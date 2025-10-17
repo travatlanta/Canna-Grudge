@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Scanner • CannaGrudge</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<link rel="icon" href="/assets/GrudgeCon.png" sizes="any" />
+<style>
+  :root{--bg:#0f0f12;--text:#e8e8e8;--muted:#9d9d9d;--good:#1f8f49;--bad:#b93b3b}
+  html,body{margin:0;background:var(--bg);color:var(--text);font:16px/1.55 ui-sans-serif,system-ui,-apple-system,Segoe UI,Inter,Arial}
+  .wrap{max-width:720px;margin:0 auto;padding:0 16px}
+  header{position:sticky;top:0;z-index:40;background:#121217;border-bottom:1px solid #24242a}
+  .row{display:flex;align-items:center;justify-content:space-between;height:56px}
+  .pane{margin-top:12px;background:#15151a;border:1px solid #24242a;border-radius:14px;padding:12px}
+  video{width:100%;border-radius:12px;background:#000}
+  .btn{padding:10px 14px;border:1px solid #2f2f33;border-radius:10px;color:#e8e8e8;background:transparent;font-weight:900;cursor:pointer}
+  .status{margin-top:10px;padding:10px;border-radius:10px;font-weight:900;display:none}
+  .ok{background:#122518;color:#bfe7c7;border:1px solid #244e31;display:block}
+  .no{background:#2a1414;color:#f0b6b6;border:1px solid #5c2a2a;display:block}
+</style>
+</head>
+<body>
+<header><div class="wrap row"><a href="/">CannaGrudge</a><div>Scanner</div><div></div></div></header>
+<main class="wrap" style="padding:12px 0 48px">
+  <div class="pane">
+    <video id="cam" autoplay playsinline muted></video>
+    <div style="display:flex;gap:10px;margin-top:10px">
+      <button class="btn" id="start">Start Camera</button>
+      <button class="btn" id="simulate">Simulate Scan</button>
+    </div>
+    <div id="out" class="status"></div>
+  </div>
+</main>
+<script>
+  const cam=document.getElementById('cam'), out=document.getElementById('out');
+  document.getElementById('start').onclick=async()=>{
+    try{
+      const st=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+      cam.srcObject=st;
+    }catch(e){ alert('Camera error: '+e.message); }
+  };
+  document.getElementById('simulate').onclick=()=>{
+    const ok=Math.random()>0.5;
+    out.className='status '+(ok?'ok':'no');
+    out.textContent= ok ? 'VALID • TKT_FAKE123 • GA' : 'ALREADY REDEEMED • 12:41 PM';
+  };
+</script>
+</body>
+</html>
