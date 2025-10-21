@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>CannaGrudge — Privacy Policy</title>
+  <link rel="icon" type="image/png" href="assets/favicon-gloves.png">
+  <link rel="apple-touch-icon" href="assets/favicon-gloves.png">
+  <link rel="stylesheet" href="src/theme.css">
+  <style>
+    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; display:flex; gap:8px; justify-content:space-around; background: var(--cg-surface); border-top:1px solid var(--cg-border); padding:10px 10px calc(var(--cg-safe-bottom)); z-index:40; }
+    .bottom-nav a { flex:1; text-align:center; padding:10px; border-radius:12px; color: var(--cg-text); text-decoration:none; font-size:12px; }
+    .bottom-nav a.is-active { background: rgba(0,0,0,.04); font-weight:700; }
+    main { padding-bottom: 84px; }
+    .hero-min { min-height: 62vh; }
+  </style>
+
+</head>
+<body>
+  <main class="container">
+    <article class="card">
+      <h1 class="display" style="font-size:28px;">Privacy Policy</h1>
+      <p>We collect your name, email, and purchase details to issue tickets and manage entry.</p>
+      <h3>Data We Collect</h3>
+      <ul>
+        <li>Account: name, email (plus social ID if you use Apple/Google)</li>
+        <li>Orders: ticket type, quantity, price</li>
+        <li>Device basics: browser type, approximate location</li>
+      </ul>
+      <h3>Why We Use It</h3>
+      <ul>
+        <li>Issue unique tickets and verify at entry</li>
+        <li>Send confirmations and event updates</li>
+        <li>Fraud prevention and analytics</li>
+      </ul>
+      <h3>Your Choices</h3>
+      <ul>
+        <li>Access, correct, or delete data by contacting support</li>
+        <li>Opt out of marketing emails anytime</li>
+      </ul>
+    </article>
+  </main>
+
+  <nav class="bottom-nav">
+    <a href="index.html" data-nav="index.html">Home</a>
+    <a href="event.html" data-nav="event.html">Event</a>
+  </nav>
+  <script src="src/app.js"></script>
+</body>
+</html>

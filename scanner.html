@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>CannaGrudge — Scanner</title>
+  <link rel="icon" type="image/png" href="assets/favicon-gloves.png">
+  <link rel="apple-touch-icon" href="assets/favicon-gloves.png">
+  <link rel="stylesheet" href="src/theme.css">
+  <style>
+    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; display:flex; gap:8px; justify-content:space-around; background: var(--cg-surface); border-top:1px solid var(--cg-border); padding:10px 10px calc(var(--cg-safe-bottom)); z-index:40; }
+    .bottom-nav a { flex:1; text-align:center; padding:10px; border-radius:12px; color: var(--cg-text); text-decoration:none; font-size:12px; }
+    .bottom-nav a.is-active { background: rgba(0,0,0,.04); font-weight:700; }
+    main { padding-bottom: 84px; }
+    .hero-min { min-height: 62vh; }
+  </style>
+
+</head>
+<body>
+  <main class="container">
+    <section class="card">
+      <h1 class="display" style="font-size:26px;">Ticket Scanner</h1>
+      <p class="muted">This is a placeholder. In production, this page uses the camera to scan and verify QR codes offline.</p>
+      <ul class="muted">
+        <li>Opens camera</li>
+        <li>Verifies signature with cached public key</li>
+        <li>Marks ticket as checked-in</li>
+      </ul>
+    </section>
+  </main>
+
+  <nav class="bottom-nav">
+    <a href="admin.html" data-nav="admin.html">Back</a>
+    <a href="analytics.html" data-nav="analytics.html">Analytics</a>
+  </nav>
+  <script src="src/app.js"></script>
+</body>
+</html>

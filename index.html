@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>CannaGrudge — Home</title>
+  <link rel="icon" type="image/png" href="assets/favicon-gloves.png">
+  <link rel="apple-touch-icon" href="assets/favicon-gloves.png">
+  <link rel="stylesheet" href="src/theme.css">
+  <style>
+    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; display:flex; gap:8px; justify-content:space-around; background: var(--cg-surface); border-top:1px solid var(--cg-border); padding:10px 10px calc(var(--cg-safe-bottom)); z-index:40; }
+    .bottom-nav a { flex:1; text-align:center; padding:10px; border-radius:12px; color: var(--cg-text); text-decoration:none; font-size:12px; }
+    .bottom-nav a.is-active { background: rgba(0,0,0,.04); font-weight:700; }
+    main { padding-bottom: 84px; }
+    .hero-min { min-height: 62vh; }
+  </style>
+
+</head>
+<body>
+  <header class="hero hero-min">
+    <img class="hero__img" src="assets/hero-ring.png" alt="Boxing ring hero">
+    <div class="hero__veil"></div>
+    <div class="hero__content">
+      <div class="display hero__title">Canna<span style="color:var(--cg-primary)">Grudge</span></div>
+      <p class="muted" style="margin:10px 0 14px;">Phoenix, AZ • Nov 22, 2025</p>
+      <div style="display:flex; gap:10px;">
+        <a href="event.html" class="button button--ghost">Event Info</a>
+        <a href="checkout.html" class="button button--primary">Get Tickets</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <h2 class="display" style="font-size:28px;">This isn’t a poster. It’s an invitation.</h2>
+      <p class="muted">Live bouts, music, vendors, and sponsors. Clean visuals, fast check-in, no nonsense.</p>
+    </section>
+
+    <section style="margin-top:12px;" class="card">
+      <h3 class="display" style="font-size:22px; margin-bottom:8px;">Featured</h3>
+      <div style="display:grid; gap:10px;">
+        <div class="card" style="padding:12px;">
+          <strong>VIP Access</strong>
+          <p class="muted">Fast entry, ringside, exclusive lounge.</p>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span class="muted">$250</span>
+            <a href="checkout.html" class="button button--primary" style="padding:10px 12px;">Buy VIP</a>
+          </div>
+        </div>
+        <div class="card" style="padding:12px;">
+          <strong>Standard Ticket</strong>
+          <p class="muted">All the action. All night.</p>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span class="muted">$75</span>
+            <a href="checkout.html" class="button button--primary" style="padding:10px 12px;">Buy</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="sticky-cta">
+    <a href="checkout.html" class="button button--primary">Get Tickets</a>
+  </div>
+
+  <nav class="bottom-nav">
+    <a href="index.html" data-nav="index.html">Home</a>
+    <a href="event.html" data-nav="event.html">Event</a>
+    <a href="checkout.html" data-nav="checkout.html">Buy</a>
+    <a href="dashboard.html" data-nav="dashboard.html">Tickets</a>
+    <a href="admin.html" data-nav="admin.html">Admin</a>
+  </nav>
+
+  
+  <dialog id="loginModal" style="border:none; border-radius:16px; padding:0; width: 92vw; max-width:420px;">
+    <div class="card" style="border:none;">
+      <h2 class="display" style="margin-bottom:8px;">Sign in</h2>
+      <p class="muted" style="margin:0 0 12px;">Fast login to save your tickets.</p>
+      <div style="display:grid; gap:10px; margin-bottom:12px;">
+        <button class="button button--primary" style="background:#000; color:#fff;">Continue with Apple</button>
+        <button class="button button--primary" style="background:#0F9D58; color:#fff;">Continue with Google</button>
+        <button class="button button--ghost">Continue with Email</button>
+      </div>
+      <div style="display:flex; justify-content:flex-end; gap:8px;">
+        <button class="button button--ghost" data-close-modal>Close</button>
+      </div>
+    </div>
+  </dialog>
+
+  <script src="src/app.js"></script>
+</body>
+</html>
