@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
         </svg>
         <span class="sr-only">Home</span>
       </a>
-      <a href="dashboard.html">Dashboard</a>
+      <a href="profile.html">Dashboard</a>
     </nav>
   `.trim();
 
