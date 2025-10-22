@@ -464,3 +464,15 @@ body.with-dock .footer::after {
 
 /* give tile grid breathing room below */
 .tile-grid { margin-bottom: 20px; }
+
+
+/* Unified tile icon styling (brand gold, consistent weight) */
+.tile { color: var(--cg-text-strong); }
+.tile svg.tile__icon-svg {
+  width: 30px; height: 30px;
+  stroke: var(--cg-primary);
+  color: var(--cg-primary);
+  stroke-width: 1.9;
+}
+.tile:hover svg.tile__icon-svg { stroke: var(--cg-primary-press); color: var(--cg-primary-press); }
+
