@@ -13,9 +13,9 @@
     .bottom-nav a.is-active { background: rgba(0,0,0,.04); font-weight:700; }
     main { padding-bottom: 84px; }
     .hero-min { min-height: 62vh; }
+    .promo-wrap{ display:block; max-width: 840px; margin: 12px auto; border-radius:16px; overflow:hidden; box-shadow: 0 8px 32px rgba(0,0,0,.25); border:1px solid var(--cg-border); }
+    .promo-wrap img{ width:100%; height:auto; display:block; }
   </style>
-
-<style id="footer-space-override">footer.footer, .footer, .footer.footer--stack{margin-bottom:50px!important} body.with-dock footer.footer, body.with-dock .footer, body.with-dock .footer.footer--stack{margin-bottom:calc(var(--dock-h) + 50px)!important}</style>
 </head>
 <body class="with-dock">
   <header class="hero hero-min">
@@ -32,34 +32,18 @@
   </header>
 
   <main class="container">
-    <section class="card">
-      <h2 class="display" style="font-size:28px;">Fight night built for phones, not flyers.</h2>
-      <p class="muted">Live bouts, music, and vendors. Fast entry, instant mobile tickets, no drama.</p>
+    <section class="card card--intro">
+      <h2 class="display" style="font-size:28px;">High Stakes & Heavy Hits</h2>
+      <p class="muted">The biggest cannabis brands from across the industry step out of the dispensary and into the ring. Live boxing, mud wrestling, music, and vendor showcases collide in one arena. CannaGrudge is part festival, part fight night, an all-out celebration of cannabis culture and competition.</p>
     </section>
 
-    <section style="margin-top:12px;" class="card">
-      <h3 class="display" style="font-size:22px; margin-bottom:8px;">Featured</h3>
-      <div style="display:grid; gap:10px;">
-        <div class="card" style="padding:12px;">
-          <strong>VIP Access</strong>
-          <p class="muted">Fast entry, ringside, exclusive lounge.</p>
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span class="muted">$250</span>
-            <a href="checkout.html" class="button button--primary" style="padding:10px 12px;">Buy VIP</a>
-          </div>
-        </div>
-        <div class="card" style="padding:12px;">
-          <strong>Standard Ticket</strong>
-          <p class="muted">All the action. All night.</p>
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span class="muted">$75</span>
-            <a href="checkout.html" class="button button--primary" style="padding:10px 12px;">Buy</a>
-          </div>
-        </div>
-      </div>
-    </section>
+    <!-- Replaced Featured section with the uploaded Event Highlights image -->
+    <a class="promo-wrap" href="event.html#info" aria-label="Event Highlights">
+      <img src="assets/Event Highlights.png" alt="Event Highlights: mud wrestling, midget wrestling, two rings, live music, games, awards, food, drinks and cannabis samples">
+    </a>
   </main>
-<footer class="footer footer--stack">
+
+  <footer class="footer footer--stack">
     <div class="footer__icons">
       <a href="#" data-share="instagram" title="Share on Instagram">ig</a>
       <a href="#" data-share="facebook" title="Share on Facebook">f</a>
@@ -79,7 +63,8 @@
     </div>
     <div class="footer__legal">© CannaGrudge. All rights reserved.</div>
   </footer>
-<dialog id="loginModal" style="border:none; border-radius:16px; padding:0; width: 92vw; max-width:420px;">
+
+  <dialog id="loginModal" style="border:none; border-radius:16px; padding:0; width: 92vw; max-width:420px;">
     <div class="card" style="border:none;">
       <h2 class="display" style="margin-bottom:8px;">Sign in</h2>
       <p class="muted" style="margin:0 0 12px;">Fast login to save your tickets.</p>
@@ -96,9 +81,9 @@
 
   <script src="app.js"></script>
 
+  <!-- Fixed bottom CTA dock left as-is -->
   <div class="cta-dock">
     <a href="checkout.html" class="button button--primary">Get Tickets</a>
   </div>
 </body>
-
 </html>

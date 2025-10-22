@@ -1,8 +1,11 @@
 <!doctype html>
-<html lang="en"><head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>CannaGrudge — Event</title>
   <link rel="icon" type="image/png" href="assets/favicon-gloves.png">
+  <link rel="apple-touch-icon" href="assets/favicon-gloves.png">
   <link rel="stylesheet" href="theme.css">
 </head>
 <body>
@@ -14,29 +17,72 @@
       <p class="muted">Nov 22 • Phoenix, AZ</p>
     </div>
   </header>
+
   <main class="container">
     <section class="card" id="info">
       <div class="tile-grid">
-        <a class="tile" href="#info"><img class="tile__icon" src="assets/favicon-gloves.png"><div class="tile__label">About</div></a><a class="tile" href="#schedule"><img class="tile__icon" src="assets/favicon-gloves.png"><div class="tile__label">Schedule</div></a><a class="tile" href="#vendors"><img class="tile__icon" src="assets/favicon-gloves.png"><div class="tile__label">Vendors</div></a><a class="tile" href="#map"><img class="tile__icon" src="assets/favicon-gloves.png"><div class="tile__label">Map</div></a><a class="tile" href="#sponsors"><img class="tile__icon" src="assets/favicon-gloves.png"><div class="tile__label">Sponsors</div></a><a class="tile" href="#rules"><img class="tile__icon" src="assets/favicon-gloves.png"><div class="tile__label">Rules</div></a><a class="tile" href="#faq"><img class="tile__icon" src="assets/favicon-gloves.png"><div class="tile__label">FAQ</div></a><a class="tile" href="#food"><img class="tile__icon" src="assets/favicon-gloves.png"><div class="tile__label">Food & Drink</div></a><a class="tile" href="#parking"><img class="tile__icon" src="assets/favicon-gloves.png"><div class="tile__label">Parking</div></a><a class="tile" href="#lodging"><img class="tile__icon" src="assets/favicon-gloves.png"><div class="tile__label">Lodging</div></a><a class="tile" href="#photos"><img class="tile__icon" src="assets/favicon-gloves.png"><div class="tile__label">Photos</div></a><a class="tile" href="#contact"><img class="tile__icon" src="assets/favicon-gloves.png"><div class="tile__label">Contact</div></a>
+        <a class="tile" href="#info"><img class="tile__icon" src="assets/favicon-gloves.png" alt=""><div class="tile__label">About</div></a>
+        <a class="tile" href="#schedule"><img class="tile__icon" src="assets/favicon-gloves.png" alt=""><div class="tile__label">Schedule</div></a>
+        <a class="tile" href="#vendors"><img class="tile__icon" src="assets/favicon-gloves.png" alt=""><div class="tile__label">Vendors</div></a>
+        <a class="tile" href="#map"><img class="tile__icon" src="assets/favicon-gloves.png" alt=""><div class="tile__label">Map</div></a>
+        <a class="tile" href="#sponsors"><img class="tile__icon" src="assets/favicon-gloves.png" alt=""><div class="tile__label">Sponsors</div></a>
+        <a class="tile" href="#rules"><img class="tile__icon" src="assets/favicon-gloves.png" alt=""><div class="tile__label">Rules</div></a>
+        <a class="tile" href="#faq"><img class="tile__icon" src="assets/favicon-gloves.png" alt=""><div class="tile__label">FAQ</div></a>
+        <a class="tile" href="#food"><img class="tile__icon" src="assets/favicon-gloves.png" alt=""><div class="tile__label">Food & Drink</div></a>
+        <a class="tile" href="#parking"><img class="tile__icon" src="assets/favicon-gloves.png" alt=""><div class="tile__label">Parking</div></a>
+        <a class="tile" href="#lodging"><img class="tile__icon" src="assets/favicon-gloves.png" alt=""><div class="tile__label">Lodging</div></a>
+        <a class="tile" href="#photos"><img class="tile__icon" src="assets/favicon-gloves.png" alt=""><div class="tile__label">Photos</div></a>
+        <a class="tile" href="#contact"><img class="tile__icon" src="assets/favicon-gloves.png" alt=""><div class="tile__label">Contact</div></a>
       </div>
     </section>
+
     <section class="card" id="schedule" style="margin-top:12px;">
       <h2 class="display" style="font-size:24px;">Schedule</h2>
-      <ul class="muted"><li>Doors: 6:00 PM</li><li>Bouts: 7:00 PM</li><li>Main event: 9:30 PM</li></ul>
+      <ul class="muted">
+        <li>Doors: 6:00 PM</li>
+        <li>Live Music: 6:30 PM</li>
+        <li>Opening Bouts: 7:00 PM</li>
+        <li>Main Event: 9:30 PM</li>
+        <li>Awards + Afterparty</li>
+      </ul>
     </section>
+
     <section class="card" id="tickets" style="margin-top:12px;">
       <h2 class="display" style="font-size:24px;">Ticket Info</h2>
-      <p class="muted">VIP, Standard, and group bundles available.</p>
+      <p class="muted">VIP, Standard, and group bundles available. Mobile-only tickets for fast entry.</p>
+    </section>
+
+    <!-- Moved Featured ticket section from Home -->
+    <section class="card" id="featured" style="margin-top:12px;">
+      <h3 class="display" style="font-size:22px; margin-bottom:8px;">Featured</h3>
+      <div style="display:grid; gap:10px;">
+        <div class="card" style="padding:12px;">
+          <strong>VIP Access</strong>
+          <p class="muted">Fast entry, ringside, exclusive lounge.</p>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span class="muted">$250</span>
+            <a href="checkout.html" class="button button--primary" style="padding:10px 12px;">Buy VIP</a>
+          </div>
+        </div>
+        <div class="card" style="padding:12px;">
+          <strong>Standard Ticket</strong>
+          <p class="muted">All the action. All night.</p>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span class="muted">$75</span>
+            <a href="checkout.html" class="button button--primary" style="padding:10px 12px;">Buy</a>
+          </div>
+        </div>
+      </div>
     </section>
   </main>
 
-  <footer class="footer">
+  <footer class="footer footer--stack">
     <div class="footer__icons">
-      <a href="#" data-share="instagram">ig</a>
-      <a href="#" data-share="facebook">f</a>
-      <a href="#" data-share="twitter">x</a>
-      <a href="#" data-share="snapchat">sc</a>
-      <a href="#" data-share="tiktok">tt</a>
+      <a href="#" data-share="instagram" title="Share on Instagram">ig</a>
+      <a href="#" data-share="facebook" title="Share on Facebook">f</a>
+      <a href="#" data-share="twitter" title="Share on X">x</a>
+      <a href="#" data-share="snapchat" title="Share on Snapchat">sc</a>
+      <a href="#" data-share="tiktok" title="Share on TikTok">tt</a>
     </div>
     <div class="footer__links">
       <a href="event.html#info">Event Info</a>
@@ -51,7 +97,6 @@
     <div class="footer__legal">© CannaGrudge. All rights reserved.</div>
   </footer>
 
-
   <nav class="bottom-nav">
     <a href="event.html#schedule" data-nav="schedule.html">Schedule</a>
     <a href="checkout.html" data-nav="checkout.html">Buy</a>
@@ -59,4 +104,5 @@
   </nav>
 
   <script src="app.js"></script>
-</body></html>
+</body>
+</html>

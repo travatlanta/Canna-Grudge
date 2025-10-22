@@ -380,32 +380,61 @@ body.with-dock .footer { margin-bottom: calc(var(--dock-h) + 12px) !important; }
 .cta-dock.behind { z-index: 0 !important; pointer-events: none !important; }
 
 
-/* Footer final spacing */
-.footer { margin-bottom: 50px !important; }
-body.with-dock .footer { margin-bottom: calc(var(--dock-h) + 50px) !important; }
-
-/* === Footer final spacing (do not remove) === */
-footer.footer, .footer, .footer.footer--stack {
-  margin-bottom: 50px !important;
-}
-body.with-dock footer.footer, body.with-dock .footer, body.with-dock .footer.footer--stack {
-  margin-bottom: calc(var(--dock-h) + 50px) !important;
-}
-
-/* === Footer final spacing (hard guarantee) === */
-footer.footer, .footer, .footer.footer--stack {
-  margin-bottom: 50px !important;
-  position: relative; /* allow z-index and pseudo-element to apply */
-  z-index: 1;
-}
-/* Pseudo-element spacer ensures visible gap even if margins collapse or are overlaid */
-footer.footer::after, .footer::after, .footer.footer--stack::after {
-  content: "";
+/* Full-width event promo image */
+.promo-wrap {
   display: block;
-  height: 50px;
+  width: 100vw;
+  margin: 0;
+  border-radius: 0;
+  overflow: hidden;
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
 }
-/* If a dock layout is present, keep the dock clearance and add 50px more */
-body.with-dock footer.footer::after, body.with-dock .footer::after, body.with-dock .footer.footer--stack::after {
-  height: calc(var(--dock-h) + 50px);
+.promo-wrap img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 0;
 }
 
+
+/* === Full-bleed promo image (edge-to-edge, no rounding) === */
+.promo-wrap {
+  display: block;
+  width: 100vw;
+  margin: 12px 0;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  overflow: visible;
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%); /* dead-center relative to viewport */
+}
+.promo-wrap img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: none !important;
+  border-radius: 0 !important;
+}
+
+/* === Footer clearance via invisible spacer (final) === */
+body.with-dock .footer {
+  position: static !important;
+  margin: 0 !important;
+}
+body.with-dock .footer::after {
+  content: "" !important;
+  display: block !important;
+  height: calc(var(--dock-h) + 14px) !important; /* footer fully clears CTA */
+}
+
+
+.hero .card, .hero__text, .intro-card { padding-top: 15px; padding-bottom: 15px; }
+
+/* extra breathing room for the home intro card */
+.card--intro{padding-top:31px;padding-bottom:31px;}
