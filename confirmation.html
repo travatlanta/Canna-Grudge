@@ -1,37 +1,42 @@
 <!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>CannaGrudge — Confirmation</title>
+<html lang="en"><head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Confirmation</title>
   <link rel="icon" type="image/png" href="assets/favicon-gloves.png">
-  <link rel="apple-touch-icon" href="assets/favicon-gloves.png">
-  <link rel="stylesheet" href="src/theme.css">
-  <style>
-    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; display:flex; gap:8px; justify-content:space-around; background: var(--cg-surface); border-top:1px solid var(--cg-border); padding:10px 10px calc(var(--cg-safe-bottom)); z-index:40; }
-    .bottom-nav a { flex:1; text-align:center; padding:10px; border-radius:12px; color: var(--cg-text); text-decoration:none; font-size:12px; }
-    .bottom-nav a.is-active { background: rgba(0,0,0,.04); font-weight:700; }
-    main { padding-bottom: 84px; }
-    .hero-min { min-height: 62vh; }
-  </style>
-
+  <link rel="stylesheet" href="theme.css">
 </head>
 <body>
   <main class="container">
-    <section class="card" style="text-align:center;">
-      <h1 class="display" style="font-size:28px;">Purchase Successful</h1>
-      <p>Thanks, <strong data-name>Guest</strong>. A receipt was sent to <span data-email>your email</span>.</p>
-      <a href="dashboard.html" class="button button--primary">View My Ticket</a>
-    </section>
+    <section class="card" style="text-align:center;"><h1 class="display" style="font-size:28px;">Purchase Successful</h1><p>Thanks, <strong data-name>Guest</strong>. A receipt was sent to <span data-email>your email</span>.</p></section>
   </main>
 
+  <footer class="footer">
+    <div class="footer__icons">
+      <a href="#" data-share="instagram">ig</a>
+      <a href="#" data-share="facebook">f</a>
+      <a href="#" data-share="twitter">x</a>
+      <a href="#" data-share="snapchat">sc</a>
+      <a href="#" data-share="tiktok">tt</a>
+    </div>
+    <div class="footer__links">
+      <a href="event.html#info">Event Info</a>
+      <a href="event.html#schedule">Schedule</a>
+      <a href="event.html#tickets">Ticket Info</a>
+      <a href="checkout.html">Buy</a>
+      <a href="profile.html">Profile</a>
+      <a href="tos.html">Terms</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="index.html">Home</a>
+    </div>
+    <div class="footer__legal">© CannaGrudge. All rights reserved.</div>
+  </footer>
+
+
   <nav class="bottom-nav">
-    <a href="index.html" data-nav="index.html">Home</a>
-    <a href="event.html" data-nav="event.html">Event</a>
+    <a href="event.html#schedule" data-nav="schedule.html">Schedule</a>
     <a href="checkout.html" data-nav="checkout.html">Buy</a>
-    <a href="dashboard.html" data-nav="dashboard.html">Tickets</a>
-    <a href="admin.html" data-nav="admin.html">Admin</a>
+    <a href="profile.html" data-nav="profile.html">Profile</a>
   </nav>
-  <script src="src/app.js"></script>
-</body>
-</html>
+
+  <script src="app.js"></script>
+</body></html>

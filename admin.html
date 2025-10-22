@@ -6,7 +6,7 @@
   <title>CannaGrudge — Admin</title>
   <link rel="icon" type="image/png" href="assets/favicon-gloves.png">
   <link rel="apple-touch-icon" href="assets/favicon-gloves.png">
-  <link rel="stylesheet" href="src/theme.css">
+  <link rel="stylesheet" href="theme.css">
   <style>
     .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; display:flex; gap:8px; justify-content:space-around; background: var(--cg-surface); border-top:1px solid var(--cg-border); padding:10px 10px calc(var(--cg-safe-bottom)); z-index:40; }
     .bottom-nav a { flex:1; text-align:center; padding:10px; border-radius:12px; color: var(--cg-text); text-decoration:none; font-size:12px; }
@@ -28,6 +28,21 @@
     </section>
   </main>
 
+  <footer class="footer">
+    <div class="footer__grid">
+      <a href="event.html">Event Info</a>
+      <a href="dashboard.html">My Tickets</a>
+      <a href="checkout.html">Buy Tickets</a>
+      <a href="admin.html">Admin</a>
+      <a href="tos.html">Terms of Service</a>
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="analytics.html">Analytics</a>
+      <a href="index.html">Home</a>
+    </div>
+    <div class="footer__legal">© CannaGrudge. All rights reserved. Mobile tickets only. Questions: support@cannagrudge.com</div>
+  </footer>
+
+
   <nav class="bottom-nav">
     <a href="index.html" data-nav="index.html">Home</a>
     <a href="event.html" data-nav="event.html">Event</a>
@@ -35,6 +50,6 @@
     <a href="dashboard.html" data-nav="dashboard.html">Tickets</a>
     <a href="admin.html" data-nav="admin.html">Admin</a>
   </nav>
-  <script src="src/app.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
