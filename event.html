@@ -2,23 +2,28 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>CannaGrudge — Event</title>
-  <link rel="icon" type="image/png" href="assets/favicon-gloves.png">
-  <link rel="apple-touch-icon" href="assets/favicon-gloves.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CannaGrudge — Event Info</title>
   <link rel="stylesheet" href="theme.css">
+  <link rel="icon" type="image/png" href="assets/favicon-gloves.png">
 </head>
 <body>
-  <header class="hero" style="min-height:36vh;">
-    <img class="hero__img" src="assets/hero-ring.png" alt="Event hero">
+  <!-- Hero with image and veil restored -->
+  <header class="hero hero--ring">
+    <img class="hero__img" src="assets/hero-ring.png" alt="Arena lights and ring">
     <div class="hero__veil"></div>
     <div class="hero__content">
-      <div class="display" style="font-size:34px;">Event Info</div>
-      <p class="muted">Nov 22 • Phoenix, AZ</p>
+      <div class="display hero__title">Event <span style="color:var(--cg-primary)">Info</span></div>
+      <p class="muted" style="margin:10px 0 14px;">Phoenix, AZ • Nov 22, 2025</p>
+      <div style="display:flex; gap:10px;">
+        <a href="#featured" class="button button--primary">Tickets</a>
+        <a href="#vendors" class="button button--ghost">Vendors</a>
+      </div>
     </div>
   </header>
 
   <main class="container">
+    <!-- Quick tiles restored -->
     <section class="card" id="info">
       <div class="tile-grid">
         <a class="tile" href="#info"><img class="tile__icon" src="assets/favicon-gloves.png" alt=""><div class="tile__label">About</div></a>
@@ -26,9 +31,8 @@
         <a class="tile" href="#vendors"><img class="tile__icon" src="assets/favicon-gloves.png" alt=""><div class="tile__label">Vendors</div></a>
         <a class="tile" href="#map"><img class="tile__icon" src="assets/favicon-gloves.png" alt=""><div class="tile__label">Map</div></a>
         <a class="tile" href="#sponsors"><img class="tile__icon" src="assets/favicon-gloves.png" alt=""><div class="tile__label">Sponsors</div></a>
-        <a class="tile" href="#rules"><img class="tile__icon" src="assets/favicon-gloves.png" alt=""><div class="tile__label">Rules</div></a>
         <a class="tile" href="#faq"><img class="tile__icon" src="assets/favicon-gloves.png" alt=""><div class="tile__label">FAQ</div></a>
-        <a class="tile" href="#food"><img class="tile__icon" src="assets/favicon-gloves.png" alt=""><div class="tile__label">Food & Drink</div></a>
+        <a class="tile" href="#food"><img class="tile__icon" src="assets/favicon-gloves.png" alt=""><div class="tile__label">Food &amp; Drink</div></a>
         <a class="tile" href="#parking"><img class="tile__icon" src="assets/favicon-gloves.png" alt=""><div class="tile__label">Parking</div></a>
         <a class="tile" href="#lodging"><img class="tile__icon" src="assets/favicon-gloves.png" alt=""><div class="tile__label">Lodging</div></a>
         <a class="tile" href="#photos"><img class="tile__icon" src="assets/favicon-gloves.png" alt=""><div class="tile__label">Photos</div></a>
@@ -36,41 +40,36 @@
       </div>
     </section>
 
-    <section class="card" id="schedule" style="margin-top:12px;">
-      <h2 class="display" style="font-size:24px;">Schedule</h2>
-      <ul class="muted">
+    <!-- Event Schedule -->
+    <section class="card" id="schedule">
+      <h2 class="display" style="font-size:22px;margin-bottom:8px;">Event Schedule</h2>
+      <ul class="bullets">
         <li>Doors: 6:00 PM</li>
-        <li>Live Music: 6:30 PM</li>
-        <li>Opening Bouts: 7:00 PM</li>
-        <li>Main Event: 9:30 PM</li>
-        <li>Awards + Afterparty</li>
+        <li>Opening: 6:30 PM</li>
+        <li>Bouts start: 7:00 PM</li>
+        <li>Intermission: 8:15 PM</li>
+        <li>Main event: 9:30 PM</li>
       </ul>
     </section>
 
-    <section class="card" id="tickets" style="margin-top:12px;">
-      <h2 class="display" style="font-size:24px;">Ticket Info</h2>
-      <p class="muted">VIP, Standard, and group bundles available. Mobile-only tickets for fast entry.</p>
-    </section>
-
-    <!-- Moved Featured ticket section from Home -->
+    <!-- Featured Tickets -->
     <section class="card" id="featured" style="margin-top:12px;">
-      <h3 class="display" style="font-size:22px; margin-bottom:8px;">Featured</h3>
-      <div style="display:grid; gap:10px;">
-        <div class="card" style="padding:12px;">
-          <strong>VIP Access</strong>
-          <p class="muted">Fast entry, ringside, exclusive lounge.</p>
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span class="muted">$250</span>
-            <a href="checkout.html" class="button button--primary" style="padding:10px 12px;">Buy VIP</a>
-          </div>
+      <h2 class="display" style="font-size:22px;margin-bottom:8px;">Featured</h2>
+      <div class="card" style="padding:12px;">
+        <strong>VIP Access</strong>
+        <p class="muted">Fast entry, ringside, exclusive lounge.</p>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span class="muted">$250</span>
+          <a href="checkout.html" class="button button--primary" style="padding:10px 12px;">Buy VIP</a>
         </div>
-        <div class="card" style="padding:12px;">
-          <strong>Standard Ticket</strong>
-          <p class="muted">All the action. All night.</p>
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span class="muted">$75</span>
-            <a href="checkout.html" class="button button--primary" style="padding:10px 12px;">Buy</a>
-          </div>
+      </div>
+
+      <div class="card" style="padding:12px; margin-top:10px;">
+        <strong>Standard Ticket</strong>
+        <p class="muted">All the action. All night.</p>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span class="muted">$75</span>
+          <a href="checkout.html" class="button button--primary" style="padding:10px 12px;">Buy</a>
         </div>
       </div>
     </section>
@@ -88,7 +87,7 @@
       <a href="event.html#info">Event Info</a>
       <a href="event.html#schedule">Schedule</a>
       <a href="event.html#tickets">Ticket Info</a>
-      <a href="checkout.html">Buy</a>
+      <a href="event.html#featured">Buy</a>
       <a href="profile.html">Profile</a>
       <a href="tos.html">Terms</a>
       <a href="privacy.html">Privacy</a>
@@ -97,12 +96,36 @@
     <div class="footer__legal">© CannaGrudge. All rights reserved.</div>
   </footer>
 
-  <nav class="bottom-nav">
-    <a href="event.html#schedule" data-nav="schedule.html">Schedule</a>
-    <a href="checkout.html" data-nav="checkout.html">Buy</a>
-    <a href="profile.html" data-nav="profile.html">Profile</a>
-  </nav>
+  <dialog id="loginModal" style="border:none; border-radius:16px; padding:0; width: 92vw; max-width:420px;">
+    <div class="card" style="border:none;">
+      <h2 class="display" style="margin-bottom:8px;">Sign in</h2>
+      <p class="muted" style="margin:0 0 12px;">Fast login to save your tickets.</p>
+      <div style="display:grid; gap:10px; margin-bottom:12px;">
+        <button class="button button--primary" style="background:#000; color:#fff;">Continue with Apple</button>
+        <button class="button button--primary" style="background:#0F9D58; color:#fff;">Continue with Google</button>
+        <button class="button button--ghost">Continue with Email</button>
+      </div>
+      <div style="display:flex; justify-content:flex-end; gap:8px;">
+        <button class="button button--ghost" data-close-modal>Close</button>
+      </div>
+    </div>
+  </dialog>
 
   <script src="app.js"></script>
+
+  <!-- Fixed bottom CTA dock left as-is -->
+
+  <nav class="bottom-nav">
+    <a href="event.html#schedule">Schedule</a>
+    <a href="event.html">Info</a>
+    <a href="index.html" class="home" aria-label="Home">
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+        <path d="M12 3l9 7-1.5 2L19 11v9h-5v-6H10v6H5v-9l-0.5 1L3 10l9-7z" fill="currentColor"/>
+      </svg>
+      <span class="sr-only">Home</span>
+    </a>
+    <a href="event.html#featured">Buy</a>
+    <a href="dashboard.html">Dashboard</a>
+  </nav>
 </body>
 </html>

@@ -255,7 +255,7 @@ body.has-sticky-cta main { padding-bottom: 24px !important; } /* accommodates CT
 .footer {
   margin: 16px auto 90px; /* leave space above bottom nav */
   max-width: 720px;
-  padding: 16px;
+  padding: 16px 16px 70px;
   border-radius: var(--cg-r-lg);
   background: var(--cg-surface);
   border: 1px solid var(--cg-border);
@@ -269,7 +269,7 @@ body.has-sticky-cta main { padding-bottom: 24px !important; } /* accommodates CT
 }
 .footer a { color: var(--cg-text-strong); text-decoration: none; }
 .footer a:hover { text-decoration: underline; }
-.footer__legal { margin-top: 10px; font-size: 12px; color: var(--cg-text-dim); }
+.footer__legal { margin-top: 14px; margin-bottom: 14px; font-size: 12px; color: var(--cg-text-dim); }
 
 /* Footer layout variant with icons + links */
 .footer--stack { text-align:center; }
@@ -430,7 +430,7 @@ body.with-dock .footer {
 body.with-dock .footer::after {
   content: "" !important;
   display: block !important;
-  height: calc(var(--dock-h) + 14px) !important; /* footer fully clears CTA */
+  height: calc(var(--dock-h) + 24px) !important; /* footer fully clears CTA */
 }
 
 
@@ -438,3 +438,29 @@ body.with-dock .footer::after {
 
 /* extra breathing room for the home intro card */
 .card--intro{padding-top:31px;padding-bottom:31px;}
+
+/* bottom-nav home circle icon and a11y helper */
+.bottom-nav a.home{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:48px;height:48px;border-radius:9999px;
+  background: rgba(255,255,255,.04);
+  border:1px solid var(--cg-border);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.04), 0 2px 10px rgba(0,0,0,.25);
+  margin: 0 6px;
+}
+.bottom-nav a.home:active{ transform: translateY(1px); }
+.bottom-nav a.home svg{ display:block; }
+.sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+
+/* even vertical rhythm between sections */
+.container > section,
+.container > .card {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+/* ensure nested ticket cards keep tighter spacing while outer Featured section keeps rhythm */
+#featured > .card { margin-top: 12px; margin-bottom: 12px; }
+
+/* give tile grid breathing room below */
+.tile-grid { margin-bottom: 20px; }
