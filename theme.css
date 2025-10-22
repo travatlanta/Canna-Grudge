@@ -476,3 +476,6 @@ body.with-dock .footer::after {
 }
 .tile:hover svg.tile__icon-svg { stroke: var(--cg-primary-press); color: var(--cg-primary-press); }
 
+
+/* home icon brand gold */
+.bottom-nav a.home svg path { fill: var(--cg-primary) !important; }
