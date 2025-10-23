@@ -1,66 +1,80 @@
-<!doctype html>
-<html lang="en"><head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Privacy Policy</title>
-  <link rel="icon" type="image/png" href="assets/favicon-gloves.png">
-  <link rel="stylesheet" href="theme.css">
-</head>
-<body>
-  <main class="container">
-    <article class="card"><h1 class="display" style="font-size:28px;">Privacy Policy</h1><p>We collect minimal info to issue tickets and manage entry.</p></article>
-  </main>
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CannaGrudge • Privacy Policy</title>
+  <style>
+    :root{--bg:#0f1012;--card:#181b20;--text:#eaecef;--muted:#a8adb6;--accent:#f5b81a}
+    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);
+    font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif}
+    .wrap{max-width:860px;margin:40px auto 80px;padding:0 20px}
+    .card{background:var(--card);border:1px solid #2a2f36;border-radius:16px;padding:28px;
+          box-shadow:0 10px 28px rgba(0,0,0,.3)}
+    h1,h2,h3{line-height:1.25;margin:0 0 8px} h1{font-size:28px}
+    h2{margin-top:22px;font-size:20px} h3{margin-top:18px;font-size:18px}
+    p,li{color:var(--text)} .muted{color:var(--muted)}
+    a{color:var(--accent);text-decoration:none} a:hover{text-decoration:underline}
+    .top{margin-bottom:16px}
+    .small{font-size:13px}
+    .pill{display:inline-block;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);
+          padding:6px 10px;border-radius:999px;margin-right:8px}
+    code{background:#0b0c10;border:1px solid #2a2f36;border-radius:6px;padding:2px 6px}
+  </style>
+</head><body>
+<div class="wrap"><div class="card">
+  <div class="top">
+    <h1>Privacy Policy</h1>
+    <div class="small muted">Last updated October 23, 2025</div>
+  </div>
 
-  <footer class="footer footer--stack">
-    <div class="footer__icons">
-      <a href="#" data-share="instagram" title="Share on Instagram">ig</a>
-      <a href="#" data-share="facebook" title="Share on Facebook">f</a>
-      <a href="#" data-share="twitter" title="Share on X">x</a>
-      <a href="#" data-share="snapchat" title="Share on Snapchat">sc</a>
-      <a href="#" data-share="tiktok" title="Share on TikTok">tt</a>
-    </div>
-    <div class="footer__links">
-      <a href="event.html#info">Event Info</a>
-      <a href="event.html#schedule">Schedule</a>
-      <a href="event.html#tickets">Ticket Info</a>
-      <a href="event.html#featured">Buy</a>
-      <a href="profile.html">Profile</a>
-      <a href="tos.html">Terms</a>
-      <a href="privacy.html">Privacy</a>
-      <a href="index.html">Home</a>
-    </div>
-    <div class="footer__legal">© CannaGrudge. All rights reserved.</div>
-  </footer>
+  <p>CannaGrudge (“we”, “us”, “our”) operates event and ticketing pages (the “Service”). 
+  This notice explains what we collect, why, how we use it, and the choices you have.</p>
 
-  <dialog id="loginModal" style="border:none; border-radius:16px; padding:0; width: 92vw; max-width:420px;">
-    <div class="card" style="border:none;">
-      <h2 class="display" style="margin-bottom:8px;">Sign in</h2>
-      <p class="muted" style="margin:0 0 12px;">Fast login to save your tickets.</p>
-      <div style="display:grid; gap:10px; margin-bottom:12px;">
-        <button class="button button--primary" style="background:#000; color:#fff;">Continue with Apple</button>
-        <button class="button button--primary" style="background:#0F9D58; color:#fff;">Continue with Google</button>
-        <button class="button button--ghost">Continue with Email</button>
-      </div>
-      <div style="display:flex; justify-content:flex-end; gap:8px;">
-        <button class="button button--ghost" data-close-modal>Close</button>
-      </div>
-    </div>
-  </dialog>
+  <h2>Information we collect</h2>
+  <ul>
+    <li><strong>Account info</strong> from identity providers you choose (Google, Facebook, Apple) via Firebase Authentication: name, email, profile photo, and provider id/UID.</li>
+    <li><strong>Basic usage data</strong> our web server or hosting platform may log (IP, device/browser, pages viewed, timestamps) for security and diagnostics.</li>
+    <li><strong>Support messages</strong> you send us (emails, forms, attachments).</li>
+  </ul>
 
-  <script src="app.js"></script>
+  <h2>How we use information</h2>
+  <ul>
+    <li>Authenticate you and provide your dashboard and tickets.</li>
+    <li>Operate, secure, and debug the Service; prevent abuse and fraud.</li>
+    <li>Communicate about your account, events, and policy updates.</li>
+    <li>Comply with legal obligations and enforce terms.</li>
+  </ul>
 
-  <!-- Fixed bottom CTA dock left as-is -->
+  <h2>Sharing</h2>
+  <ul>
+    <li><strong>Service providers</strong> that help us run the Service (e.g., Firebase/Google). They process data on our behalf under contract.</li>
+    <li><strong>Legal</strong> when required by law, to protect rights, safety, or prevent fraud.</li>
+    <li>We do <strong>not</strong> sell personal information.</li>
+  </ul>
 
-  <nav class="bottom-nav">
-    <a href="event.html#schedule">Schedule</a>
-    <a href="event.html">Info</a>
-    <a href="index.html" class="home" aria-label="Home">
-      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
-        <path d="M12 3l9 7-1.5 2L19 11v9h-5v-6H10v6H5v-9l-0.5 1L3 10l9-7z" fill="currentColor"/>
-      </svg>
-      <span class="sr-only">Home</span>
-    </a>
-    <a href="event.html#featured">Buy</a>
-    <a href="dashboard.html">Dashboard</a>
-  </nav>
+  <h2>Data retention</h2>
+  <p>We retain account data while your account is active and as needed for security, operations, and legal/compliance requirements. 
+  You can request deletion at any time (see “Your choices”).</p>
 
+  <h2>Your choices & rights</h2>
+  <ul>
+    <li><strong>Access/Update</strong>: manage your profile via your identity provider; contact us for additional requests.</li>
+    <li><strong>Delete</strong>: request deletion of your account and related data. See the <a href="delete-data.html">User Data Deletion</a> page for instructions.</li>
+    <li><strong>Opt‑out of marketing</strong>: use the unsubscribe link or contact us.</li>
+  </ul>
+
+  <h2>Children</h2>
+  <p>The Service is not intended for children under 13. We do not knowingly collect data from children under 13.</p>
+
+  <h2>Security</h2>
+  <p>We use reasonable technical and organizational measures (including Firebase Authentication and HTTPS) to protect data. 
+  No method is 100% secure; use complex passwords on your identity provider accounts and keep devices updated.</p>
+
+  <h2>International</h2>
+  <p>Data may be processed and stored in the United States and other locations where our providers operate.</p>
+
+  <h2>Changes to this policy</h2>
+  <p>We may update this notice. The “Last updated” date shows the current version. Material changes will be posted on this page.</p>
+
+  <h2>Contact us</h2>
+  <p>For privacy requests or questions, email <a href="mailto:thegreenkeepers.az@yahoo.com">thegreenkeepers.az@yahoo.com</a> with the subject <code>Privacy</code>.</p>
+</div></div>
 </body></html>
