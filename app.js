@@ -3,14 +3,36 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- simple auth guard for protected pages ---
   (function(){
     try {
-      const file = (location.pathname.split('/').pop() || '').toLowerCase();
-      const protectedPages = new Set(['dashboard.html','checkout.html','confirmation.html','profile.html']);
+      /*
+       * Determine whether the current page should require authentication.  In
+       * addition to checking for exact filenames like `dashboard.html`, also
+       * match routes without extensions (e.g. `/dashboard` or `/dashboard/`).
+       * This helps when the app is served via a web server that rewrites URLs
+       * or when the `.html` extension is omitted.
+       */
+      const path = location.pathname.toLowerCase();
+      // Pages or keywords that require the user to be logged in.  If the
+      // pathname contains any of these strings, the user will be redirected
+      // to the login page unless localStorage indicates they are logged in.
+      const authKeywords = ['dashboard', 'checkout', 'confirmation', 'profile'];
+      const requiresAuth = authKeywords.some(k => path.includes(k));
       const loggedIn = localStorage.getItem('isLoggedIn') === '1';
-      if (!loggedIn && protectedPages.has(file)) {
+      if (!loggedIn && requiresAuth) {
+        // Build a URL to the login page relative to the current directory.  If the
+        // app is served from a subdirectory or routes omit the `.html`
+        // extension (e.g. `/dashboard`), using simply 'login.html' would
+        // incorrectly point into the current route (e.g. `/dashboard/login.html`).
+        // Instead, compute the base directory from the current pathname.
         const ret = encodeURIComponent(location.pathname + location.search + location.hash);
-        location.href = 'login.html?return=' + ret;
+        const currentPath = location.pathname;
+        const lastSlash = currentPath.lastIndexOf('/');
+        const basePath = lastSlash >= 0 ? currentPath.slice(0, lastSlash) : '';
+        const loginPath = (basePath ? basePath : '') + '/login.html';
+        location.href = loginPath + '?return=' + ret;
       }
-    } catch(e) {}
+    } catch(e) {
+      // swallow errors so the page continues to render
+    }
   })();
 
   const NEW_NAV_HTML = `
@@ -84,12 +106,16 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch(e) {
       // swallow storage errors
     }
-    const file = (location.pathname.split('/').pop() || '').toLowerCase();
-    if (file === 'login.html') {
+    const currentPath = location.pathname;
+    const lastSlash = currentPath.lastIndexOf('/');
+    const basePath = lastSlash >= 0 ? currentPath.slice(0, lastSlash) : '';
+    const dashboardPath = (basePath ? basePath : '') + '/dashboard.html';
+    const file = (currentPath.split('/').pop() || '').toLowerCase();
+    if (file === 'login.html' || file === 'login') {
       // Respect return parameter if present
       const params = new URLSearchParams(location.search);
       const ret = params.get('return');
-      const dest = ret ? decodeURIComponent(ret) : 'dashboard.html';
+      const dest = ret ? decodeURIComponent(ret) : dashboardPath;
       location.href = dest;
     } else {
       // Close modal if present
@@ -98,7 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
         modal.close();
       }
       // Redirect to dashboard so the user sees their info
-      location.href = 'dashboard.html';
+      location.href = dashboardPath;
     }
   }
 
