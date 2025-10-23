@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sign in • CannaGrudge</title>
+  <link rel="icon" type="image/png" href="assets/favicon-gloves.png">
+  <link rel="stylesheet" href="theme.css">
+</head>
+<body class="with-dock">
+  <header class="hero hero-min">
+    <img class="hero__img" src="assets/hero-ring.png" alt="Boxing ring hero">
+    <div class="hero__veil"></div>
+    <div class="hero__content">
+      <div class="display hero__title">Sign <span style="color:var(--cg-primary)">In</span></div>
+      <p class="muted" style="margin:10px 0 14px;">Access tickets and your dashboard</p>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card" style="max-width:720px;margin:12px auto;">
+      <!-- Social login buttons -->
+      <div id="socialLoginButtons" style="display:grid; gap:10px; margin-bottom:12px;">
+        <button class="button button--primary" data-provider="facebook" style="background:#1877F2; color:#fff;">
+          <svg viewBox="0 0 512 512" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M512 256C512 114.6 397.4 0 256 0S0 114.6 0 256C0 376 82.7 476.8 194.2 504.5V334.2H141.4V256h52.8V222.3c0-87.1 39.4-127.5 125-127.5c16.2 0 44.2 3.2 55.7 6.4V172c-6-.6-16.5-1-29.6-1c-42 0-58.2 15.9-58.2 57.2V256h83.6l-14.4 78.2H287V510.1C413.8 494.8 512 386.9 512 256z" /></svg>
+          <span style="margin-left:8px;">Continue with Facebook</span>
+        </button>
+        <button class="button button--primary" data-provider="google" style="background:#0F9D58; color:#fff;">
+          <svg viewBox="0 0 488 512" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504C110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z" /></svg>
+          <span style="margin-left:8px;">Continue with Google</span>
+        </button>
+      </div>
+      <form id="authForm" style="display:grid; gap:10px;">
+        <div style="display:grid; gap:8px; grid-template-columns: 1fr 1fr;">
+          <label style="display:grid; gap:6px;">
+            <span class="muted" style="font-size:12px;">Full name</span>
+            <input id="fullName" type="text" placeholder="Jane Doe" required style="padding:12px;border-radius:12px;border:1px solid var(--cg-border);">
+          </label>
+          <label style="display:grid; gap:6px;">
+            <span class="muted" style="font-size:12px;">Email</span>
+            <input id="email" type="email" placeholder="you@example.com" required style="padding:12px;border-radius:12px;border:1px solid var(--cg-border);">
+          </label>
+        </div>
+        <div style="display:grid; gap:8px; grid-template-columns: 1fr 1fr;">
+          <label style="display:grid; gap:6px;">
+            <span class="muted" style="font-size:12px;">Phone (optional)</span>
+            <input id="phone" type="tel" placeholder="(555) 555-5555" style="padding:12px;border-radius:12px;border:1px solid var(--cg-border);">
+          </label>
+          <label style="display:grid; gap:6px;">
+            <span class="muted" style="font-size:12px;">Avatar URL (optional)</span>
+            <input id="avatarUrl" type="url" placeholder="https://..." style="padding:12px;border-radius:12px;border:1px solid var(--cg-border);">
+          </label>
+        </div>
+        <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:6px;">
+          <a href="index.html" class="button button--ghost">Cancel</a>
+          <button class="button button--primary" type="submit">Continue</button>
+        </div>
+        <p class="muted" style="font-size:12px;margin-top:2px;">By continuing you agree to our <a href="tos.html">Terms</a> and <a href="privacy.html">Privacy Policy</a>.</p>
+      </form>
+    </section>
+  </main>
+
+  <footer class="footer footer--stack">
+    <div class="footer__icons">
+      <a href="#" title="Instagram">ig</a><a href="#" title="Facebook">f</a><a href="#" title="X">x</a><a href="#" title="Snapchat">sc</a><a href="#" title="TikTok">tt</a>
+    </div>
+    <div class="footer__links">
+      <a href="event.html#info">Event Info</a>
+      <a href="event.html#featured">Buy</a>
+      <a href="index.html">Home</a>
+    </div>
+    <div class="footer__legal">© CannaGrudge. All rights reserved.</div>
+  </footer>
+
+  <script>
+  (function(){
+    const form = document.getElementById('authForm');
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      const name = document.getElementById('fullName').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+      const avatarUrl = document.getElementById('avatarUrl').value.trim();
+
+      // Save to localStorage for the dashboard/tickets
+      localStorage.setItem('isLoggedIn', '1');
+      localStorage.setItem('fullName', name);
+      localStorage.setItem('email', email);
+      if (phone) localStorage.setItem('phone', phone);
+      if (avatarUrl) localStorage.setItem('avatarUrl', avatarUrl);
+
+      // Return to the page they came from, or dashboard
+      const params = new URLSearchParams(location.search);
+      const ret = params.get('return');
+      const dest = ret ? decodeURIComponent(ret) : 'dashboard.html';
+      location.href = dest;
+    });
+  })();
+  </script>
+
+  <script src="app.js"></script>
+
+  <nav class="bottom-nav">
+    <a href="event.html">Event Info</a>
+    <a href="index.html" class="home" aria-label="Home">
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+        <path d="M12 3l9 7-1.5 2L19 11v9h-5v-6H10v6H5v-9l-0.5 1L3 10l9-7z" fill="currentColor"/>
+      </svg>
+      <span class="sr-only">Home</span>
+    </a>
+    <a href="dashboard.html">Dashboard</a>
+  </nav>
+</body>
+</html>

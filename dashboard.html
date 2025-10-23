@@ -6,8 +6,46 @@
   <link rel="stylesheet" href="theme.css">
 </head>
 <body>
-  <main class="container">
-    <section class="card"><h1 class="display" style="font-size:26px;">My Tickets</h1><p class="muted">Tickets will appear here after purchase.</p></section>
+    <main class="container">
+    <!-- Profile Header -->
+    <section class="card" id="profile">
+      <div style="display:flex; align-items:center; gap:14px;">
+        <div class="avatar" style="width:72px;height:72px;border-radius:999px;overflow:hidden;border:1px solid var(--cg-border); box-shadow: 0 1px 8px rgba(0,0,0,.18); background: rgba(255,255,255,.06); display:flex; align-items:center; justify-content:center;">
+          <img id="avatarImg" alt="" style="width:100%;height:100%;object-fit:cover;display:none;">
+          <span id="avatarFallback" class="muted" style="font-weight:900; font-size:18px;">GA</span>
+        </div>
+        <div>
+          <h1 class="display" style="font-size:24px; margin-bottom:4px;" id="displayName">Guest Attendee</h1>
+          <p class="muted" id="displayTier">Ticket Tier: General Admission</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Personal Info -->
+    <section class="card" id="personal">
+      <strong style="display:block; margin-bottom:8px;">Personal Information</strong>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+        <div>
+          <div class="muted" style="font-size:12px;">Name</div>
+          <div id="piName">Guest Attendee</div>
+        </div>
+        <div>
+          <div class="muted" style="font-size:12px;">Email</div>
+          <div id="piEmail">guest@example.com</div>
+        </div>
+        <div>
+          <div class="muted" style="font-size:12px;">Phone</div>
+          <div id="piPhone">—</div>
+        </div>
+        <div>
+          <div class="muted" style="font-size:12px;">City, State</div>
+          <div id="piCityState">—</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- My Tickets (existing content preserved below) -->
+
   </main>
 
   <footer class="footer footer--stack">
@@ -62,5 +100,50 @@
     <a href="event.html#featured">Buy</a>
     <a href="dashboard.html">Dashboard</a>
   </nav>
+
+
+<script>
+// Populate dashboard fields from localStorage if available
+(function(){
+  try {
+    const name = localStorage.getItem('fullName') || localStorage.getItem('name');
+    const email = localStorage.getItem('email');
+    const phone = localStorage.getItem('phone');
+    const city = localStorage.getItem('city');
+    const state = localStorage.getItem('state');
+    const tier = localStorage.getItem('ticketTier') || localStorage.getItem('tier');
+    const avatar = localStorage.getItem('avatarUrl');
+
+    if (name) {
+      document.getElementById('displayName').textContent = name;
+      document.getElementById('piName').textContent = name;
+      // Initials fallback
+      const initials = name.split(' ').map(p => p[0]).filter(Boolean).slice(0,2).join('').toUpperCase();
+      const fb = document.getElementById('avatarFallback');
+      if (fb) fb.textContent = initials || 'GA';
+    }
+    if (tier) {
+      document.getElementById('displayTier').textContent = 'Ticket Tier: ' + tier;
+    }
+    if (email) document.getElementById('piEmail').textContent = email;
+    if (phone) document.getElementById('piPhone').textContent = phone;
+    if (city || state) {
+      document.getElementById('piCityState').textContent = [city, state].filter(Boolean).join(', ');
+    }
+
+    if (avatar) {
+      const img = document.getElementById('avatarImg');
+      const fb = document.getElementById('avatarFallback');
+      if (img) {
+        img.src = avatar;
+        img.style.display = 'block';
+        if (fb) fb.style.display = 'none';
+      }
+    }
+  } catch(e) {
+    // swallow
+  }
+})();
+</script>
 
 </body></html>
