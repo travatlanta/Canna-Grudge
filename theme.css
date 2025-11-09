@@ -179,22 +179,49 @@ html[data-theme="light"] .button--ghost {
 }
 .sticky-cta .button { width: 100%; }
 
-/* Tile grid */
+/* Tile grid
+   Use a three‑column CSS grid rather than flexbox to ensure each tile
+   maintains its dimensions and does not reflow when the adjacent popup
+   appears. The grid columns evenly divide the available space.  A small
+   horizontal margin (4%) on the grid container creates a consistent edge
+   regardless of content size. */
 .tile-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
+  margin-left: 4%;
+  margin-right: 4%;
 }
+/* Tiles occupy their full grid cell without flex sizing.  Define a
+   consistent appearance and transition effects. */
 .tile {
-  background: var(--cg-surface);
+  flex: none;
+  width: 100%;
+  max-width: 100%;
+  /* Make tiles slightly lighter than the surrounding card to emphasize that
+     they are interactive buttons. In dark mode, `ink-700` provides a
+     midtone that contrasts against the page background without
+     diminishing the gold icons. */
+  background: var(--cg-ink-700);
   border: 1px solid var(--cg-border);
   border-radius: var(--cg-r-lg);
   padding: 14px 8px;
   text-align: center;
-  box-shadow: 0 2px 8px rgba(0,0,0,.06);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .06);
   transition: transform .08s ease, box-shadow .12s ease, background .12s ease;
 }
+/* Provide a subtle scale effect when pressing a tile. */
 .tile:active { transform: scale(.98); }
+/* Highlight the selected tile using a gold border and slightly lighter
+   surface while preserving its original size. */
+.tile.selected {
+  border: 1px solid var(--cg-primary);
+  /* Use an even lighter shade when the tile is selected to provide
+     clear feedback. `ink-600` is lighter than both the default tile
+     and the surrounding cards. */
+  background: var(--cg-ink-600);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .1);
+}
 .tile__icon { width: 28px; height: 28px; margin: 2px auto 6px; opacity: .95; }
 .tile__label { font-size: 12px; font-weight: 750; color: var(--cg-text-strong); }
 
@@ -604,6 +631,17 @@ body.with-dock .footer { margin-bottom: calc(var(--dock-h) + 12px) !important; }
   }
 }
 
+/* Override the promo wrapper on the event info page.  The event info page
+   container has 4% horizontal margins (on mobile), which would otherwise
+   make the full‑bleed image appear indented.  Apply equal negative
+   margins to cancel the container spacing and allow the image to span
+   the viewport width. */
+body.event-info .promo-wrap {
+  margin-left: calc(-1 * 4%);
+  margin-right: calc(-1 * 4%);
+  width: 100vw;
+}
+
 /* === Footer clearance via invisible spacer (final) === */
 body.with-dock .footer {
   position: static !important;
@@ -670,6 +708,19 @@ body.with-dock main {
 
 /* give tile grid breathing room below */
 .tile-grid { margin-bottom: 20px; }
+
+/* Styling for the information popup under the tile grid. A lighter
+   background and subtle border draw attention without overwhelming the
+   design. This overrides the default .card styling for popups. */
+.tile-popup {
+  /* Use a lighter background for popups to draw attention. This shade
+     contrasts against the dark card surfaces, ensuring the content
+     stands out without overwhelming the layout. */
+  background: var(--cg-ink-600);
+  border: 1px solid rgba(245, 184, 26, .25);
+  border-radius: var(--cg-r-lg);
+  box-shadow: 0 2px 10px rgba(0,0,0,.3);
+}
 
 
 /* Unified tile icon styling (brand gold, consistent weight) */
