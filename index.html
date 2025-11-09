@@ -10,9 +10,10 @@
   <style>
     /* Removed redundant bottom-nav styles and manual padding; rely on theme.css and app.js for layout */
     .hero-min { min-height: 62vh; }
-    /* Use the global promo-wrap definition from theme.css for the full-bleed event image.  Do not constrain the width here. */
+    /* Use the global promo-wrap definition from theme.css for the full‑bleed event image.  Do not constrain the width here. */
 
-    /* Expand the main container on the home page so content spans the full width with gentle gutters */
+    /* Expand the main container on the home page so content spans the full width with gentle gutters on mobile.
+       On larger screens introduce a maximum width to prevent overly wide layouts. */
     body.index .container {
       max-width: none;
       width: 100%;
@@ -20,11 +21,148 @@
       padding-right: 4%;
     }
 
-    /* Make the full-bleed promo image extend edge to edge by negating the page gutters */
-    body.index .promo-wrap {
-      display: block;
-      margin-left: -4%;
-      margin-right: -4%;
+    /* On wide viewports, center the container and cap its width */
+    @media (min-width: 992px) {
+      body.index .container {
+        max-width: 1200px;
+        margin-left: auto;
+        margin-right: auto;
+        padding-left: 2rem;
+        padding-right: 2rem;
+      }
+    }
+
+    /* The hero content inherits its max width from the global theme.  No additional
+       overrides are required here; see theme.css for responsive sizing. */
+
+    /* Desktop layout for the home page: arrange the intro card and poster side by side.  The
+       container becomes a flex container on large screens.  On smaller screens the default
+       stacked layout and full‑bleed image from theme.css remain in effect. */
+    @media (min-width: 992px) {
+      /*
+        Desktop layout: split the intro column and the poster.  Use
+        flex-start alignment so the intro content isn’t forced to match
+        the height of the poster.  Allocate slightly more width to the
+        poster (approx 52%) per user feedback and the remainder to
+        the left column (approx 48%).
+      */
+      body.index main.container {
+        display: flex;
+        flex-direction: row;
+        gap: 24px;
+        /* Stretch children vertically so the poster matches the height of the
+           left column.  The intro column retains its natural height, and
+           the poster will crop via object-fit. */
+        align-items: stretch;
+      }
+      body.index main.container .intro-column {
+        flex: 1 1 48%;
+      }
+      body.index main.container .promo-wrap {
+        flex: 1 1 52%;
+        margin: 0;
+        width: auto;
+        position: static;
+        left: 0;
+        right: 0;
+        /* Use flexbox to center the contained image horizontally.  Stretch
+           the image vertically so the column height matches the left
+           column.  Overflow hidden prevents the image from spilling
+           outside its container. */
+        display: flex;
+        justify-content: center;
+        align-items: stretch;
+        overflow: hidden;
+      }
+      body.index main.container .promo-wrap img {
+        /* Display the inline image on desktop and scale it to fully fit
+           inside the container without cropping.  Both width and height
+           are set to 100% so that object-fit: contain can determine
+           the appropriate scale.  The image is centered within the
+           container. */
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        object-position: center;
+      }
+    }
+
+    /* Feature list styling for desktop; hidden on small screens */
+    .feature-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .feature-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+      color: var(--cg-text);
+      background: rgba(255, 255, 255, 0.05);
+      padding: 4px 8px;
+      border-radius: 8px;
+    }
+    .feature-icon {
+      font-size: 1.2em;
+    }
+    @media (max-width: 991px) {
+      .feature-list {
+        display: none;
+      }
+    }
+
+    /*
+      Desktop feature overview
+      -----------------------
+      The home page includes a section of feature cards that call out key
+      attractions.  On small screens the section remains hidden so the
+      stacked mobile layout isn’t cluttered.  Once the viewport is at
+      least 992px wide the grid becomes visible and lays the cards out
+      in a responsive grid.  Each card uses the theme variables for
+      surface color, border radius and elevation so they sit nicely on
+      the dark background.
+    */
+    .features-grid {
+      display: none;
+    }
+    @media (min-width: 992px) {
+      .features-grid {
+        display: grid;
+        /* Two columns to fit beneath the intro card on desktop */
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+        margin-top: 24px;
+      }
+    }
+    .feature-card {
+      background: var(--cg-surface);
+      border-radius: var(--cg-r-lg);
+      border: 1px solid var(--cg-border);
+      box-shadow: var(--cg-elev);
+      padding: 20px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .feature-card__icon {
+      font-size: 32px;
+      margin-bottom: 10px;
+      color: var(--cg-primary);
+    }
+    .feature-card__title {
+      font-size: 18px;
+      font-weight: 700;
+      margin: 0 0 4px;
+      color: var(--cg-text-strong);
+    }
+    .feature-card__text {
+      font-size: 13px;
+      margin: 0;
+      color: var(--cg-text);
     }
   </style>
 </head>
@@ -43,10 +181,51 @@
   </header>
 
   <main class="container">
+    <!-- Wrap the intro content and feature cards in a single column so
+         they occupy the left side of the desktop layout.  On mobile
+         this wrapper simply stacks its children vertically. -->
+    <div class="intro-column">
     <section class="card card--intro">
       <h2 class="display" style="font-size:28px;">High Stakes & Heavy Hits</h2>
       <p class="muted">The biggest cannabis brands from across the industry step out of the dispensary and into the ring. Live boxing, mud wrestling, music, and vendor showcases collide in one arena. CannaGrudge is part festival, part fight night, an all-out celebration of cannabis culture and competition.</p>
+
+      <!-- Feature list to highlight key attractions on desktop.  Hidden on small screens to preserve space. -->
+      <div class="feature-list">
+        <div class="feature-item"><span class="feature-icon">🥊</span><span class="feature-label">Live Boxing</span></div>
+        <div class="feature-item"><span class="feature-icon">💧</span><span class="feature-label">Mud Wrestling</span></div>
+        <div class="feature-item"><span class="feature-icon">🎵</span><span class="feature-label">Music &amp; Entertainment</span></div>
+        <div class="feature-item"><span class="feature-icon">🍔</span><span class="feature-label">Food &amp; Drink</span></div>
+        <div class="feature-item"><span class="feature-icon">🎯</span><span class="feature-label">Games &amp; Awards</span></div>
+        <div class="feature-item"><span class="feature-icon">🛍️</span><span class="feature-label">Cannabis Vendors</span></div>
+      </div>
     </section>
+
+    <!-- Desktop feature overview highlighting key attractions.  On large
+         screens this grid appears directly below the intro card within
+         the same column; on small screens it remains hidden. -->
+    <section class="features-grid">
+      <div class="feature-card">
+        <div class="feature-card__icon">🥊</div>
+        <h3 class="feature-card__title">Live Boxing</h3>
+        <p class="feature-card__text">Watch top fighters go glove-to-glove in the ring.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-card__icon">💧</div>
+        <h3 class="feature-card__title">Mud Wrestling</h3>
+        <p class="feature-card__text">Dive into the dirtiest showdown you’ve ever seen.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-card__icon">🎵</div>
+        <h3 class="feature-card__title">Music &amp; Entertainment</h3>
+        <p class="feature-card__text">Groove to live acts and DJs all night long.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-card__icon">🛍️</div>
+        <h3 class="feature-card__title">Vendors &amp; Samples</h3>
+        <p class="feature-card__text">Explore the best of cannabis culture with top brands.</p>
+      </div>
+    </section>
+    </div> <!-- /.intro-column -->
 
     <!-- Replaced Featured section with the uploaded Event Highlights image -->
     <a class="promo-wrap" href="event.html#info" aria-label="Event Highlights">
@@ -66,13 +245,10 @@
     </div>
     <div class="footer__links">
       <a href="event.html#info">Event Info</a>
-      <a href="event.html#schedule">Schedule</a>
-      <a href="event.html#tickets">Ticket Info</a>
-      <a href="event.html#featured">Buy</a>
-      <a href="profile.html">Profile</a>
-      <a href="tos.html">Terms</a>
-      <a href="privacy.html">Privacy</a>
-      <a href="index.html">Home</a>
+      <a href="event.html#vendors">Vendors</a>
+      <a href="event.html#tickets">Tickets</a>
+      <a href="tos.html">Terms &amp; Conditions</a>
+      <a href="privacy.html">Privacy Policy</a>
     </div>
     <div class="footer__legal">© CannaGrudge. All rights reserved.</div>
   </footer>
@@ -93,6 +269,30 @@
   </dialog>
 
   <script src="app.js"></script>
+
+  <!--
+    Adjust the poster column height to match the height of the intro column
+    on desktop.  This ensures the promotional image does not exceed the
+    combined height of the text and feature boxes.  The poster scales
+    proportionally inside its container thanks to object-fit: contain.
+  -->
+  <script>
+    function adjustPosterHeight() {
+      // Apply only on desktop widths (>=992px); otherwise reset height
+      const mq = window.matchMedia('(min-width: 992px)');
+      const intro = document.querySelector('.intro-column');
+      const promo = document.querySelector('body.index main.container .promo-wrap');
+      if (!intro || !promo) return;
+      if (mq.matches) {
+        const h = intro.offsetHeight;
+        promo.style.height = h + 'px';
+      } else {
+        promo.style.height = '';
+      }
+    }
+    window.addEventListener('load', adjustPosterHeight);
+    window.addEventListener('resize', adjustPosterHeight);
+  </script>
 
   <!-- Fixed bottom CTA dock left as-is -->
 

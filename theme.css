@@ -353,6 +353,29 @@ body.has-sticky-cta main { padding-bottom: 24px !important; }
 /* Ensure bottom-nav visually anchors to bottom */
 .bottom-nav { backdrop-filter: saturate(120%) blur(2px); }
 
+/* -------------------------------------------------------------------- */
+/* Responsive max-widths for page layouts                                   */
+/* To provide a consistent reading experience on large screens, increase    */
+/* the default container width and constrain hero content on all pages.     */
+/* On smaller viewports the existing mobile-first styles remain untouched.  */
+@media (min-width: 992px) {
+  /* Increase the maximum width for primary layout containers.  This applies
+     to cards, settings screens and other sections wrapped in .container. */
+  .container {
+    max-width: 1200px;
+  }
+  /* Constrain hero content within the same width and center it, leaving
+     the background image and footer to span edge-to-edge.  Add side padding
+     so content doesn’t butt up against the viewport edges. */
+  .hero__content {
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
 /* Revised bottom nav with centered Home icon */
 .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; display:flex; align-items:center; justify-content:space-between; gap:10px; background: var(--cg-surface); border-top:1px solid var(--cg-border); padding:12px 14px calc(var(--cg-safe-bottom)); z-index:40; }
 .bottom-nav a { flex:1; text-align:center; padding:10px 8px; border-radius:12px; color: var(--cg-text); text-decoration:none; font-size:12px; }
