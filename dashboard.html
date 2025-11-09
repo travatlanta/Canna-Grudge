@@ -5,6 +5,50 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Dashboard • CannaGrudge</title>
   <link rel="stylesheet" href="theme.css">
+  <!-- Local styles for dashboard enhancements -->
+  <style>
+    /* Smaller buttons for dashboard action bar */
+    .btn-small {
+      padding: 8px 12px;
+      font-size: 14px;
+      font-weight: 700;
+      border-radius: 10px;
+    }
+    /* Icon button for editing profile */
+    .icon-btn {
+      background: transparent;
+      border: 1px solid var(--cg-border);
+      color: inherit;
+      border-radius: 8px;
+      width: 32px;
+      height: 32px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .icon-btn img {
+      width: 16px;
+      height: 16px;
+    }
+    /* Action bar container */
+    .card-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    /* FAQ card styling */
+    .faq-card {
+      max-width: 720px;
+      margin: 24px auto;
+      padding: 16px;
+      background: #181b20;
+      border: 1px solid #2a2f36;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, .28);
+    }
+  </style>
   <style>
     body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;margin:0;background:#0f1012;color:#eaecef}
     .wrap{max-width:720px;margin:24px auto;padding:16px}
@@ -17,22 +61,40 @@
 <body class="with-dock">
   <!-- Use a main container so the bottom nav can compute proper padding -->
   <main class="container">
-    <!-- Profile card -->
+    <!-- Profile card with actions -->
     <div class="card profile-card" style="max-width:720px;margin:24px auto 8px;padding:16px;">
-      <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;">
-        <img id="profileImage" src="assets/Icons/avatar-placeholder.png" alt="Profile picture" style="width:64px;height:64px;border-radius:50%;border:2px solid var(--cg-border);object-fit:cover;">
-        <div>
+      <div style="display:flex;align-items:flex-start;gap:16px;">
+        <!-- Avatar wrapper with upload icon overlay -->
+        <div style="position:relative; width:64px; height:64px;">
+          <img id="profileImage" src="assets/Icons/avatar-placeholder.png" alt="Profile picture" style="width:64px;height:64px;border-radius:50%;border:2px solid var(--cg-border);object-fit:cover;">
+          <!-- Hidden file input for photo upload -->
+          <input type="file" id="profileUpload" accept="image/*" style="display:none">
+          <!-- Overlay pencil icon to change photo -->
+          <button id="changePhoto" class="icon-btn" title="Change Photo" style="position:absolute;bottom:-8px;right:-8px;background:#181b20;border:1px solid var(--cg-border);">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M11.013.648a.5.5 0 0 1 .707 0l3.182 3.182a.5.5 0 0 1 0 .707l-9.193 9.193a.5.5 0 0 1-.168.11l-3.856 1.653a.5.5 0 0 1-.65-.65l1.653-3.856a.5.5 0 0 1 .11-.168l9.193-9.193zM12.257 1.94l1.803 1.803L13 4.803 11.197 3l1.06-1.06zM10.743 2.454L12.546 4.257 4.126 12.677l-1.803-1.803L10.743 2.454zM1.5 13.5l.857-.857.4 1.666-1.666-.4.409-.409z" />
+            </svg>
+          </button>
+        </div>
+        <div style="flex:1;">
           <h1 id="name" style="margin:0 0 4px;">Loading…</h1>
           <div class="muted">Email: <span id="email">—</span></div>
           <div class="muted">Provider: <span id="provider">—</span></div>
+          <div class="muted">Address: <span id="address">—</span></div>
         </div>
+        <!-- Edit profile button -->
+        <button id="editProfile" class="icon-btn" title="Edit Profile">
+          <!-- Inline edit icon SVG -->
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M11.013.648a.5.5 0 0 1 .707 0l3.182 3.182a.5.5 0 0 1 0 .707l-9.193 9.193a.5.5 0 0 1-.168.11l-3.856 1.653a.5.5 0 0 1-.65-.65l1.653-3.856a.5.5 0 0 1 .11-.168l9.193-9.193zM12.257 1.94l1.803 1.803L13 4.803 11.197 3l1.06-1.06zM10.743 2.454L12.546 4.257 4.126 12.677l-1.803-1.803L10.743 2.454zM1.5 13.5l.857-.857.4 1.666-1.666-.4.409-.409z" />
+          </svg>
+        </button>
       </div>
-      <div style="margin-bottom:12px;">
-        <input type="file" id="profileUpload" accept="image/*" style="display:none">
-        <button id="uploadButton" class="btn" type="button">Upload Photo</button>
-      </div>
-      <div style="margin-top:14px;">
-        <button id="logout" class="btn">Sign Out</button>
+      <!-- Action bar -->
+      <div class="card-actions">
+        <a href="settings.html" class="btn btn-small" style="text-decoration:none;">Manage Account</a>
+        <a href="messages.html" class="btn btn-small" style="text-decoration:none;">Message Center</a>
+        <button id="logout" class="btn btn-small" type="button">Sign Out</button>
       </div>
     </div>
 
@@ -40,54 +102,12 @@
     <div class="card tickets-card" style="max-width:720px;margin:24px auto;padding:16px;">
       <h2 style="margin-top:0;margin-bottom:12px;">My Tickets</h2>
       <div id="ticketsPlaceholder" class="muted" style="margin-bottom:12px;">No tickets purchased yet. Tickets will appear here when available.</div>
-      <!-- Download/print button for tickets. Disabled until tickets are available -->
-      <button id="downloadTickets" class="btn" type="button" disabled>Download / Print Tickets</button>
+      <!-- Download button for tickets. Disabled until tickets are available -->
+      <button id="downloadTickets" class="btn btn-small" type="button" disabled>Download</button>
     </div>
 
-    <!-- Preferences -->
-    <div class="card preferences-card" style="max-width:720px;margin:24px auto;padding:16px;">
-      <h2 style="margin-top:0;margin-bottom:12px;">Preferences</h2>
-      <div class="muted" style="margin-bottom:8px;">Dashboard Theme</div>
-      <select id="themeSelect" class="btn" style="background:#181b20;color:#eaecef;border:1px solid var(--cg-border);padding:6px 8px;margin-bottom:16px;">
-        <option value="dark">Dark</option>
-        <option value="light">Light</option>
-        <option value="system">System</option>
-      </select>
-      <div class="muted" style="margin-bottom:8px;">Bio</div>
-      <textarea id="bio" rows="3" style="width:100%;border-radius:12px;padding:8px;background:#181b20;color:#eaecef;border:1px solid var(--cg-border);" placeholder="Tell us about yourself"></textarea>
-    </div>
-
-    <!-- Notification Settings -->
-    <div class="card notifications-card" style="max-width:720px;margin:24px auto;padding:16px;">
-      <h2 style="margin-top:0;margin-bottom:12px;">Notification Settings</h2>
-      <label style="display:block;margin-bottom:8px;"><input type="checkbox" id="notifPush" /> Push Notifications</label>
-      <label style="display:block;margin-bottom:8px;"><input type="checkbox" id="notifEmail" /> Email Notifications</label>
-    </div>
-
-    <!-- Wallet & Billing -->
-    <div class="card wallet-card" style="max-width:720px;margin:24px auto;padding:16px;">
-      <h2 style="margin-top:0;margin-bottom:12px;">Wallet &amp; Billing</h2>
-      <div class="muted" style="margin-bottom:8px;">No saved payment methods.</div>
-      <div class="muted">No billing history available.</div>
-    </div>
-
-    <!-- Message Center -->
-    <div class="card message-center-card" style="max-width:720px;margin:24px auto;padding:16px;">
-      <h2 style="margin-top:0;margin-bottom:12px;">Message Center</h2>
-      <div class="muted" style="margin-bottom:8px;">Send a message to event administrators.</div>
-      <textarea id="messageInput" rows="4" style="width:100%;border-radius:12px;padding:8px;background:#181b20;color:#eaecef;border:1px solid var(--cg-border);" placeholder="Type your message here"></textarea>
-      <button id="sendMessage" class="btn" type="button" style="margin-top:8px;">Send</button>
-    </div>
-
-    <!-- Privacy & Security -->
-    <div class="card privacy-card" style="max-width:720px;margin:24px auto;padding:16px;">
-      <h2 style="margin-top:0;margin-bottom:12px;">Privacy &amp; Security</h2>
-      <label style="display:block;margin-bottom:8px;"><input type="checkbox" id="hideProfile" /> Hide my profile from public</label>
-      <label style="display:block;margin-bottom:8px;"><input type="checkbox" id="enable2FA" /> Enable Two-Factor Authentication</label>
-    </div>
-
-    <!-- Frequently Asked Questions -->
-    <div class="card faq-card" style="max-width:720px;margin:24px auto;padding:16px;">
+    <!-- Frequently Asked Questions on dashboard -->
+    <div class="faq-card">
       <h2 style="margin-top:0;margin-bottom:12px;">Frequently Asked Questions</h2>
       <div class="muted">Coming soon: We'll populate this section with helpful answers to common questions about events, tickets, and your account.</div>
     </div>
@@ -98,7 +118,7 @@
     const { auth, onAuthStateChanged, signOut } = window.__cgAuth;
     // Elements for profile photo and upload
     const profileImageEl = document.getElementById('profileImage');
-    const uploadButton = document.getElementById('uploadButton');
+    const changePhotoBtn = document.getElementById('changePhoto');
     const profileUpload = document.getElementById('profileUpload');
 
     onAuthStateChanged(auth, (user) => {
@@ -119,6 +139,11 @@
       if (photo) {
         profileImageEl.src = photo;
       }
+      // Load stored address
+      const addr = localStorage.getItem('userAddress');
+      if (addr) {
+        document.getElementById('address').textContent = addr;
+      }
     });
 
     document.getElementById('logout').onclick = async () => {
@@ -126,77 +151,9 @@
       location.href = 'login.html';
     };
 
-    // Preferences: load and save theme preference
-    const themeSelect = document.getElementById('themeSelect');
-    if (themeSelect) {
-      // Set initial value based on stored preference or default
-      const savedTheme = localStorage.getItem('dashboardTheme') || 'dark';
-      themeSelect.value = savedTheme;
-      themeSelect.addEventListener('change', () => {
-        localStorage.setItem('dashboardTheme', themeSelect.value);
-        // Here you could apply the theme to the document or notify the user
-      });
-    }
-    // Bio persistence (optional)
-    const bioInput = document.getElementById('bio');
-    if (bioInput) {
-      bioInput.value = localStorage.getItem('userBio') || '';
-      bioInput.addEventListener('blur', () => {
-        localStorage.setItem('userBio', bioInput.value);
-      });
-    }
-    // Notification settings persistence
-    const notifPush = document.getElementById('notifPush');
-    const notifEmail = document.getElementById('notifEmail');
-    if (notifPush) {
-      notifPush.checked = localStorage.getItem('notifPush') === 'true';
-      notifPush.addEventListener('change', () => {
-        localStorage.setItem('notifPush', notifPush.checked);
-      });
-    }
-    if (notifEmail) {
-      notifEmail.checked = localStorage.getItem('notifEmail') === 'true';
-      notifEmail.addEventListener('change', () => {
-        localStorage.setItem('notifEmail', notifEmail.checked);
-      });
-    }
-    // Privacy settings persistence
-    const hideProfile = document.getElementById('hideProfile');
-    const enable2FA = document.getElementById('enable2FA');
-    if (hideProfile) {
-      hideProfile.checked = localStorage.getItem('hideProfile') === 'true';
-      hideProfile.addEventListener('change', () => {
-        localStorage.setItem('hideProfile', hideProfile.checked);
-      });
-    }
-    if (enable2FA) {
-      enable2FA.checked = localStorage.getItem('enable2FA') === 'true';
-      enable2FA.addEventListener('change', () => {
-        localStorage.setItem('enable2FA', enable2FA.checked);
-      });
-    }
-    // Handle ticket download/print (stub)
-    const downloadBtn = document.getElementById('downloadTickets');
-    if (downloadBtn) {
-      downloadBtn.addEventListener('click', () => {
-        // Currently no tickets available; you could integrate actual tickets here
-        alert('There are no tickets available to download or print at this time.');
-      });
-    }
-    // Message center send handler
-    const sendMessage = document.getElementById('sendMessage');
-    const messageInput = document.getElementById('messageInput');
-    if (sendMessage && messageInput) {
-      sendMessage.addEventListener('click', () => {
-        const msg = messageInput.value.trim();
-        if (!msg) return;
-        alert('Your message has been sent to the event administrators.');
-        messageInput.value = '';
-      });
-    }
 
-    // Trigger hidden file input when clicking the upload button
-    uploadButton.addEventListener('click', () => {
+    // Trigger hidden file input when clicking the change photo icon
+    changePhotoBtn.addEventListener('click', () => {
       profileUpload.click();
     });
 
@@ -211,6 +168,17 @@
         localStorage.setItem('avatar', dataUrl);
       };
       reader.readAsDataURL(file);
+    });
+
+    // Allow user to edit address and other profile info
+    const editProfileBtn = document.getElementById('editProfile');
+    editProfileBtn.addEventListener('click', () => {
+      const currentAddr = localStorage.getItem('userAddress') || '';
+      const newAddr = prompt('Enter your address:', currentAddr);
+      if (newAddr !== null) {
+        document.getElementById('address').textContent = newAddr;
+        localStorage.setItem('userAddress', newAddr);
+      }
     });
   </script>
 
@@ -238,10 +206,12 @@
   </footer>
   <nav class="bottom-nav">
     <a href="event.html">Event Info</a>
+    <a href="settings.html">Settings</a>
     <a href="index.html" class="home" aria-label="Home">
       <img src="assets/Icons/home.png" alt="Home" width="22" height="22" />
       <span class="sr-only">Home</span>
     </a>
+    <a href="messages.html">Inbox</a>
     <a href="dashboard.html">Dashboard</a>
   </nav>
 </body>

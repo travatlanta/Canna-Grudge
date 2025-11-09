@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Settings • CannaGrudge</title>
+  <link rel="stylesheet" href="theme.css">
+</head>
+<body class="with-dock">
+  <main class="container">
+    <div class="card" style="max-width:720px;margin:24px auto;padding:16px;">
+      <h2 style="margin-top:0;margin-bottom:16px;">Settings &amp; Preferences</h2>
+      <!-- Preferences -->
+      <section style="margin-bottom:24px;">
+        <h3 style="margin:0 0 8px;">Preferences</h3>
+        <label class="muted" style="display:block;margin-bottom:4px;">Dashboard Theme</label>
+        <select id="themeSelect" class="btn" style="background:#181b20;color:#eaecef;border:1px solid var(--cg-border);padding:6px 8px;margin-bottom:16px;">
+          <option value="dark">Dark</option>
+          <option value="light">Light</option>
+          <option value="system">System</option>
+        </select>
+        <label class="muted" style="display:block;margin-bottom:4px;">Bio</label>
+        <textarea id="bio" rows="3" style="width:100%;border-radius:12px;padding:8px;background:#181b20;color:#eaecef;border:1px solid var(--cg-border);" placeholder="Tell us about yourself"></textarea>
+        <label class="muted" style="display:block;margin:8px 0 4px;">Address</label>
+        <input type="text" id="addressInput" placeholder="Enter your address" style="width:100%;border-radius:12px;padding:8px;background:#181b20;color:#eaecef;border:1px solid var(--cg-border);">
+      </section>
+      <!-- Notification Settings -->
+      <section style="margin-bottom:24px;">
+        <h3 style="margin:0 0 8px;">Notification Settings</h3>
+        <label style="display:block;margin-bottom:8px;"><input type="checkbox" id="notifPush"> Push Notifications</label>
+        <label style="display:block;margin-bottom:8px;"><input type="checkbox" id="notifEmail"> Email Notifications</label>
+      </section>
+      <!-- Wallet & Billing -->
+      <section style="margin-bottom:24px;">
+        <h3 style="margin:0 0 8px;">Wallet &amp; Billing</h3>
+        <div class="muted" style="margin-bottom:8px;">No saved payment methods.</div>
+        <div class="muted">No billing history available.</div>
+      </section>
+      <!-- Privacy & Security -->
+      <section style="margin-bottom:24px;">
+        <h3 style="margin:0 0 8px;">Privacy &amp; Security</h3>
+        <label style="display:block;margin-bottom:8px;"><input type="checkbox" id="hideProfile"> Hide my profile from public</label>
+        <label style="display:block;margin-bottom:8px;"><input type="checkbox" id="enable2FA"> Enable Two-Factor Authentication</label>
+      </section>
+      <!-- Frequently Asked Questions -->
+      <section>
+        <h3 style="margin:0 0 8px;">Frequently Asked Questions</h3>
+        <div class="muted">Coming soon: We'll populate this section with helpful answers to common questions about events, tickets, and your account.</div>
+      </section>
+    </div>
+  </main>
+
+  <script type="module">
+    // Settings page script to persist preferences and settings
+    // Theme preference
+    const themeSelect = document.getElementById('themeSelect');
+    if (themeSelect) {
+      const savedTheme = localStorage.getItem('dashboardTheme') || 'dark';
+      themeSelect.value = savedTheme;
+      themeSelect.addEventListener('change', () => {
+        localStorage.setItem('dashboardTheme', themeSelect.value);
+      });
+    }
+    // Bio persistence
+    const bioInput = document.getElementById('bio');
+    if (bioInput) {
+      bioInput.value = localStorage.getItem('userBio') || '';
+      bioInput.addEventListener('blur', () => {
+        localStorage.setItem('userBio', bioInput.value);
+      });
+    }
+
+    // Address persistence
+    const addressInput = document.getElementById('addressInput');
+    if (addressInput) {
+      addressInput.value = localStorage.getItem('userAddress') || '';
+      addressInput.addEventListener('blur', () => {
+        localStorage.setItem('userAddress', addressInput.value);
+      });
+    }
+    // Notification settings
+    const notifPush = document.getElementById('notifPush');
+    const notifEmail = document.getElementById('notifEmail');
+    if (notifPush) {
+      notifPush.checked = localStorage.getItem('notifPush') === 'true';
+      notifPush.addEventListener('change', () => {
+        localStorage.setItem('notifPush', notifPush.checked);
+      });
+    }
+    if (notifEmail) {
+      notifEmail.checked = localStorage.getItem('notifEmail') === 'true';
+      notifEmail.addEventListener('change', () => {
+        localStorage.setItem('notifEmail', notifEmail.checked);
+      });
+    }
+    // Privacy settings
+    const hideProfile = document.getElementById('hideProfile');
+    const enable2FA = document.getElementById('enable2FA');
+    if (hideProfile) {
+      hideProfile.checked = localStorage.getItem('hideProfile') === 'true';
+      hideProfile.addEventListener('change', () => {
+        localStorage.setItem('hideProfile', hideProfile.checked);
+      });
+    }
+    if (enable2FA) {
+      enable2FA.checked = localStorage.getItem('enable2FA') === 'true';
+      enable2FA.addEventListener('change', () => {
+        localStorage.setItem('enable2FA', enable2FA.checked);
+      });
+    }
+  </script>
+  <script src="app.js"></script>
+  <footer class="footer footer--stack">
+    <div class="footer__share"><img src="assets/Icons/share-online.png" alt="Share Online"></div>
+    <div class="footer__icons">
+      <a href="https://www.instagram.com/?url=https%3A%2F%2Fcannagrudge.com" target="_blank" data-share="instagram" title="Share on Instagram"><img src="assets/Icons/instagram.png" alt="Instagram"></a>
+      <a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fcannagrudge.com" target="_blank" data-share="facebook" title="Share on Facebook"><img src="assets/Icons/facebook.png" alt="Facebook"></a>
+      <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fcannagrudge.com" target="_blank" data-share="twitter" title="Share on X"><img src="assets/Icons/twitter.png" alt="X"></a>
+      <a href="https://www.snapchat.com/share?link=https%3A%2F%2Fcannagrudge.com" target="_blank" data-share="snapchat" title="Share on Snapchat"><img src="assets/Icons/snapchat.png" alt="Snapchat"></a>
+      <a href="https://www.tiktok.com/" target="_blank" data-share="tiktok" title="Share on TikTok"><img src="assets/Icons/tik tok.png" alt="TikTok"></a>
+    </div>
+    <div class="footer__links">
+      <a href="event.html#info">Event Info</a>
+      <a href="event.html#schedule">Schedule</a>
+      <a href="event.html#tickets">Ticket Info</a>
+      <a href="event.html#featured">Buy</a>
+      <a href="profile.html">Profile</a>
+      <a href="tos.html">Terms</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="index.html">Home</a>
+    </div>
+    <div class="footer__legal">© CannaGrudge. All rights reserved.</div>
+  </footer>
+  <nav class="bottom-nav">
+    <a href="event.html">Event Info</a>
+    <a href="settings.html">Settings</a>
+    <a href="index.html" class="home" aria-label="Home">
+      <img src="assets/Icons/home.png" alt="Home" width="22" height="22">
+      <span class="sr-only">Home</span>
+    </a>
+    <a href="messages.html">Inbox</a>
+    <a href="dashboard.html">Dashboard</a>
+  </nav>
+</body>
+</html>

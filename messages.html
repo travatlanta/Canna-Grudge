@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Messages • CannaGrudge</title>
+  <link rel="stylesheet" href="theme.css">
+  <style>
+    /* Small button style for message tabs and actions */
+    .btn-small {
+      padding: 6px 10px;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body class="with-dock">
+  <main class="container">
+    <div class="card" style="max-width:720px;margin:24px auto;padding:16px;">
+      <h2 style="margin-top:0;margin-bottom:12px;">Messages</h2>
+      <!-- Tabs for Inbox, Sent, Trash -->
+      <nav id="messageTabs" style="display:flex;gap:8px;margin-bottom:16px;">
+        <button class="btn btn-small" data-tab="inbox">Inbox</button>
+        <button class="btn btn-small" data-tab="sent">Sent</button>
+        <button class="btn btn-small" data-tab="trash">Trash</button>
+      </nav>
+      <div id="messagesList" style="margin-bottom:16px;">
+        <p class="muted">No messages yet.</p>
+      </div>
+      <h3 style="margin-bottom:8px;">Contact Event Administrators</h3>
+      <form id="messageForm">
+        <textarea id="messageInput" rows="4" required style="width:100%;border-radius:12px;padding:8px;background:#181b20;color:#eaecef;border:1px solid var(--cg-border);" placeholder="Write your message..."></textarea>
+        <button type="submit" class="btn btn-small" style="margin-top:8px;">Send Message</button>
+      </form>
+    </div>
+  </main>
+  <script type="module">
+    const messagesList = document.getElementById('messagesList');
+    const messageTabs = document.getElementById('messageTabs');
+    const messageForm = document.getElementById('messageForm');
+    const messageInput = document.getElementById('messageInput');
+
+    // Helper to get messages by category
+    function getMessages(type) {
+      const key = 'user' + type.charAt(0).toUpperCase() + type.slice(1) + 'Messages';
+      return JSON.parse(localStorage.getItem(key) || '[]');
+    }
+    // Helper to save messages by category
+    function saveMessages(type, msgs) {
+      const key = 'user' + type.charAt(0).toUpperCase() + type.slice(1) + 'Messages';
+      localStorage.setItem(key, JSON.stringify(msgs));
+    }
+    // Load messages for a given tab
+    function loadMessages(tab) {
+      const msgs = getMessages(tab);
+      messagesList.innerHTML = '';
+      if (msgs.length === 0) {
+        messagesList.innerHTML = '<p class="muted">No messages in ' + tab + '.</p>';
+        return;
+      }
+      // Show newest first
+      msgs.slice().reverse().forEach((msg, index) => {
+        const div = document.createElement('div');
+        div.className = 'card';
+        div.style.marginBottom = '12px';
+        div.style.padding = '12px';
+        div.innerHTML = '<div style="font-weight:600;margin-bottom:4px;">' + (msg.subject || 'Message') + '</div>' +
+                        '<div class="muted" style="font-size:12px;margin-bottom:4px;">' + msg.timestamp + '</div>' +
+                        '<div style="margin-bottom:8px;">' + msg.body + '</div>';
+        // Action buttons container
+        const actions = document.createElement('div');
+        actions.style.textAlign = 'right';
+        // In trash tab, allow restore
+        if (tab === 'trash') {
+          const restoreBtn = document.createElement('button');
+          restoreBtn.className = 'btn btn-small';
+          restoreBtn.textContent = 'Restore';
+          restoreBtn.onclick = () => {
+            const trash = getMessages('trash');
+            const idx = trash.length - 1 - index;
+            const [restored] = trash.splice(idx, 1);
+            saveMessages('trash', trash);
+            const inbox = getMessages('inbox');
+            inbox.push(restored);
+            saveMessages('inbox', inbox);
+            loadMessages('trash');
+          };
+          actions.appendChild(restoreBtn);
+        } else {
+          // In inbox or sent, allow delete to trash
+          const deleteBtn = document.createElement('button');
+          deleteBtn.className = 'btn btn-small';
+          deleteBtn.textContent = 'Delete';
+          deleteBtn.onclick = () => {
+            const list = getMessages(tab);
+            const idx = list.length - 1 - index;
+            const [deleted] = list.splice(idx, 1);
+            saveMessages(tab, list);
+            const trash = getMessages('trash');
+            trash.push(deleted);
+            saveMessages('trash', trash);
+            loadMessages(tab);
+          };
+          actions.appendChild(deleteBtn);
+        }
+        div.appendChild(actions);
+        messagesList.appendChild(div);
+      });
+    }
+    // Tab switching
+    messageTabs.addEventListener('click', (e) => {
+      if (e.target.tagName === 'BUTTON') {
+        const tab = e.target.getAttribute('data-tab');
+        Array.from(messageTabs.children).forEach(btn => btn.classList.remove('active'));
+        e.target.classList.add('active');
+        loadMessages(tab);
+      }
+    });
+    // Initialize default tab
+    const defaultTabBtn = messageTabs.querySelector('button[data-tab="inbox"]');
+    if (defaultTabBtn) {
+      defaultTabBtn.classList.add('active');
+      loadMessages('inbox');
+    }
+    // Handle message sending -> save to sent messages
+    messageForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const body = messageInput.value.trim();
+      if (!body) return;
+      const sent = getMessages('sent');
+      sent.push({ subject: 'Message to Admin', body: body, timestamp: new Date().toLocaleString() });
+      saveMessages('sent', sent);
+      messageInput.value = '';
+      alert('Your message has been sent!');
+      // reload current tab
+      const activeBtn = messageTabs.querySelector('button.active');
+      const currentTab = activeBtn ? activeBtn.getAttribute('data-tab') : 'inbox';
+      loadMessages(currentTab);
+    });
+  </script>
+  <footer class="footer footer--stack">
+    <div class="footer__share"><img src="assets/Icons/share-online.png" alt="Share Online"></div>
+    <div class="footer__icons">
+      <a href="https://www.instagram.com/?url=https%3A%2F%2Fcannagrudge.com" target="_blank"><img src="assets/Icons/instagram.png" alt="Instagram"></a>
+      <a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fcannagrudge.com" target="_blank"><img src="assets/Icons/facebook.png" alt="Facebook"></a>
+      <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fcannagrudge.com" target="_blank"><img src="assets/Icons/twitter.png" alt="X"></a>
+      <a href="https://www.snapchat.com/share?link=https%3A%2F%2Fcannagrudge.com" target="_blank"><img src="assets/Icons/snapchat.png" alt="Snapchat"></a>
+      <a href="https://www.tiktok.com/" target="_blank"><img src="assets/Icons/tik tok.png" alt="TikTok"></a>
+    </div>
+    <div class="footer__links">
+      <a href="event.html#info">Event Info</a>
+      <a href="event.html#schedule">Schedule</a>
+      <a href="event.html#tickets">Ticket Info</a>
+      <a href="event.html#featured">Buy</a>
+      <a href="profile.html">Profile</a>
+      <a href="tos.html">Terms</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="index.html">Home</a>
+    </div>
+    <div class="footer__legal">© CannaGrudge. All rights reserved.</div>
+  </footer>
+  <nav class="bottom-nav">
+    <a href="event.html">Event Info</a>
+    <a href="settings.html">Settings</a>
+    <a href="index.html" class="home" aria-label="Home">
+      <img src="assets/Icons/home.png" alt="Home" width="22" height="22">
+      <span class="sr-only">Home</span>
+    </a>
+    <a href="messages.html">Inbox</a>
+    <a href="dashboard.html">Dashboard</a>
+  </nav>
+</body>
+</html>
