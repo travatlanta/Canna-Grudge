@@ -1,6 +1,8 @@
-<!doctype html><html lang="en"><head>
+<!doctype html><html lang="en" data-theme="dark"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>CannaGrudge • Privacy Policy</title>
+  <!-- Shared theme stylesheet -->
+  <link rel="stylesheet" href="theme.css">
   <style>
     :root{--bg:#0f1012;--card:#181b20;--text:#eaecef;--muted:#a8adb6;--accent:#f5b81a}
     *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);
@@ -18,7 +20,7 @@
           padding:6px 10px;border-radius:999px;margin-right:8px}
     code{background:#0b0c10;border:1px solid #2a2f36;border-radius:6px;padding:2px 6px}
   </style>
-</head><body>
+</head><body class="with-dock">
 <div class="wrap"><div class="card">
   <div class="top">
     <h1>Privacy Policy</h1>
@@ -77,4 +79,38 @@
   <h2>Contact us</h2>
   <p>For privacy requests or questions, email <a href="mailto:thegreenkeepers.az@yahoo.com">thegreenkeepers.az@yahoo.com</a> with the subject <code>Privacy</code>.</p>
 </div></div>
+  <footer class="footer footer--stack">
+    <div class="footer__share"><img src="assets/Icons/share-online.png" alt="Share Online" /></div>
+    <div class="footer__icons">
+      <a href="https://www.instagram.com/?url=https%3A%2F%2Fcannagrudge.com" target="_blank" data-share="instagram" title="Share on Instagram"><img src="assets/Icons/instagram.png" alt="Instagram" /></a>
+      <a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fcannagrudge.com" target="_blank" data-share="facebook" title="Share on Facebook"><img src="assets/Icons/facebook.png" alt="Facebook" /></a>
+      <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fcannagrudge.com" target="_blank" data-share="twitter" title="Share on X"><img src="assets/Icons/twitter.png" alt="X" /></a>
+      <a href="https://www.snapchat.com/share?link=https%3A%2F%2Fcannagrudge.com" target="_blank" data-share="snapchat" title="Share on Snapchat"><img src="assets/Icons/snapchat.png" alt="Snapchat" /></a>
+      <!-- Updated TikTok link to open the platform directly (no direct share URL available) -->
+      <a href="https://www.tiktok.com/" target="_blank" data-share="tiktok" title="Share on TikTok"><img src="assets/Icons/tik tok.png" alt="TikTok" /></a>
+    </div>
+    <div class="footer__links">
+      <!-- Removed Event Info link -->
+      <a href="event.html#schedule">Schedule</a>
+      <a href="event.html#tickets">Ticket Info</a>
+      <!-- Removed Buy link -->
+      <a href="profile.html">Profile</a>
+      <a href="tos.html">Terms</a>
+      <a href="privacy.html">Privacy</a>
+      <!-- Removed Home link -->
+    </div>
+    <div class="footer__legal">© CannaGrudge. All rights reserved.</div>
+  </footer>
+
+  <!-- Shared app script for mobile nav/menus -->
+  <script src="app.js"></script>
+
+  <nav class="bottom-nav">
+    <a href="event.html">Event Info</a>
+    <a href="index.html" class="home" aria-label="Home">
+      <img src="assets/Icons/home.png" alt="Home" width="22" height="22" />
+      <span class="sr-only">Home</span>
+    </a>
+    <a href="dashboard.html">Dashboard</a>
+  </nav>
 </body></html>

@@ -1,9 +1,10 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Dashboard • CannaGrudge</title>
+  <link rel="stylesheet" href="theme.css">
   <style>
     body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;margin:0;background:#0f1012;color:#eaecef}
     .wrap{max-width:720px;margin:24px auto;padding:16px}
@@ -13,9 +14,10 @@
          font-weight:800;cursor:pointer}
   </style>
 </head>
-<body>
-  <div class="wrap">
-    <div class="card">
+<body class="with-dock">
+  <!-- Use a main container so the bottom nav can compute proper padding -->
+  <main class="container">
+    <div class="card" style="max-width:720px;margin:24px auto 8px;padding:16px;">
       <h1 id="name" style="margin:0 0 6px;">Loading…</h1>
       <div class="muted">Email: <span id="email">—</span></div>
       <div class="muted">Provider: <span id="provider">—</span></div>
@@ -23,18 +25,22 @@
         <button id="logout" class="btn">Sign Out</button>
       </div>
     </div>
-  </div>
+  </main>
 
+  <!-- Restore Firebase auth to populate and sign out -->
   <script type="module" src="./firebase-config.js"></script>
   <script type="module">
     const { auth, onAuthStateChanged, signOut } = window.__cgAuth;
-
     onAuthStateChanged(auth, (user) => {
       if (!user) {
         const ret = encodeURIComponent(location.pathname + location.search + location.hash);
+        // Clear login flag if not logged in
+        localStorage.removeItem('isLoggedIn');
         location.href = 'login.html?return=' + ret;
         return;
       }
+      // Mark the user as logged in for the global auth guard
+      localStorage.setItem('isLoggedIn', '1');
       const name = user.displayName || 'CannaGrudge User';
       const email = user.email || '—';
       const providerId = (user.providerData[0] && user.providerData[0].providerId) || '—';
@@ -42,11 +48,43 @@
       document.getElementById('email').textContent = email;
       document.getElementById('provider').textContent = providerId;
     });
-
     document.getElementById('logout').onclick = async () => {
       await signOut(auth);
+      // Remove login flag on sign out
+      localStorage.removeItem('isLoggedIn');
       location.href = 'login.html';
     };
   </script>
+
+  <script src="app.js"></script>
+  <footer class="footer footer--stack">
+    <div class="footer__share"><img src="assets/Icons/share-online.png" alt="Share Online" /></div>
+    <div class="footer__icons">
+      <a href="https://www.instagram.com/?url=https%3A%2F%2Fcannagrudge.com" target="_blank" data-share="instagram" title="Share on Instagram"><img src="assets/Icons/instagram.png" alt="Instagram" /></a>
+      <a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fcannagrudge.com" target="_blank" data-share="facebook" title="Share on Facebook"><img src="assets/Icons/facebook.png" alt="Facebook" /></a>
+      <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fcannagrudge.com" target="_blank" data-share="twitter" title="Share on X"><img src="assets/Icons/twitter.png" alt="X" /></a>
+      <a href="https://www.snapchat.com/share?link=https%3A%2F%2Fcannagrudge.com" target="_blank" data-share="snapchat" title="Share on Snapchat"><img src="assets/Icons/snapchat.png" alt="Snapchat" /></a>
+      <a href="https://www.tiktok.com/" target="_blank" data-share="tiktok" title="Share on TikTok"><img src="assets/Icons/tik tok.png" alt="TikTok" /></a>
+    </div>
+    <div class="footer__links">
+      <!-- Removed Event Info link -->
+      <a href="event.html#schedule">Schedule</a>
+      <a href="event.html#tickets">Ticket Info</a>
+      <!-- Removed Buy link -->
+      <a href="profile.html">Profile</a>
+      <a href="tos.html">Terms</a>
+      <a href="privacy.html">Privacy</a>
+      <!-- Removed Home link -->
+    </div>
+    <div class="footer__legal">© CannaGrudge. All rights reserved.</div>
+  </footer>
+  <nav class="bottom-nav">
+    <a href="event.html">Event Info</a>
+    <a href="index.html" class="home" aria-label="Home">
+      <img src="assets/Icons/home.png" alt="Home" width="22" height="22" />
+      <span class="sr-only">Home</span>
+    </a>
+    <a href="dashboard.html">Dashboard</a>
+  </nav>
 </body>
 </html>

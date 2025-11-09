@@ -111,6 +111,9 @@ html, body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   margin: 0;
+
+  /* Prevent horizontal scrolling when using full‑width promo images */
+  overflow-x: hidden;
 }
 
 h1, h2, h3, .display {
@@ -220,8 +223,30 @@ html[data-theme="light"] .button--ghost {
   overflow: hidden;
   border-radius: 0 0 var(--cg-r-lg) var(--cg-r-lg);
   background: var(--cg-ink-900);
+  /*
+   * Ensure the hero section always has a visible height. Without an explicit
+   * height the header can collapse to zero if its contents don’t compute
+   * a height (for example when the image fails to load or isn’t measured
+   * yet). A minimum height also prevents other elements from sliding
+   * underneath the hero when the page is rendered. Using a viewport‑based
+   * unit keeps the hero proportional across devices while still allowing
+   * it to shrink on very small screens. You can adjust the value if you
+   * need the hero to be taller or shorter.
+   */
+  min-height: 40vh;
 }
 .hero__img { width: 100%; display: block; object-fit: cover; }
+
+/*
+ * Force the hero image to fill the height of the hero. Some browsers
+ * require an explicit height on the image for object‑fit to apply
+ * correctly; without it the image may collapse to zero height. Setting
+ * height: 100% ties the image to its parent’s height (defined above
+ * via min-height) so the hero background always appears.
+ */
+.hero__img {
+  height: 100%;
+}
 .hero__veil {
   position: absolute; inset: 0;
   background: radial-gradient(80% 60% at 50% 20%, rgba(0,0,0,.0) 0%, rgba(0,0,0,.35) 60%, rgba(0,0,0,.70) 100%);
@@ -277,7 +302,15 @@ body.has-sticky-cta main { padding-bottom: 24px !important; } /* accommodates CT
 .footer__icons a { display:inline-flex; align-items:center; justify-content:center; width:40px; height:40px; border-radius:12px; background: rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10); text-decoration:none; font-weight:900; color:#fff; }
 html[data-theme="light"] .footer__icons a { background: rgba(0,0,0,.04); border-color: rgba(20,23,28,.12); color: var(--cg-text-strong); }
 
-.footer__links { display:flex; justify-content:center; gap:14px; flex-wrap:wrap; font-size:13px; }
+.footer__links {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  /* Add extra space below the site map links to separate from the copyright */
+  margin-bottom: 12px;
+}
 .footer__links a { color: var(--cg-text); text-decoration:none; }
 .footer__links a:hover { text-decoration:underline; }
 
@@ -297,13 +330,166 @@ body.has-sticky-cta main { padding-bottom: 24px !important; }
 .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; display:flex; align-items:center; justify-content:space-between; gap:10px; background: var(--cg-surface); border-top:1px solid var(--cg-border); padding:12px 14px calc(var(--cg-safe-bottom)); z-index:40; }
 .bottom-nav a { flex:1; text-align:center; padding:10px 8px; border-radius:12px; color: var(--cg-text); text-decoration:none; font-size:12px; }
 .bottom-nav a.is-active { background: rgba(0,0,0,.06); font-weight:800; }
+
+/* Color the home icon in the bottom nav using the primary brand gold */
+.bottom-nav a.home {
+  color: var(--cg-primary);
+}
 .bottom-nav__home { flex:0 0 auto; width:54px; height:54px; border-radius:999px; display:flex; align-items:center; justify-content:center; background: var(--cg-primary); color: var(--cg-primary-ink); box-shadow: var(--cg-elev); font-weight:900; }
 .bottom-nav__home:active { transform: translateY(1px) scale(.98); }
 
 /* Footer icons: big circular social buttons (IG, FB, X, Snap, TikTok) */
 .footer__icons { display:flex; justify-content:center; gap:12px; margin-bottom:14px; flex-wrap:wrap; }
 .footer__icons a { width:44px; height:44px; border-radius:14px; display:inline-flex; align-items:center; justify-content:center; background: rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10); color:#fff; font-weight:900; text-decoration:none; font-size:18px; }
+/* Ensure that any inline SVG or <img> inside the footer icons scales consistently */
+.footer__icons a svg,
+.footer__icons a img {
+  width: 20px;
+  height: 20px;
+}
 html[data-theme="light"] .footer__icons a { background: rgba(0,0,0,.04); border-color: rgba(20,23,28,.12); color: var(--cg-text-strong); }
+
+/*
+ * Desktop footer width
+ * On larger screens the footer should stretch the full page width instead of being
+ * constrained to a fixed max-width. This preserves the mobile layout while
+ * allowing desktop designs to span edge‑to‑edge.
+ */
+@media (min-width: 768px) {
+  .footer {
+    max-width: none;
+    margin-left: 0;
+    margin-right: 0;
+  }
+}
+
+/*
+ * Ensure the footer spans the full width of the viewport on all screen
+ * sizes, not just on larger breakpoints. Removing the max‑width and
+ * horizontal auto margins prevents the footer from appearing anchored
+ * only to the left side on mobile.
+ */
+.footer {
+  max-width: none;
+  width: 100%;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+/*
+ * Bottom navigation styling adjustments
+ * Differentiate the mobile/desktop bottom nav from the footer by using a
+ * slightly lighter background. Add subtle hover and active states to
+ * communicate interaction on desktop and mobile.
+ */
+/*
+ * Bottom navigation base color
+ * Use a solid elevated surface color (no transparency) so the menu stands
+ * out clearly against the page. This applies to both dark and light themes.
+ */
+.bottom-nav {
+  background: var(--cg-surface-2);
+  /* Ensure the nav stays fixed at the bottom of the viewport at all times */
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  /* Distribute the nav items evenly so the menu stays centered regardless of the number of links */
+  justify-content: space-evenly;
+}
+html[data-theme="light"] .bottom-nav {
+  background: var(--cg-surface-2);
+}
+
+/* Hover and active feedback for nav buttons */
+/* Adjust hover and active states to remain visible against more opaque base */
+/* Adjust hover and active states to stand out against more opaque base */
+/* Subtle hover/active states with no full transparency */
+.bottom-nav a:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+.bottom-nav a:active {
+  background: rgba(255, 255, 255, 0.10);
+}
+/* Adjust hover/active colors for light theme */
+html[data-theme="light"] .bottom-nav a:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+html[data-theme="light"] .bottom-nav a:active {
+  background: rgba(0, 0, 0, 0.10);
+}
+
+/*
+ * ----------------------------------------------------------------------
+ * Final bottom navigation override
+ *
+ * The site defines several competing styles for .bottom-nav in earlier
+ * sections. To ensure consistent behaviour across pages and screen sizes
+ * we consolidate all declarations here. The navigation bar remains fixed
+ * at the bottom of the viewport, distributes its items evenly and uses a
+ * solid elevated surface colour with subtle hover/active feedback. These
+ * styles apply last so they override any earlier conflicting rules.
+ */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  background: var(--cg-surface-2);
+  border-top: 1px solid var(--cg-border);
+  padding: 12px 12px calc(var(--cg-safe-bottom));
+  z-index: 60;
+  /* Remove any backdrop filters or transparency inherited from previous rules */
+  backdrop-filter: none;
+}
+
+.bottom-nav a {
+  flex: 1;
+  text-align: center;
+  padding: 10px 8px;
+  border-radius: 12px;
+  color: var(--cg-text);
+  text-decoration: none;
+  font-size: 12px;
+}
+
+.bottom-nav a:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+.bottom-nav a:active {
+  background: rgba(255, 255, 255, 0.10);
+}
+
+html[data-theme="light"] .bottom-nav {
+  background: var(--cg-surface-2);
+}
+html[data-theme="light"] .bottom-nav a:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+html[data-theme="light"] .bottom-nav a:active {
+  background: rgba(0, 0, 0, 0.10);
+}
+
+/* New share label above social icons */
+/* Display the share graphic instead of text */
+.footer__share {
+  /* Provide additional breathing room below the share icon */
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+/* Scale the Share Online graphic to align with the social icons */
+.footer__share img {
+  /* Enlarge the share graphic so it's more prominent */
+  height: 28px;
+  width: auto;
+}
+
+/* No color override needed when using an image */
 
 
 /* Sticky CTA positioning logic:
@@ -356,7 +542,7 @@ body.has-sticky-cta .footer { margin-bottom: calc(var(--cta-h) + 16px); }
 
 
 /* Fixed CTA Dock: own layer, prevents overlap */
-:root { --dock-h: 92px; } /* total area for the dock including margins */
+:root { --dock-h: 64px; } /* reduce dock height to match bottom nav without leaving excess space */
 .cta-dock {
   position: fixed;
   left: 0; right: 0; bottom: 0;
@@ -380,46 +566,42 @@ body.with-dock .footer { margin-bottom: calc(var(--dock-h) + 12px) !important; }
 .cta-dock.behind { z-index: 0 !important; pointer-events: none !important; }
 
 
-/* Full-width event promo image */
+
+
+/* === Full‑bleed promo image (edge‑to‑edge) === */
+/*
+ * On mobile screens the event promo should stretch flush with the edges of
+ * the viewport. We offset the parent container’s horizontal padding by
+ * applying equal negative margins on the left and right. On larger
+ * screens (≥768px) we use a viewport‑width layout with negative 50vw
+ * margins so the image spans the full width. This prevents horizontal
+ * overflow and keeps the image centered.
+ */
 .promo-wrap {
   display: block;
-  width: 100vw;
-  margin: 0;
-  border-radius: 0;
+  /* Offset the default container padding (16px each side) so the image
+     touches the edges on smaller screens */
+  margin: 12px -16px;
   overflow: hidden;
-  position: relative;
-  left: 50%;
-  right: 50%;
-  margin-left: -50vw;
-  margin-right: -50vw;
-}
-.promo-wrap img {
-  width: 100%;
-  height: auto;
-  display: block;
   border-radius: 0;
 }
-
-
-/* === Full-bleed promo image (edge-to-edge, no rounding) === */
-.promo-wrap {
-  display: block;
-  width: 100vw;
-  margin: 12px 0;
-  border: none !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-  overflow: visible;
-  position: relative;
-  left: 50%;
-  transform: translateX(-50%); /* dead-center relative to viewport */
-}
 .promo-wrap img {
   display: block;
   width: 100%;
   height: auto;
   border: none !important;
   border-radius: 0 !important;
+}
+@media (min-width: 768px) {
+  .promo-wrap {
+    width: 100vw;
+    margin: 12px 0;
+    position: relative;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+  }
 }
 
 /* === Footer clearance via invisible spacer (final) === */
@@ -428,9 +610,33 @@ body.with-dock .footer {
   margin: 0 !important;
 }
 body.with-dock .footer::after {
+  /* Reduce the spacer below the footer so the copyright lands just above the bottom nav.  
+     The extra space was too large before (dock height + 24px), leaving an unnecessary gap.  
+     Use a smaller offset to visually align the footer closer to the dock while still
+     preventing overlap. */
   content: "" !important;
   display: block !important;
-  height: calc(var(--dock-h) + 24px) !important; /* footer fully clears CTA */
+  /* Provide a small gap beneath the footer so the copyright rests just above
+     the bottom nav. 12px gives enough breathing room without leaving a huge
+     empty space. */
+  height: 12px !important;
+}
+
+/* ------------------------------------------------------------------------- */
+/* Layout helpers for pages using the bottom navigation dock.                 */
+/* When a page has little content, the default static layout allows the
+   footer to float in the middle of the screen, leaving an awkward gap
+   above the bottom nav.  Using flexbox on the body ensures that the main
+   content area expands to fill the viewport, pushing the footer down so
+   it always sits right above the nav. */
+body.with-dock {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+body.with-dock main {
+  flex: 1 0 auto;
 }
 
 
@@ -478,4 +684,7 @@ body.with-dock .footer::after {
 
 
 /* home icon brand gold */
-.bottom-nav a.home svg path { fill: var(--cg-primary) !important; }
+/* When using an inline SVG, the following rule tinted the path to the primary color.
+   Since the new home icon is a yellow PNG, comment this out to prevent overriding
+   the image. */
+/* .bottom-nav a.home svg path { fill: var(--cg-primary) !important; } */
