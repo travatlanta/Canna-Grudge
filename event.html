@@ -1,63 +1,34 @@
 <!doctype html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>CannaGrudge — Event Info</title>
   <link rel="stylesheet" href="theme.css">
+  <!-- Local overrides for event tile styling -->
   <style>
-    /* Override tile grid layout to use a 3‑column CSS grid.  Using an
-       explicit grid with equal fractional columns ensures the tiles keep
-       their dimensions regardless of content or pop‑ups.  The 10px gap is
-       preserved between columns and rows. */
-    .tile-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      /* Apply horizontal margins to the entire tile grid so it retains a
-         consistent overall width regardless of the content below.  Using
-         percentage values makes the margin responsive across desktop and
-         mobile sizes. */
-      margin-left: 4%;
-      margin-right: 4%;
-    }
-    /* Reset any flex properties on the tiles so they honor the grid layout.
-       Ensure each tile fills its grid cell without growing or shrinking. */
+    /* Use a darker surface for event tiles to improve contrast; highlight the selected tile */
     .tile {
-      flex: none !important;
-      width: 100%;
-      max-width: 100%;
+      /* Lighten default tile background to help them stand out as buttons */
+      background: var(--cg-ink-700);
     }
-    /* Highlight the selected tile without changing its size.  Use a gold
-       border and a slightly elevated surface color for emphasis. */
     .tile.selected {
       border: 1px solid var(--cg-primary);
-      background: var(--cg-surface-2);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, .1);
+      background: var(--cg-ink-600);
     }
-    /* Styling for the information popup card.  Use a lighter background
-       than the surrounding card to draw attention.  The gold border ties
-       into the brand palette. */
     .tile-popup {
       background: var(--cg-ink-600);
-      border: 1px solid rgba(245, 184, 26, .25);
-      border-radius: var(--cg-r-lg);
-      box-shadow: 0 2px 10px rgba(0, 0, 0, .3);
     }
 
-    /* On the event info page, allow the main container to span the full
-       viewport width with a responsive gutter.  This prevents the tile
-       section from appearing overly narrow and matches the visual density
-       shown in the reference screenshot.  The 4% padding on each side
-       mirrors the margin requested for the tile grid. */
+    /* Expand the main container on the event page for a wider layout with gentle gutters */
     body.event-info .container {
       max-width: none;
       width: 100%;
       padding-left: 4%;
       padding-right: 4%;
     }
-    /* Remove the explicit margin on the tile grid when it inherits its
-       horizontal spacing from the container above. */
+
+    /* Align the tile grid with the container gutters */
     body.event-info .tile-grid {
       margin-left: 0;
       margin-right: 0;
@@ -80,12 +51,7 @@
     </div>
   </header>
 
-  <!-- Expand the container to the full viewport width on this page.  Inline
-       styles take precedence over theme styles and ensure the tile grid is
-       not restricted by the default 720px max-width.  A 4% gutter on each
-       side preserves the desired margin while allowing the content to
-       breathe. -->
-  <main class="container" style="max-width:none;width:100%;padding-left:4%;padding-right:4%;">
+  <main class="container">
     <!-- Quick tiles restored -->
     
 
@@ -101,26 +67,10 @@
     <a class="tile" href="#lodging"><svg class="tile__icon-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h18v8H3z"/><path d="M7 7v8"/><path d="M17 7v8"/></svg><div class="tile__label">Lodging</div></a>
     <a class="tile" href="#contact"><svg class="tile__icon-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><polyline points="3,7 12,13 21,7"/></svg><div class="tile__label">Contact</div></a>
   </div>
-
-  <!-- Container for tile popup content. This sits outside of the tile grid so it
-       does not affect the layout of the tiles. When a tile is clicked,
-       JavaScript will populate this container with a card containing the
-       relevant information. -->
-  <div id="infoPopup"></div>
 </section>
 
-  <!-- Halftime Show promotional image.  Display the full-width image below
-       the information tiles.  The surrounding wrapper uses the
-       `promo-wrap` class so the image extends to the viewport edges on
-       smaller screens.  The URL contains a space, so it is encoded as
-       `%20` for proper HTML rendering. -->
-  <div class="promo-wrap halftime-promo">
-    <img src="assets/Halftime%20Show.png" alt="Little People Wrestling Halftime Show">
-  </div>
 
 
-
-  <!-- Event Schedule and Featured sections have been removed at the user's request. -->
   </main>
 
   <footer class="footer footer--stack">
@@ -134,131 +84,27 @@
       <a href="https://www.tiktok.com/" target="_blank" data-share="tiktok" title="Share on TikTok"><img src="assets/Icons/tik tok.png" alt="TikTok" /></a>
     </div>
     <div class="footer__links">
-      <!-- Removed Event Info link -->
-      <!-- Schedule and Ticket Info links removed -->
-      <!-- Removed Buy link -->
+      <a href="event.html#info">Event Info</a>
+      <a href="event.html#schedule">Schedule</a>
+      <a href="event.html#tickets">Ticket Info</a>
+      <a href="event.html#featured">Buy</a>
       <a href="profile.html">Profile</a>
       <a href="tos.html">Terms</a>
       <a href="privacy.html">Privacy</a>
-      <!-- Removed Home link -->
+      <a href="index.html">Home</a>
     </div>
     <div class="footer__legal">© CannaGrudge. All rights reserved.</div>
   </footer>
   <script src="app.js"></script>
 
-  <!-- Inline script to handle interactive tiles on the event info page.  -->
-  <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    // Select all tiles within the grid. Each tile corresponds to a content section.
-    const tiles = document.querySelectorAll('.tile-grid .tile');
-    // Define a simple content map for each tile. These snippets will populate the popup.
-    // Feel free to customize the HTML here to match the information you want to present.
-    const contentMap = {
-      about: `
-        <h3 class="display" style="font-size:20px;margin-bottom:8px;">About</h3>
-        <p class="muted">High Stakes & Heavy Hits: The biggest cannabis brands from across the industry step out of the dispensary and into the ring. Live boxing, mud wrestling, music, vendor showcases and more collide in one arena. CannaGrudge is part festival, part fight night—an all‑out celebration of cannabis culture and competition.</p>
-      `,
-      schedule: `
-        <h3 class="display" style="font-size:20px;margin-bottom:8px;">Schedule</h3>
-        <ul class="bullets">
-          <li>Doors: 6:00 PM</li>
-          <li>Opening: 6:30 PM</li>
-          <li>Bouts start: 7:00 PM</li>
-          <li>Intermission: 8:15 PM</li>
-          <li>Main event: 9:30 PM</li>
-        </ul>
-      `,
-      vendors: `
-        <h3 class="display" style="font-size:20px;margin-bottom:8px;">Vendors</h3>
-        <p class="muted">Meet the brands bringing their best to the ring! Our vendor lineup features top cannabis companies showcasing products, swag and interactive experiences. Come by their booths, discover new favorites and support the companies who make CannaGrudge possible.</p>
-      `,
-      map: `
-        <h3 class="display" style="font-size:20px;margin-bottom:8px;">Map</h3>
-        <p class="muted">CannaGrudge takes place at Litchfield Park, AZ. Detailed maps of the venue, including entrances, exits and points of interest, will be available onsite. Stay tuned for a downloadable map coming soon.</p>
-      `,
-      faq: `
-        <h3 class="display" style="font-size:20px;margin-bottom:8px;">FAQ</h3>
-        <ul class="bullets">
-          <li><strong>Where is the event?</strong> Litchfield Park, AZ.</li>
-          <li><strong>When is the event?</strong> February 28th 2026. Doors open at 6:00 PM.</li>
-          <li><strong>Are cannabis products consumed onsite?</strong> Consumption policies vary based on local regulations. Please consume responsibly.</li>
-        </ul>
-      `,
-      food: `
-        <h3 class="display" style="font-size:20px;margin-bottom:8px;">Food &amp; Drink</h3>
-        <p class="muted">Enjoy a variety of food trucks and beverage vendors offering delicious bites and drinks throughout the evening. Vegetarian and vegan options will be available.</p>
-      `,
-      parking: `
-        <h3 class="display" style="font-size:20px;margin-bottom:8px;">Parking</h3>
-        <p class="muted">Limited parking is available at the venue on a first‑come, first‑served basis. We encourage ride‑sharing and car‑pooling. Accessible parking spaces are provided for guests with disabilities.</p>
-      `,
-      lodging: `
-        <h3 class="display" style="font-size:20px;margin-bottom:8px;">Lodging</h3>
-        <p class="muted">Planning to stay the night? Check out nearby hotels and accommodations in Litchfield Park and greater Phoenix. Book early to secure the best rates.</p>
-      `,
-      contact: `
-        <h3 class="display" style="font-size:20px;margin-bottom:8px;">Contact</h3>
-        <p class="muted">Have questions or need assistance? Reach out to us at <a href="mailto:info@cannagrudge.com">info@cannagrudge.com</a> and we’ll get back to you promptly.</p>
-      `
-    };
-
-    // Reference to the container that will hold our pop‑up content. This container
-    // is placed outside of the tile grid so that adding a pop‑up does not change
-    // the layout of the tiles themselves. See the HTML above for details.
-    const infoPopupContainer = document.getElementById('infoPopup');
-    // Track the currently displayed popup element so it can be removed on the next click.
-    let currentPopup = null;
-    // Track which tile is currently selected so we can highlight it and clear previous state
-    let selectedTile = null;
-
-    tiles.forEach(tile => {
-      tile.addEventListener('click', (ev) => {
-        ev.preventDefault();
-        const href = tile.getAttribute('href');
-        if (!href || !href.startsWith('#')) return;
-        const key = href.slice(1);
-        // Always scroll the info section (tile grid) to the top of the viewport.  Using
-        // scrollIntoView ensures the bottom of the hero aligns with the top of the
-        // viewport, so the grid and popup are fully visible. This approach
-        // avoids relying on precise hero measurements which can vary between
-        // screen sizes and devices.
-        const infoSection = document.getElementById('info');
-        if (infoSection) {
-          infoSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-        // Highlight the selected tile and clear any prior selection
-        if (selectedTile && selectedTile !== tile) {
-          selectedTile.classList.remove('selected');
-        }
-        tile.classList.add('selected');
-        selectedTile = tile;
-        // Clear any previously inserted popup
-        if (currentPopup) {
-          currentPopup.remove();
-          currentPopup = null;
-        }
-        // Build a new popup card and append it to the popup container.  Use the
-        // content map for the tile or a fallback if none exists.
-        const popup = document.createElement('div');
-        popup.className = 'card tile-popup';
-        popup.style.marginTop = '12px';
-        popup.innerHTML = contentMap[key] || '<p class="muted">Content coming soon.</p>';
-        // Insert into container
-        infoPopupContainer.appendChild(popup);
-        currentPopup = popup;
-        // We no longer force a second scroll to the popup itself.  Anchoring
-        // the info section under the hero provides sufficient visibility.
-      });
-    });
-  });
-  </script>
-
   <nav class="bottom-nav">
     <a href="event.html">Event Info</a>
+    <a href="settings.html">Settings</a>
     <a href="index.html" class="home" aria-label="Home">
       <img src="assets/Icons/home.png" alt="Home" width="22" height="22" />
       <span class="sr-only">Home</span>
     </a>
+    <a href="messages.html">Inbox</a>
     <a href="dashboard.html">Dashboard</a>
   </nav>
 
