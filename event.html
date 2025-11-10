@@ -148,6 +148,13 @@
         object-position: center;
         display: block;
       }
+    /* Remove side padding on small screens so the image and content
+       can extend edge‑to‑edge.  This ensures the promo image spans
+       the full viewport width without gutters. */
+    body.event-info .container {
+      padding-left: 0;
+      padding-right: 0;
+    }
       /* Center the tile grid and allow it to wrap nicely on small screens */
       .tile-grid {
         display: grid;
@@ -237,7 +244,8 @@
     <div class="hero__veil"></div>
     <div class="hero__content">
       <div class="display hero__title">Event <span style="color:var(--cg-primary)">Info</span></div>
-      <p class="muted" style="margin:10px 0 14px;">Phoenix, AZ • Feb 28th 2026</p>
+      <!-- Update: display the correct host city for the event. -->
+      <p class="muted" style="margin:10px 0 14px;">Litchfield Park, AZ • Feb 28th 2026</p>
       <div style="display:flex; gap:10px;">
         <a href="#featured" class="button button--primary">Tickets</a>
         <a href="#vendors" class="button button--ghost">Vendors</a>
@@ -311,7 +319,7 @@
             live boxing, mud wrestling, music and DJ performances, games and
             awards, plus a bustling vendor expo featuring cannabis products,
             accessories, apparel and more. It’s part fight night, part
-            festival—and all about celebrating cannabis culture in Phoenix on
+            festival—and all about celebrating cannabis culture in Litchfield Park on
             February&nbsp;28,&nbsp;2026.
           </p>
         `,
@@ -515,7 +523,7 @@
               });
             }
           }
-          // Scroll so that the hero date line ("Phoenix, AZ • Feb 28th 2026")
+          // Scroll so that the hero date line ("Litchfield Park, AZ • Feb 28th 2026")
           // appears at the top of the viewport on small screens.  This
           // gives a consistent anchor point for all tiles.  Delay the
           // scroll slightly to ensure the popup has been inserted.
