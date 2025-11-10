@@ -39,6 +39,9 @@
       padding-right: 4%;
     }
 
+    /* No additional scroll padding on the event page.  Offsets are
+       handled directly in JavaScript when scrolling on mobile. */
+
     /* Align the tile grid with the container gutters */
     body.event-info .tile-grid {
       margin-left: 0;
@@ -153,6 +156,9 @@
         justify-items: center;
       }
     }
+
+    /* Remove scroll-margin-top override from the mobile tiles column.  We
+       will handle offsetting the scroll via JavaScript instead. */
 
     /* Style the mini calendar in the schedule popup to look more like a
        standalone calendar.  Add borders, subtle shading and consistent
@@ -509,37 +515,26 @@
               });
             }
           }
-          // Smoothly scroll the page so the tiles and newly inserted
-          // information panel are fully visible below the header.  This
-          // improves usability on smaller screens by preventing the
-          // popup from being partially hidden under the hero.  Determine
-          // the bottom of the hero and scroll the window to that
-          // position.  Use a slight delay so the DOM has time to
-          // insert the popup before scrolling.
-          // Smoothly scroll the page on small screens so the tile grid
-          // and its popup are fully visible.  Scroll the event-content
-          // section into view, aligning it at the top of the viewport.
+          // Scroll so that the hero date line ("Phoenix, AZ • Feb 28th 2026")
+          // appears at the top of the viewport on small screens.  This
+          // gives a consistent anchor point for all tiles.  Delay the
+          // scroll slightly to ensure the popup has been inserted.
           if (window.innerWidth < 992) {
-            const hero = document.querySelector('header.hero');
-            if (hero) {
-              // Delay the scroll slightly to ensure the popup has been
-              // inserted and the DOM updated before calculating positions.
-              setTimeout(() => {
-                const target = hero.offsetTop + hero.offsetHeight;
-                // Scroll both the root element and body for broader support
-                if (document.documentElement) {
-                  document.documentElement.scrollTo({ top: target, behavior: 'smooth' });
-                }
-                if (document.body) {
-                  document.body.scrollTop = target;
-                }
-              }, 60);
-            }
+            setTimeout(() => {
+              const anchor = document.querySelector('header.hero .muted');
+              if (anchor && typeof anchor.scrollIntoView === 'function') {
+                anchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }
+            }, 50);
+          } else {
+            // On desktop, do not scroll.
           }
         });
       });
     });
   </script>
+
+
 
   <!-- No height adjustment needed for the event poster; flexbox alignment
        ensures the image column and tile column have equal height on
