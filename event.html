@@ -148,12 +148,15 @@
         object-position: center;
         display: block;
       }
-    /* Remove side padding on small screens so the image and content
-       can extend edge‑to‑edge.  This ensures the promo image spans
-       the full viewport width without gutters. */
-    body.event-info .container {
-      padding-left: 0;
-      padding-right: 0;
+    /* On small screens, offset the promo image to compensate for the
+       container’s side padding.  By stretching the width and
+       applying negative margins equal to the container gutters,
+       the image can extend edge‑to‑edge while the tile section
+       retains its left/right margin. */
+    body.event-info main.container .event-image {
+      width: calc(100% + 8%);
+      margin-left: -4%;
+      margin-right: -4%;
     }
       /* Center the tile grid and allow it to wrap nicely on small screens */
       .tile-grid {
