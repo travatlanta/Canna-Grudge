@@ -35,31 +35,92 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   })();
 
-  const NEW_NAV_HTML = `
-    <nav class="bottom-nav">
-      <a href="event.html">Event Info</a>
-      <a href="index.html" class="home" aria-label="Home">
-        <img src="assets/Icons/home.png" alt="Home" width="22" height="22" />
-        <span class="sr-only">Home</span>
-      </a>
-      <a href="dashboard.html">Dashboard</a>
-    </nav>
-  `.trim();
-
+  /**
+   * Build and apply the bottom navigation markup dynamically based on
+   * authentication state.  When logged in, the rightmost nav item
+   * displays the user's first name alongside their avatar (or initials).
+   * When not logged in, the nav item links to the login page and
+   * displays "Log in".  The Event Info and Home links remain
+   * constant.
+   */
   function applyNav() {
     let nav = document.querySelector('nav.bottom-nav');
     if (!nav) {
-      // create at end of body if missing
+      // Create the nav element at the end of the body if missing
       nav = document.createElement('nav');
       nav.className = 'bottom-nav';
       document.body.appendChild(nav);
     }
-    // Replace with the exact markup
-    nav.outerHTML = NEW_NAV_HTML;
-
-    // No need to tint the home icon; the PNG already contains the brand color. Remove inline SVG tinting.
+    // Determine login state from localStorage
+    const loggedIn = localStorage.getItem('isLoggedIn') === '1';
+    let profileHTML;
+    if (loggedIn) {
+      // Retrieve the user's full name and avatar (if any)
+      // Retrieve the user's full name.  If no full name is stored, fall back
+      // to the email username (the part before the @) if available.  This
+      // prevents the label from always being "User" when the site is
+      // first loaded after login and fullName has not been persisted yet.
+      let fullName = localStorage.getItem('fullName');
+      if (!fullName) {
+        const email = localStorage.getItem('email');
+        if (email && email.includes('@')) {
+          fullName = email.split('@')[0];
+        }
+      }
+      if (!fullName) fullName = 'User';
+      const avatar = localStorage.getItem('avatar') || localStorage.getItem('avatarUrl') || '';
+      // Use the first name for display
+      const firstName = fullName.split(' ')[0];
+      // Build the avatar element: use the stored image if available,
+      // otherwise fall back to the first initial in a colored circle
+      let avatarHTML;
+      if (avatar) {
+        avatarHTML = `<img src="${avatar}" alt="${firstName} avatar" style="width:22px;height:22px;border-radius:50%;object-fit:cover;border:2px solid var(--cg-primary);">`;
+      } else {
+        const initial = firstName.charAt(0).toUpperCase();
+        /*
+         * When no avatar image is stored, display the user's initial in
+         * a colored circle.  Use the primary brand color for the
+         * background and its ink color for the text so the login area
+         * stands out clearly against the dark nav.  The circle
+         * remains the same size as an avatar image.
+         */
+        avatarHTML = `<div style="width:22px;height:22px;border-radius:50%;background:var(--cg-primary);color:var(--cg-primary-ink);display:flex;align-items:center;justify-content:center;font-size:12px;">${initial}</div>`;
+      }
+      profileHTML = `
+        <a href="dashboard.html" class="profile-nav">
+          ${avatarHTML}
+          <span>${firstName}</span>
+        </a>
+      `;
+    } else {
+      // Build a login link with return parameter to redirect back after sign in
+      const current = location.pathname + location.search + location.hash;
+      const loginHref = 'login.html' + (location.pathname.toLowerCase().includes('login') ? '' : `?return=${encodeURIComponent(current)}`);
+      // Use a simple inline SVG for the login avatar.  This gives the
+      // login nav a recognizable person icon without requiring an external image.
+      const loginSvg = `<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="currentColor"><circle cx="12" cy="8" r="4"></circle><path d="M4 20a8 8 0 0116 0H4z"></path></svg>`;
+      profileHTML = `<a href="${loginHref}" class="login-nav">
+        ${loginSvg}
+        <span>Log in</span>
+      </a>`;
+    }
+    // Compose the nav HTML
+    const navHTML = `
+      <nav class="bottom-nav">
+        <a href="event.html">Event Info</a>
+        <a href="index.html" class="home" aria-label="Home">
+          <img src="assets/Icons/home.png" alt="Home" width="22" height="22" />
+          <span class="sr-only">Home</span>
+        </a>
+        ${profileHTML}
+      </nav>
+    `.trim();
+    // Replace the existing nav with the new markup
+    nav.outerHTML = navHTML;
   }
 
+  // Apply the navigation on load
   applyNav();
 
   // === Social login & modal enhancements ===

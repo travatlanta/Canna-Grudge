@@ -523,6 +523,63 @@ html[data-theme="light"] .bottom-nav a:active {
   background: rgba(0, 0, 0, 0.10);
 }
 
+/*
+ * Profile/Log‑in nav item styling
+ *
+ * When the bottom navigation displays the logged in user or the Log in link,
+ * highlight that nav item with a subtle primary‑tinted background.  Use the
+ * brand gold as the tint so it stands out clearly against the dark nav
+ * surface.  Also unify spacing and alignment for the profile row and
+ * ensure the user name is rendered in the primary colour.  On hover and
+ * active states the tint intensifies slightly to communicate interactivity.
+ */
+/* Style the profile/login nav items to mirror the appearance of the other
+   navigation links.  Use the same colour palette and spacing, and align
+   the text and avatar horizontally.  Avoid adding a distinct background so
+   the menu retains symmetry; only the home button remains a pill. */
+.bottom-nav .profile-nav,
+.bottom-nav .login-nav {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 8px;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--cg-text);
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.12s ease;
+}
+
+/* On hover and active, reuse the default nav hover effect rather than a custom
+   gold tint.  Leave the colour unchanged so the icon and text remain
+   consistent with the Event Info link. */
+.bottom-nav .profile-nav:hover,
+.bottom-nav .login-nav:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+.bottom-nav .profile-nav:active,
+.bottom-nav .login-nav:active {
+  background: rgba(255, 255, 255, 0.10);
+}
+
+/* Ensure avatar images inside the profile nav item are consistently sized */
+.bottom-nav .profile-nav img {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--cg-primary);
+  object-fit: cover;
+}
+
+/* Keep the user's first name in the primary brand colour */
+/* Use the default nav text colour for the user name */
+.bottom-nav .profile-nav span {
+  color: var(--cg-text);
+}
+
 /* New share label above social icons */
 /* Display the share graphic instead of text */
 .footer__share {

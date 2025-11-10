@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sponsorship Deck • CannaGrudge</title>
+  <link rel="stylesheet" href="theme.css">
+  <style>
+    /* Use a simple container for the deck page */
+    .deck-container {
+      max-width: 900px;
+      margin: 40px auto 80px;
+      padding: 0 16px;
+    }
+    .deck-container h1 {
+      margin: 0 0 12px;
+    }
+    .deck-container p {
+      margin: 0 0 20px;
+    }
+    /* PDF viewer takes up most of the available height without overlapping the
+       fixed bottom navigation.  Subtract the nav height and some margin for
+       breathing room. */
+    .deck-viewer {
+      width: 100%;
+      height: calc(100vh - var(--cg-nav-h) - 220px);
+      border: none;
+      background: var(--cg-surface);
+      border-radius: var(--cg-r-lg);
+      box-shadow: var(--cg-elev);
+    }
+  </style>
+</head>
+<body class="with-dock">
+  <main class="deck-container">
+    <h1>Sponsorship Deck</h1>
+    <p>View or download the latest CannaGrudge sponsorship deck below.</p>
+    <!-- Embed the PDF.  If the PDF is not present or cannot load, the browser
+         will display a fallback download prompt.  Replace the file path if
+         your PDF resides elsewhere. -->
+    <embed class="deck-viewer" src="assets/deck/CannaGrudge sponsorship deck.pdf" type="application/pdf" />
+    <p style="margin-top:20px;">
+      <a class="button button--primary" href="assets/deck/CannaGrudge sponsorship deck.pdf" download>Download PDF</a>
+    </p>
+  </main>
+
+  <!-- Load the global navigation and auth logic -->
+  <script src="app.js"></script>
+
+  <!-- Footer replicates the simplified site map and share icons used on other pages -->
+  <footer class="footer footer--stack">
+    <div class="footer__share"><img src="assets/Icons/share-online.png" alt="Share Online" /></div>
+    <div class="footer__icons">
+      <a href="https://www.instagram.com/?url=https%3A%2F%2Fcannagrudge.com" target="_blank" data-share="instagram" title="Share on Instagram"><img src="assets/Icons/instagram.png" alt="Instagram" /></a>
+      <a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fcannagrudge.com" target="_blank" data-share="facebook" title="Share on Facebook"><img src="assets/Icons/facebook.png" alt="Facebook" /></a>
+      <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fcannagrudge.com" target="_blank" data-share="twitter" title="Share on X"><img src="assets/Icons/twitter.png" alt="X" /></a>
+      <a href="https://www.snapchat.com/share?link=https%3A%2F%2Fcannagrudge.com" target="_blank" data-share="snapchat" title="Share on Snapchat"><img src="assets/Icons/snapchat.png" alt="Snapchat" /></a>
+      <a href="https://www.tiktok.com/" target="_blank" data-share="tiktok" title="Share on TikTok"><img src="assets/Icons/tik tok.png" alt="TikTok" /></a>
+    </div>
+    <div class="footer__links">
+      <a href="event.html#info">Event Info</a>
+      <a href="event.html#vendors">Vendors</a>
+      <a href="event.html#tickets">Tickets</a>
+      <a href="tos.html">Terms &amp; Conditions</a>
+      <a href="privacy.html">Privacy Policy</a>
+    </div>
+    <div class="footer__legal">© CannaGrudge. All rights reserved.</div>
+  </footer>
+</body>
+</html>

@@ -43,25 +43,43 @@
     // Attach handlers for each provider
     document.getElementById('btnGoogle').onclick  = () => {
       signInWithPopup(auth, googleProvider)
-        .then(() => {
+        .then(result => {
           // Mark the user as logged in for the global auth guard
           localStorage.setItem('isLoggedIn', '1');
+          // Persist the user's display name and avatar so the bottom nav
+          // can show their name and photo.  Use the provider result if available,
+          // otherwise fall back to the current user on the auth instance.
+          const user = result.user;
+          const name = (user && user.displayName) || (auth.currentUser && auth.currentUser.displayName) || '';
+          const avatarUrl = (user && user.photoURL) || (auth.currentUser && auth.currentUser.photoURL) || '';
+          if (name) localStorage.setItem('fullName', name);
+          if (avatarUrl) localStorage.setItem('avatarUrl', avatarUrl);
           go();
         })
         .catch(e => alert(e.message || e));
     };
     document.getElementById('btnFacebook').onclick = () => {
       signInWithPopup(auth, facebookProvider)
-        .then(() => {
+        .then(result => {
           localStorage.setItem('isLoggedIn', '1');
+          const user = result.user;
+          const name = (user && user.displayName) || (auth.currentUser && auth.currentUser.displayName) || '';
+          const avatarUrl = (user && user.photoURL) || (auth.currentUser && auth.currentUser.photoURL) || '';
+          if (name) localStorage.setItem('fullName', name);
+          if (avatarUrl) localStorage.setItem('avatarUrl', avatarUrl);
           go();
         })
         .catch(e => alert(e.message || e));
     };
     document.getElementById('btnApple').onclick   = () => {
       signInWithPopup(auth, appleProvider)
-        .then(() => {
+        .then(result => {
           localStorage.setItem('isLoggedIn', '1');
+          const user = result.user;
+          const name = (user && user.displayName) || (auth.currentUser && auth.currentUser.displayName) || '';
+          const avatarUrl = (user && user.photoURL) || (auth.currentUser && auth.currentUser.photoURL) || '';
+          if (name) localStorage.setItem('fullName', name);
+          if (avatarUrl) localStorage.setItem('avatarUrl', avatarUrl);
           go();
         })
         .catch(e => alert(e.message || e));
@@ -70,6 +88,13 @@
     onAuthStateChanged(auth, user => {
       if (user) {
         localStorage.setItem('isLoggedIn', '1');
+        // Persist name and avatar for nav display.  Use displayName/photoURL
+        // if available; if not, don't overwrite existing values so manual
+        // logins (email) can set name later.
+        const name = user.displayName;
+        const avatarUrl = user.photoURL;
+        if (name) localStorage.setItem('fullName', name);
+        if (avatarUrl) localStorage.setItem('avatarUrl', avatarUrl);
         go();
       }
     });
