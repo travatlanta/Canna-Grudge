@@ -526,7 +526,13 @@
               // inserted and the DOM updated before calculating positions.
               setTimeout(() => {
                 const target = hero.offsetTop + hero.offsetHeight;
-                window.scrollTo({ top: target, behavior: 'smooth' });
+                // Scroll both the root element and body for broader support
+                if (document.documentElement) {
+                  document.documentElement.scrollTo({ top: target, behavior: 'smooth' });
+                }
+                if (document.body) {
+                  document.body.scrollTop = target;
+                }
               }, 60);
             }
           }
