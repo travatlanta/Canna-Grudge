@@ -51,8 +51,24 @@ document.addEventListener('DOMContentLoaded', () => {
       nav.className = 'bottom-nav';
       document.body.appendChild(nav);
     }
-    // Determine login state from localStorage
-    const loggedIn = localStorage.getItem('isLoggedIn') === '1';
+    // Determine login state from localStorage.  A user is considered
+    // authenticated only if the `isLoggedIn` flag is present AND there
+    // is a stored full name or email.  This extra check prevents
+    // situations where the `isLoggedIn` flag remains from a past
+    // session without any associated user information, which would
+    // otherwise cause stale names to appear in the nav.  If either
+    // condition fails we remove any lingering data and treat the
+    // visitor as logged out.
+    const isFlagSet = localStorage.getItem('isLoggedIn') === '1';
+    const hasUserInfo = !!(localStorage.getItem('fullName') || localStorage.getItem('email'));
+    const loggedIn = isFlagSet && hasUserInfo;
+    if (!loggedIn) {
+      try {
+        ['isLoggedIn','fullName','email','avatar','avatarUrl'].forEach(k => localStorage.removeItem(k));
+      } catch (e) {
+        // swallow errors
+      }
+    }
     let profileHTML;
     if (loggedIn) {
       // Retrieve the user's full name and avatar (if any)

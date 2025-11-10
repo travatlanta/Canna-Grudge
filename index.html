@@ -197,6 +197,31 @@
       margin: 0;
       color: var(--cg-text);
     }
+
+    /* Placeholder boxes below the poster on the home page.  These boxes
+       announce upcoming content such as featured fights and select
+       sponsors.  They use the same card styling as the feature cards
+       for visual consistency. */
+    .placeholder-box {
+      background: var(--cg-surface);
+      border-radius: var(--cg-r-lg);
+      border: 1px solid var(--cg-border);
+      box-shadow: var(--cg-elev);
+      padding: 20px;
+      margin-top: 24px;
+      text-align: center;
+    }
+    .placeholder-box h3 {
+      margin: 0 0 6px;
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--cg-text-strong);
+    }
+    .placeholder-box p {
+      margin: 0;
+      font-size: 15px;
+      color: var(--cg-text);
+    }
   </style>
 </head>
 <body class="with-dock index">
@@ -275,6 +300,18 @@
     <a class="promo-wrap" href="event.html#info" aria-label="Event Highlights">
       <img src="assets/Event Highlights.png" alt="Event Highlights: mud wrestling, midget wrestling, two rings, live music, games, awards, food, drinks and cannabis samples">
     </a>
+
+    <!-- Placeholder content sections to tease future updates.  These cards
+         will be replaced with dynamic content once featured fights and
+         sponsor showcases are ready to publish. -->
+    <div class="placeholder-box">
+      <h3>Featured Fights</h3>
+      <p>This section will highlight our biggest match‑ups. Stay tuned!</p>
+    </div>
+    <div class="placeholder-box">
+      <h3>Select Sponsors</h3>
+      <p>Coming soon: spotlights on our premier sponsors.</p>
+    </div>
 
     <!-- Mobile feature overview: replicate the feature cards below the poster on small screens.  This
          section becomes visible only on viewports narrower than 992px.  On desktop the existing

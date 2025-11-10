@@ -6,48 +6,337 @@
   <title>Sponsorship Deck • CannaGrudge</title>
   <link rel="stylesheet" href="theme.css">
   <style>
-    /* Use a simple container for the deck page */
+    /* Container for the deck page */
     .deck-container {
-      max-width: 900px;
+      max-width: 1000px;
       margin: 40px auto 80px;
       padding: 0 16px;
     }
     .deck-container h1 {
-      margin: 0 0 12px;
+      margin: 0 0 8px;
     }
     .deck-container p {
-      margin: 0 0 20px;
+      margin: 0 0 18px;
     }
-    /* PDF viewer takes up most of the available height without overlapping the
-       fixed bottom navigation.  Subtract the nav height and some margin for
-       breathing room. */
-    .deck-viewer {
-      width: 100%;
-      height: calc(100vh - var(--cg-nav-h) - 220px);
-      border: none;
-      background: var(--cg-surface);
+
+    /* Horizontal slider for images */
+    .deck-slider {
+      position: relative;
+      overflow: auto;
+      display: flex;
+      gap: 12px;
+      scroll-snap-type: x mandatory;
+      padding-bottom: 8px;
       border-radius: var(--cg-r-lg);
       box-shadow: var(--cg-elev);
+      background: var(--cg-surface);
+      /* slim, low-contrast scrollbar */
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,0.22) transparent;
+    }
+    .deck-slider::-webkit-scrollbar {
+      height: 6px;
+    }
+    .deck-slider::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .deck-slider::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.22);
+      border-radius: 3px;
+    }
+
+    .deck-slide {
+      flex: 0 0 100%;
+      scroll-snap-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--cg-surface);
+      border-radius: var(--cg-r-lg);
+    }
+    .deck-slide img {
+      width: 100%;
+      height: calc(100vh - var(--cg-nav-h) - 240px);
+      object-fit: contain;
+      border-radius: var(--cg-r-lg);
+      background: #000; /* hide any transparent PNG edges */
+    }
+
+    .deck-controls {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin: 12px 0 6px;
+    }
+    .deck-btn {
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.12);
+      color: var(--cg-text-strong);
+      border-radius: 12px;
+      padding: 8px 12px;
+      cursor: pointer;
+      transition: transform .08s ease;
+    }
+    .deck-btn:active {
+      transform: translateY(1px);
+    }
+
+    /* Sponsor interest form styling */
+    .sponsor-form {
+      margin-top: 24px;
+      display: grid;
+      gap: 12px;
+      background: var(--cg-surface);
+      border-radius: var(--cg-r-lg);
+      padding: 16px;
+      border: 1px solid var(--cg-border);
+      box-shadow: var(--cg-elev);
+    }
+    .sponsor-form .row {
+      display: grid;
+      gap: 12px;
+    }
+    @media(min-width: 720px) {
+      .sponsor-form .row {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+    .sponsor-form label {
+      font-weight: 700;
+      font-size: 14px;
+    }
+    .sponsor-form input,
+    .sponsor-form select,
+    .sponsor-form textarea {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid var(--cg-border);
+      background: var(--cg-surface-2);
+      color: var(--cg-text);
+      font-size: 14px;
+    }
+    .sponsor-form textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+    .toast {
+      display: none;
+      margin-top: 8px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: rgba(22, 163, 74, .18);
+      border: 1px solid rgba(22, 163, 74, .38);
+      color: var(--cg-text-strong);
+      font-size: 14px;
+    }
+    .toast.show {
+      display: block;
     }
   </style>
 </head>
 <body class="with-dock">
   <main class="deck-container">
     <h1>Sponsorship Deck</h1>
-    <p>View or download the latest CannaGrudge sponsorship deck below.</p>
-    <!-- Embed the PDF.  If the PDF is not present or cannot load, the browser
-         will display a fallback download prompt.  Replace the file path if
-         your PDF resides elsewhere. -->
-    <embed class="deck-viewer" src="assets/deck/CannaGrudge sponsorship deck.pdf" type="application/pdf" />
-    <p style="margin-top:20px;">
-      <a class="button button--primary" href="assets/deck/CannaGrudge sponsorship deck.pdf" download>Download PDF</a>
+    <p>Swipe or use the controls to view the CannaGrudge sponsorship deck one page at a time.</p>
+
+    <!-- Image slider using deck images 1.png to 14.png -->
+    <div class="deck-slider" id="deckSlider" aria-label="Sponsorship deck pages">
+      <div class="deck-slide"><img src="assets/deck/1.png" alt="Deck page 1" loading="lazy"></div>
+      <div class="deck-slide"><img src="assets/deck/2.png" alt="Deck page 2" loading="lazy"></div>
+      <div class="deck-slide"><img src="assets/deck/3.png" alt="Deck page 3" loading="lazy"></div>
+      <div class="deck-slide"><img src="assets/deck/4.png" alt="Deck page 4" loading="lazy"></div>
+      <div class="deck-slide"><img src="assets/deck/5.png" alt="Deck page 5" loading="lazy"></div>
+      <div class="deck-slide"><img src="assets/deck/6.png" alt="Deck page 6" loading="lazy"></div>
+      <div class="deck-slide"><img src="assets/deck/7.png" alt="Deck page 7" loading="lazy"></div>
+      <div class="deck-slide"><img src="assets/deck/8.png" alt="Deck page 8" loading="lazy"></div>
+      <div class="deck-slide"><img src="assets/deck/9.png" alt="Deck page 9" loading="lazy"></div>
+      <div class="deck-slide"><img src="assets/deck/10.png" alt="Deck page 10" loading="lazy"></div>
+      <div class="deck-slide"><img src="assets/deck/11.png" alt="Deck page 11" loading="lazy"></div>
+      <div class="deck-slide"><img src="assets/deck/12.png" alt="Deck page 12" loading="lazy"></div>
+      <div class="deck-slide"><img src="assets/deck/13.png" alt="Deck page 13" loading="lazy"></div>
+      <div class="deck-slide"><img src="assets/deck/14.png" alt="Deck page 14" loading="lazy"></div>
+    </div>
+
+    <div class="deck-controls">
+      <button type="button" class="deck-btn" id="prevSlide">◀ Prev</button>
+      <button type="button" class="deck-btn" id="nextSlide">Next ▶</button>
+    </div>
+
+    <!-- Optional: link to download the original PDF -->
+    <!-- Button to dynamically generate a PDF from the deck images.  When clicked on
+         desktop or mobile, the browser will assemble the images (1.png through
+         14.png) into a single PDF file and trigger a download.  This avoids
+         relying on a pre‑built PDF that may be blocked on some devices. -->
+    <p style="margin-top:16px;">
+      <button type="button" id="downloadPdfBtn" class="button button--primary">Download PDF</button>
     </p>
+
+    <!-- Sponsor interest form -->
+    <form id="sponsorForm" class="sponsor-form" novalidate>
+      <h2 style="margin:0;">Interested in Sponsoring?</h2>
+      <div class="row">
+        <div>
+          <label for="brand">Brand name</label>
+          <input id="brand" name="brand" type="text" placeholder="Brand Inc." required>
+        </div>
+        <div>
+          <label for="contact">Contact name</label>
+          <input id="contact" name="contact" type="text" placeholder="Jane Smith" required>
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label for="level">Sponsorship level</label>
+          <select id="level" name="level" required>
+            <option value="" disabled selected>Select a level</option>
+            <option>VIP Sponsor</option>
+            <option>Gold Sponsor</option>
+            <option>Stage Sponsor</option>
+            <option>DJ Sponsor</option>
+            <option>Food Truck Space</option>
+            <option>10x10 Booth</option>
+            <option>10x20 Booth</option>
+            <option>Ring Sponsor</option>
+            <option>Mud Wrestling</option>
+            <option>Halftime Show</option>
+            <option>Custom</option>
+          </select>
+        </div>
+        <div>
+          <label for="email">Contact email</label>
+          <input id="email" name="email" type="email" placeholder="name@brand.com">
+        </div>
+      </div>
+      <div>
+        <label for="message">Message</label>
+        <textarea id="message" name="message" placeholder="Tell us what you have in mind…"></textarea>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <button class="button button--primary" type="submit">Send</button>
+        <div id="sponsorToast" class="toast">Thanks! We'll be in touch.</div>
+      </div>
+    </form>
   </main>
 
-  <!-- Load the global navigation and auth logic -->
+  <!-- Include global navigation and auth logic -->
   <script src="app.js"></script>
 
-  <!-- Footer replicates the simplified site map and share icons used on other pages -->
+  <script>
+  // Slider functionality: scroll by slide width on button click and wheel events
+  (function() {
+    const slider = document.getElementById('deckSlider');
+    if (!slider) return;
+    const slides = Array.from(slider.querySelectorAll('.deck-slide'));
+    const prev = document.getElementById('prevSlide');
+    const next = document.getElementById('nextSlide');
+    const getIndex = () => Math.round(slider.scrollLeft / slider.clientWidth);
+    const goTo = (i) => {
+      const index = Math.max(0, Math.min(i, slides.length - 1));
+      slider.scrollTo({ left: index * slider.clientWidth, behavior: 'smooth' });
+    };
+    if (prev) prev.addEventListener('click', () => goTo(getIndex() - 1));
+    if (next) next.addEventListener('click', () => goTo(getIndex() + 1));
+    // Wheel control: vertical scroll triggers slide change
+    slider.addEventListener('wheel', (e) => {
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+        e.preventDefault();
+        goTo(getIndex() + (e.deltaY > 0 ? 1 : -1));
+      }
+    }, { passive: false });
+    // Keyboard arrow support when slider has focus
+    slider.tabIndex = 0;
+    slider.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') goTo(getIndex() + 1);
+      if (e.key === 'ArrowLeft')  goTo(getIndex() - 1);
+    });
+  })();
+
+  // Sponsor form submission: show toast and reset form (demo only)
+  (function() {
+    const form = document.getElementById('sponsorForm');
+    const toast = document.getElementById('sponsorToast');
+    if (!form) return;
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      if (toast) {
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 4000);
+      }
+      form.reset();
+    });
+  })();
+
+  // Dynamically generate a PDF containing all deck images and download it.
+  (function() {
+    const btn = document.getElementById('downloadPdfBtn');
+    if (!btn) return;
+    btn.addEventListener('click', async () => {
+      // Lazy load jsPDF from CDN to avoid blocking page load.  The UMD
+      // build attaches jsPDF to window.jspdf when loaded.
+      if (!window.jspdf) {
+        await new Promise((resolve, reject) => {
+          const script = document.createElement('script');
+          script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+          script.onload = resolve;
+          script.onerror = reject;
+          document.body.appendChild(script);
+        });
+      }
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      // List of image filenames corresponding to the deck pages.  If you add
+      // or remove pages, update this array accordingly.  The images should
+      // reside in assets/deck/ and be named exactly as listed.
+      const pages = [
+        '1.png','2.png','3.png','4.png','5.png','6.png','7.png',
+        '8.png','9.png','10.png','11.png','12.png','13.png','14.png'
+      ];
+      for (let i = 0; i < pages.length; i++) {
+        const path = `assets/deck/${pages[i]}`;
+        try {
+          const resp = await fetch(path);
+          if (!resp.ok) throw new Error('Image not found');
+          const blob = await resp.blob();
+          // Convert blob to data URL
+          const dataUrl = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.readAsDataURL(blob);
+          });
+          // For the first page, use the default page; for subsequent pages,
+          // add a new page to the PDF before inserting the image.
+          if (i > 0) pdf.addPage('a4', 'portrait');
+          // Always fill the page background with dark grey before drawing the image.
+          const pageWidth = pdf.internal.pageSize.getWidth();
+          const pageHeight = pdf.internal.pageSize.getHeight();
+          pdf.setFillColor(24, 26, 30); // dark grey/black background
+          pdf.rect(0, 0, pageWidth, pageHeight, 'F');
+          // Determine the maximum width and height for the image with margins
+          const imgProps = pdf.getImageProperties(dataUrl);
+          const margin = 10;
+          const maxW = pageWidth - margin * 2;
+          const maxH = pageHeight - margin * 2;
+          let imgW = maxW;
+          let imgH = (imgProps.height * maxW) / imgProps.width;
+          if (imgH > maxH) {
+            imgH = maxH;
+            imgW = (imgProps.width * maxH) / imgProps.height;
+          }
+          const x = (pageWidth - imgW) / 2;
+          const y = (pageHeight - imgH) / 2;
+          pdf.addImage(dataUrl, 'PNG', x, y, imgW, imgH);
+        } catch (e) {
+          // Silently skip missing images
+          continue;
+        }
+      }
+      // Trigger the download
+      pdf.save('CannaGrudge_Sponsorship_Deck.pdf');
+    });
+  })();
+  </script>
+
   <footer class="footer footer--stack">
     <div class="footer__share"><img src="assets/Icons/share-online.png" alt="Share Online" /></div>
     <div class="footer__icons">
