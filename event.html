@@ -521,16 +521,13 @@
           // section into view, aligning it at the top of the viewport.
           if (window.innerWidth < 992) {
             const hero = document.querySelector('header.hero');
-            const eventContent = document.querySelector('.event-content');
-            if (hero && eventContent) {
-              const rect = eventContent.getBoundingClientRect();
-              const heroHeight = hero.offsetHeight;
-              // If the top of the event content is still hidden under
-              // the hero (accounting for the hero’s height), scroll it
-              // into view.  Otherwise do nothing to avoid a bounce.
-              if (rect.top - heroHeight > 8) {
-                eventContent.scrollIntoView({ behavior: 'smooth', block: 'start' });
-              }
+            if (hero) {
+              // Delay the scroll slightly to ensure the popup has been
+              // inserted and the DOM updated before calculating positions.
+              setTimeout(() => {
+                const target = hero.offsetTop + hero.offsetHeight;
+                window.scrollTo({ top: target, behavior: 'smooth' });
+              }, 60);
             }
           }
         });
