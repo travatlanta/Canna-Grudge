@@ -140,7 +140,7 @@
     <h1>Sponsorship Deck</h1>
     <p>Swipe or use the controls to view the CannaGrudge sponsorship deck one page at a time.</p>
 
-    <!-- Image slider using deck images 1.png to 14.png -->
+    <!-- Image slider using deck images 1.png to 15.png -->
     <div class="deck-slider" id="deckSlider" aria-label="Sponsorship deck pages">
       <div class="deck-slide"><img src="assets/deck/1.png" alt="Deck page 1" loading="lazy"></div>
       <div class="deck-slide"><img src="assets/deck/2.png" alt="Deck page 2" loading="lazy"></div>
@@ -156,6 +156,7 @@
       <div class="deck-slide"><img src="assets/deck/12.png" alt="Deck page 12" loading="lazy"></div>
       <div class="deck-slide"><img src="assets/deck/13.png" alt="Deck page 13" loading="lazy"></div>
       <div class="deck-slide"><img src="assets/deck/14.png" alt="Deck page 14" loading="lazy"></div>
+      <div class="deck-slide"><img src="assets/deck/15.png" alt="Deck page 14" loading="lazy"></div>
     </div>
 
     <div class="deck-controls">
@@ -166,7 +167,7 @@
     <!-- Optional: link to download the original PDF -->
     <!-- Button to dynamically generate a PDF from the deck images.  When clicked on
          desktop or mobile, the browser will assemble the images (1.png through
-         14.png) into a single PDF file and trigger a download.  This avoids
+         15.png) into a single PDF file and trigger a download.  This avoids
          relying on a pre‑built PDF that may be blocked on some devices. -->
     <p style="margin-top:16px;">
       <button type="button" id="downloadPdfBtn" class="button button--primary">Download PDF</button>
@@ -290,7 +291,7 @@
       // reside in assets/deck/ and be named exactly as listed.
       const pages = [
         '1.png','2.png','3.png','4.png','5.png','6.png','7.png',
-        '8.png','9.png','10.png','11.png','12.png','13.png','14.png'
+        '8.png','9.png','10.png','11.png','12.png','13.png','14.png','15.png'
       ];
       for (let i = 0; i < pages.length; i++) {
         const path = `assets/deck/${pages[i]}`;
