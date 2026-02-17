@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CannaGrudge — Become a Sponsor</title>
+  <link rel="stylesheet" href="theme.css">
+  <style>
+    .sponsor-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 40px;
+      align-items: start;
+    }
+    @media (min-width: 768px) {
+      .sponsor-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+    .benefit-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-top: 20px;
+    }
+    .benefit-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 15px;
+      color: var(--cg-text-secondary);
+    }
+    .benefit-item svg {
+      flex-shrink: 0;
+    }
+    .form-group {
+      margin-bottom: 16px;
+    }
+    #successMsg {
+      text-align: center;
+      padding: 32px 0;
+    }
+    #successMsg svg {
+      margin: 0 auto 16px;
+    }
+    #errorMsg {
+      color: var(--cg-red);
+      font-size: 14px;
+      margin-top: 12px;
+    }
+  </style>
+</head>
+<body class="page-padded">
+
+  <div class="page-header">
+    <div class="container">
+      <h1>Become a <span class="text-gradient">Sponsor</span></h1>
+      <p class="section-subtitle">Partner with CannaGrudge for an unforgettable event experience</p>
+    </div>
+  </div>
+
+  <section class="section">
+    <div class="container">
+      <div class="sponsor-grid">
+        <div class="card">
+          <h3 style="font-size: 22px; margin-bottom: 8px;">Why Sponsor CannaGrudge?</h3>
+          <p style="font-size: 14px; color: var(--cg-text-secondary); line-height: 1.7;">Align your brand with one of the most exciting cannabis events of the year. Our sponsorship packages offer unmatched visibility and engagement.</p>
+          <div class="benefit-list">
+            <div class="benefit-item">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <span>Brand visibility to 500+ attendees</span>
+            </div>
+            <div class="benefit-item">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <span>Logo placement on event materials</span>
+            </div>
+            <div class="benefit-item">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <span>VIP booth space at the venue</span>
+            </div>
+            <div class="benefit-item">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <span>Social media promotion</span>
+            </div>
+            <div class="benefit-item">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d4a843" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <span>Custom sponsorship packages available</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 style="font-size: 22px; margin-bottom: 8px;">Request Deck Access</h3>
+          <p style="font-size: 14px; color: var(--cg-text-secondary); line-height: 1.7; margin-bottom: 20px;">Fill out the form below and we'll send you our sponsorship deck.</p>
+          <form id="sponsorForm">
+            <div class="form-group">
+              <label class="label" for="companyInput">Company Name</label>
+              <input type="text" id="companyInput" class="input" required placeholder="Your company name">
+            </div>
+            <div class="form-group">
+              <label class="label" for="contactInput">Contact Name</label>
+              <input type="text" id="contactInput" class="input" required placeholder="Your full name">
+            </div>
+            <div class="form-group">
+              <label class="label" for="emailInput">Email</label>
+              <input type="email" id="emailInput" class="input" required placeholder="you@company.com">
+            </div>
+            <div class="form-group">
+              <label class="label" for="phoneInput">Phone</label>
+              <input type="tel" id="phoneInput" class="input" placeholder="(optional)">
+            </div>
+            <div class="form-group">
+              <label class="label" for="messageInput">Message</label>
+              <textarea id="messageInput" class="input" rows="3" placeholder="Tell us about your sponsorship interests (optional)"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Request Access</button>
+          </form>
+          <div id="successMsg" style="display:none;">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--cg-green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="16 9 10.5 14.5 8 12"></polyline></svg>
+            <p style="font-size: 16px; color: var(--cg-text-secondary); line-height: 1.7;">Thank you! We'll review your request and send the deck access link to your email.</p>
+          </div>
+          <div id="errorMsg" style="display:none;"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer" data-animate="fade">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <div class="footer-brand">Canna<span>Grudge</span></div>
+          <p class="footer-desc">The ultimate cannabis boxing event. Live fights, music, vendors, and more in Litchfield Park, AZ.</p>
+          <div class="footer-social">
+            <a href="https://www.instagram.com/" target="_blank" aria-label="Instagram"><img src="assets/Icons/instagram.png" alt="Instagram"></a>
+            <a href="https://www.facebook.com/" target="_blank" aria-label="Facebook"><img src="assets/Icons/facebook.png" alt="Facebook"></a>
+            <a href="https://twitter.com/" target="_blank" aria-label="X"><img src="assets/Icons/twitter.png" alt="X"></a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h4>Event</h4>
+          <a href="index.html">Home</a>
+          <a href="event.html">Event Info</a>
+          <a href="tickets.html">Tickets</a>
+        </div>
+        <div class="footer-col">
+          <h4>Support</h4>
+          <a href="event.html#faq">FAQ</a>
+          <a href="event.html#contact">Contact</a>
+          <a href="tos.html">Terms &amp; Conditions</a>
+        </div>
+        <div class="footer-col">
+          <h4>Legal</h4>
+          <a href="privacy.html">Privacy Policy</a>
+          <a href="delete-data.html">Delete Data</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; 2026 CannaGrudge. All rights reserved.</span>
+        <div>
+          <a href="privacy.html">Privacy</a> &nbsp;&middot;&nbsp; <a href="tos.html">Terms</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js?v=2"></script>
+  <script type="module" src="./firebase-config.js"></script>
+  <script>
+    (function() {
+      var form = document.getElementById('sponsorForm');
+      var successMsg = document.getElementById('successMsg');
+      var errorMsg = document.getElementById('errorMsg');
+
+      form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        errorMsg.style.display = 'none';
+
+        var data = {
+          company: document.getElementById('companyInput').value,
+          contact: document.getElementById('contactInput').value,
+          email: document.getElementById('emailInput').value,
+          phone: document.getElementById('phoneInput').value,
+          message: document.getElementById('messageInput').value
+        };
+
+        fetch('/api/sponsors/request', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        })
+        .then(function(res) {
+          if (!res.ok) throw new Error('Request failed');
+          return res.json();
+        })
+        .then(function() {
+          form.style.display = 'none';
+          successMsg.style.display = 'block';
+        })
+        .catch(function(err) {
+          errorMsg.textContent = 'Something went wrong. Please try again or email us directly.';
+          errorMsg.style.display = 'block';
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

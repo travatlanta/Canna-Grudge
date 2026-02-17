@@ -79,6 +79,27 @@
       font-weight: 900;
       color: var(--cg-gold);
     }
+    .promo-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .promo-row .input {
+      flex: 1;
+    }
+    #promoStatus {
+      font-size: 13px;
+      margin-top: 6px;
+      min-height: 18px;
+    }
+    .discount-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      font-size: 14px;
+      color: var(--cg-green);
+    }
   </style>
 </head>
 <body class="page-padded">
@@ -103,6 +124,14 @@
             <label class="label" for="nameInput">Full Name</label>
             <input type="text" class="input" id="nameInput" placeholder="Your full name">
           </div>
+          <div class="form-group">
+            <label class="label" for="promoInput">Promo Code (optional)</label>
+            <div class="promo-row">
+              <input type="text" class="input" id="promoInput" placeholder="Enter promo code">
+              <button class="btn btn-outline btn-sm" id="applyPromo">Apply</button>
+            </div>
+            <div id="promoStatus"></div>
+          </div>
           <div id="card-container"></div>
           <button class="btn btn-primary btn-block btn-lg" id="payBtn" disabled>Pay Now</button>
           <div class="payment-error" id="paymentError"></div>
@@ -111,6 +140,7 @@
         <div class="order-summary">
           <h3>Order Summary</h3>
           <div id="orderItems"></div>
+          <div id="discountLine"></div>
           <div class="divider"></div>
           <div class="order-total">
             <span class="total-label">Total</span>
@@ -137,6 +167,7 @@
           <h4>Event</h4>
           <a href="index.html">Home</a>
           <a href="event.html">Event Info</a>
+          <a href="sponsors.html">Sponsors</a>
           <a href="tickets.html">Tickets</a>
         </div>
         <div class="footer-col">
@@ -164,7 +195,33 @@
   <script type="module" src="./firebase-config.js"></script>
   <script>
 document.addEventListener('DOMContentLoaded', async () => {
-  const cart = typeof getCart === 'function' ? getCart() : JSON.parse(localStorage.getItem('cg_cart') || '[]');
+  let cart = typeof getCart === 'function' ? getCart() : JSON.parse(localStorage.getItem('cg_cart') || '[]');
+
+  const params = new URLSearchParams(window.location.search);
+  const inviteToken = params.get('invite');
+
+  if (inviteToken) {
+    try {
+      const invRes = await fetch('/api/purchase-links/' + encodeURIComponent(inviteToken));
+      if (invRes.ok) {
+        const invData = await invRes.json();
+        cart = [{
+          id: invData.tier_name.toLowerCase().replace(/\s+/g, '-'),
+          name: invData.tier_name,
+          price: invData.price_cents,
+          qty: invData.qty,
+          tierId: invData.tier_id
+        }];
+        if (typeof saveCart === 'function') saveCart(cart);
+        if (invData.email) {
+          document.getElementById('emailInput').value = invData.email;
+        }
+        if (invData.promo_code) {
+          document.getElementById('promoInput').value = invData.promo_code;
+        }
+      }
+    } catch (e) {}
+  }
 
   if (cart.length === 0) {
     location.href = 'tickets.html';
@@ -173,15 +230,93 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const itemsEl = document.getElementById('orderItems');
   const totalEl = document.getElementById('orderTotal');
-  let total = 0;
+  const discountLineEl = document.getElementById('discountLine');
+  let originalTotal = 0;
+  let appliedPromoCode = '';
+  let appliedDiscount = 0;
+  let appliedDiscountType = '';
+  let appliedDiscountAmount = 0;
 
-  itemsEl.innerHTML = cart.map(item => {
-    const itemTotal = item.price * item.qty;
-    total += itemTotal;
-    return `<div class="order-item"><span class="item-name">${item.name} x${item.qty}</span><span class="item-price">$${(itemTotal/100).toFixed(2)}</span></div>`;
-  }).join('');
+  function renderOrderSummary() {
+    originalTotal = 0;
+    itemsEl.innerHTML = cart.map(item => {
+      const itemTotal = item.price * item.qty;
+      originalTotal += itemTotal;
+      return '<div class="order-item"><span class="item-name">' + item.name + ' x' + item.qty + '</span><span class="item-price">$' + (itemTotal/100).toFixed(2) + '</span></div>';
+    }).join('');
 
-  totalEl.textContent = '$' + (total/100).toFixed(2);
+    if (appliedPromoCode && appliedDiscount > 0) {
+      discountLineEl.innerHTML = '<div class="discount-line"><span>Discount (' + appliedPromoCode + ')</span><span>-$' + (appliedDiscount/100).toFixed(2) + '</span></div>';
+    } else {
+      discountLineEl.innerHTML = '';
+    }
+
+    const finalTotal = Math.max(0, originalTotal - appliedDiscount);
+    totalEl.textContent = '$' + (finalTotal/100).toFixed(2);
+  }
+
+  renderOrderSummary();
+
+  function recalcDiscount() {
+    if (!appliedPromoCode) {
+      appliedDiscount = 0;
+      return;
+    }
+    if (appliedDiscountType === 'percent') {
+      appliedDiscount = Math.floor(originalTotal * appliedDiscountAmount / 100);
+    } else {
+      appliedDiscount = appliedDiscountAmount;
+    }
+    if (appliedDiscount > originalTotal) appliedDiscount = originalTotal;
+  }
+
+  document.getElementById('applyPromo').addEventListener('click', async () => {
+    const code = document.getElementById('promoInput').value.trim();
+    const statusEl = document.getElementById('promoStatus');
+
+    if (!code) {
+      statusEl.style.color = 'var(--cg-red)';
+      statusEl.textContent = 'Please enter a promo code';
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/promos/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: code })
+      });
+      const data = await res.json();
+
+      if (res.ok && data.valid) {
+        appliedPromoCode = data.code;
+        appliedDiscountType = data.discount_type;
+        appliedDiscountAmount = data.discount_amount;
+        recalcDiscount();
+        renderOrderSummary();
+
+        statusEl.style.color = 'var(--cg-green)';
+        if (data.discount_type === 'percent') {
+          statusEl.textContent = data.discount_amount + '% off applied!';
+        } else {
+          statusEl.textContent = '$' + (data.discount_amount / 100).toFixed(2) + ' off applied!';
+        }
+      } else {
+        appliedPromoCode = '';
+        appliedDiscount = 0;
+        renderOrderSummary();
+        statusEl.style.color = 'var(--cg-red)';
+        statusEl.textContent = data.error || 'Invalid promo code';
+      }
+    } catch (e) {
+      statusEl.style.color = 'var(--cg-red)';
+      statusEl.textContent = 'Could not validate promo code';
+    }
+  });
+
+  if (inviteToken && document.getElementById('promoInput').value) {
+    document.getElementById('applyPromo').click();
+  }
 
   try {
     const configRes = await fetch('/api/square-config');
@@ -225,10 +360,10 @@ document.addEventListener('DOMContentLoaded', async () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             sourceId: result.token,
-            amount: total,
-            currency: 'USD',
+            items: cart.map(function(item) { return { id: item.id, name: item.name, price: item.price, qty: item.qty, tierId: item.tierId }; }),
             email: email,
-            note: 'CannaGrudge Tickets: ' + cart.map(i => i.name + ' x' + i.qty).join(', ')
+            name: name,
+            promoCode: appliedPromoCode || ''
           })
         });
 
@@ -237,10 +372,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (payData.success) {
           localStorage.setItem('cg_last_order', JSON.stringify({
             items: cart,
-            total: total,
+            total: originalTotal,
+            discount: payData.discount || 0,
             email: email,
             name: name,
             paymentId: payData.payment.id,
+            orderId: payData.order_id,
+            promoCode: appliedPromoCode || '',
+            receiptUrl: payData.payment.receipt_url || '',
             date: new Date().toISOString()
           }));
           localStorage.removeItem('cg_cart');

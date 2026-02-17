@@ -3,76 +3,1161 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>CannaGrudge — Admin</title>
+  <title>CannaGrudge — Admin Dashboard</title>
   <link rel="icon" type="image/png" href="assets/favicon-gloves.png">
   <link rel="apple-touch-icon" href="assets/favicon-gloves.png">
   <link rel="stylesheet" href="theme.css">
   <style>
-    /* Removed redundant bottom-nav styles and manual padding; rely on theme.css and app.js for layout */
-    .hero-min { min-height: 62vh; }
+    body.page-padded { padding-top: 0; }
+
+    .admin-wrap { display: flex; min-height: 100vh; }
+
+    .admin-sidebar {
+      width: 240px;
+      background: var(--cg-black);
+      border-right: 1px solid var(--cg-border);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      z-index: 100;
+      transition: transform .3s ease;
+    }
+
+    .admin-sidebar-header {
+      padding: 24px 20px;
+      border-bottom: 1px solid var(--cg-border);
+    }
+
+    .admin-sidebar-header h2 {
+      font-family: var(--cg-font-display);
+      font-size: 20px;
+      font-weight: 900;
+    }
+
+    .admin-sidebar-header h2 span { color: var(--cg-gold); }
+
+    .admin-sidebar-nav {
+      flex: 1;
+      padding: 12px 0;
+      overflow-y: auto;
+    }
+
+    .admin-nav-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 20px;
+      background: transparent;
+      border: none;
+      color: var(--cg-text-secondary);
+      font-family: var(--cg-font-display);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--cg-transition);
+      text-align: left;
+    }
+
+    .admin-nav-btn:hover { color: var(--cg-text); background: rgba(255,255,255,.03); }
+    .admin-nav-btn.active { color: var(--cg-gold); background: var(--cg-gold-glow); border-right: 3px solid var(--cg-gold); }
+    .admin-nav-btn svg { flex-shrink: 0; }
+
+    .admin-sidebar-footer {
+      padding: 16px 20px;
+      border-top: 1px solid var(--cg-border);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .admin-sidebar-footer a,
+    .admin-sidebar-footer button {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 0;
+      background: transparent;
+      border: none;
+      color: var(--cg-text-muted);
+      font-family: var(--cg-font-display);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: color var(--cg-transition);
+    }
+
+    .admin-sidebar-footer a:hover,
+    .admin-sidebar-footer button:hover { color: var(--cg-text); }
+
+    .admin-main {
+      flex: 1;
+      margin-left: 240px;
+      padding: 32px;
+      min-height: 100vh;
+      overflow-y: auto;
+    }
+
+    .admin-main-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 32px;
+    }
+
+    .admin-main-header h1 {
+      font-size: 28px;
+      font-weight: 900;
+    }
+
+    .mobile-menu-toggle {
+      display: none;
+      width: 40px;
+      height: 40px;
+      border-radius: var(--cg-radius-sm);
+      background: var(--cg-surface);
+      border: 1px solid var(--cg-border);
+      color: var(--cg-text);
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 20px;
+    }
+
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.6);
+      z-index: 99;
+    }
+
+    @media (max-width: 768px) {
+      .admin-sidebar { transform: translateX(-100%); }
+      .admin-sidebar.open { transform: translateX(0); }
+      .admin-main { margin-left: 0; padding: 20px; }
+      .mobile-menu-toggle { display: flex; }
+      .sidebar-overlay.open { display: block; }
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .admin-table-wrap { overflow-x: auto; }
+
+    .admin-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    .admin-table th {
+      text-align: left;
+      padding: 12px 16px;
+      font-family: var(--cg-font-display);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      color: var(--cg-text-muted);
+      background: var(--cg-surface);
+      border-bottom: 1px solid var(--cg-border);
+      white-space: nowrap;
+    }
+
+    .admin-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--cg-border);
+      color: var(--cg-text-secondary);
+      vertical-align: middle;
+    }
+
+    .admin-table tr:hover td { background: rgba(255,255,255,.02); }
+
+    .admin-table .actions { display: flex; gap: 6px; }
+
+    .badge-green { background: rgba(34,197,94,.1); color: var(--cg-green); border-color: rgba(34,197,94,.2); }
+    .badge-red { background: rgba(239,68,68,.1); color: var(--cg-red); border-color: rgba(239,68,68,.2); }
+    .badge-gold { background: var(--cg-gold-glow); color: var(--cg-gold); border-color: rgba(212,168,67,.2); }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.7);
+      z-index: 200;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-overlay.open { display: flex; }
+
+    .modal-card {
+      background: var(--cg-surface);
+      border: 1px solid var(--cg-border);
+      border-radius: var(--cg-radius-lg);
+      padding: 32px;
+      width: 100%;
+      max-width: 520px;
+      max-height: 90vh;
+      overflow-y: auto;
+      position: relative;
+    }
+
+    .modal-card h3 {
+      font-size: 20px;
+      font-weight: 800;
+      margin-bottom: 24px;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 32px;
+      height: 32px;
+      border-radius: var(--cg-radius-sm);
+      background: transparent;
+      border: 1px solid var(--cg-border);
+      color: var(--cg-text-secondary);
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-close:hover { border-color: var(--cg-border-hover); color: var(--cg-text); }
+
+    .form-group { margin-bottom: 16px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .toggle-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 0;
+    }
+
+    .toggle {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      background: var(--cg-surface-3);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background var(--cg-transition);
+    }
+
+    .toggle.active { background: var(--cg-gold); }
+
+    .toggle::after {
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #fff;
+      transition: transform var(--cg-transition);
+    }
+
+    .toggle.active::after { transform: translateX(20px); }
+
+    .msg { padding: 12px 16px; border-radius: var(--cg-radius-sm); margin-bottom: 16px; font-size: 14px; font-weight: 600; }
+    .msg-error { background: rgba(239,68,68,.1); color: var(--cg-red); border: 1px solid rgba(239,68,68,.2); }
+    .msg-success { background: rgba(34,197,94,.1); color: var(--cg-green); border: 1px solid rgba(34,197,94,.2); }
+
+    .loading-spinner {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 48px;
+      color: var(--cg-text-muted);
+      font-size: 14px;
+    }
+
+    .copy-link {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--cg-surface-2);
+      padding: 8px 12px;
+      border-radius: var(--cg-radius-sm);
+      font-size: 13px;
+      color: var(--cg-text-secondary);
+      word-break: break-all;
+    }
+
+    .copy-link button {
+      flex-shrink: 0;
+      padding: 4px 10px;
+      background: var(--cg-gold);
+      color: var(--cg-black);
+      border: none;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .access-denied {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      text-align: center;
+      padding: 40px;
+    }
+
+    .access-denied h1 { font-size: 32px; margin-bottom: 12px; }
+    .access-denied p { color: var(--cg-text-secondary); margin-bottom: 24px; }
+
+    select.input {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%2371717a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 36px;
+    }
   </style>
-
 </head>
-<body class="with-dock">
-  <main class="container">
-    <section class="card">
-      <h1 class="display" style="font-size:26px;">Admin Portal</h1>
-      <p class="muted">Restricted access. Use the scanner to check in guests.</p>
-      <div style="display:grid; gap:10px; margin-top:10px;">
-        <a href="scanner.html" class="button button--primary">Open Scanner</a>
-        <a href="analytics.html" class="button button--ghost">Analytics</a>
-      </div>
-    </section>
-  </main>
+<body class="page-padded">
 
-  <footer class="footer footer--stack">
-    <div class="footer__share"><img src="assets/Icons/share-online.png" alt="Share Online" /></div>
-    <div class="footer__icons">
-      <!-- Replace text abbreviations with actual social platform logos -->
-      <a href="https://www.instagram.com/?url=https%3A%2F%2Fcannagrudge.com" target="_blank" data-share="instagram" title="Share on Instagram"><img src="assets/Icons/instagram.png" alt="Instagram" /></a>
-      <a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fcannagrudge.com" target="_blank" data-share="facebook" title="Share on Facebook"><img src="assets/Icons/facebook.png" alt="Facebook" /></a>
-      <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fcannagrudge.com" target="_blank" data-share="twitter" title="Share on X"><img src="assets/Icons/twitter.png" alt="X" /></a>
-      <a href="https://www.snapchat.com/share?link=https%3A%2F%2Fcannagrudge.com" target="_blank" data-share="snapchat" title="Share on Snapchat"><img src="assets/Icons/snapchat.png" alt="Snapchat" /></a>
-      <a href="https://www.tiktok.com/" target="_blank" data-share="tiktok" title="Share on TikTok"><img src="assets/Icons/tik tok.png" alt="TikTok" /></a>
+  <div id="adminLoading" class="loading-spinner" style="min-height:100vh;">Loading...</div>
+
+  <div id="accessDenied" class="access-denied" style="display:none;">
+    <h1>Access Denied</h1>
+    <p>You do not have admin privileges to access this dashboard.</p>
+    <a href="index.html" class="btn btn-primary">Back to Site</a>
+  </div>
+
+  <div id="adminApp" style="display:none;">
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <div class="admin-wrap">
+      <aside class="admin-sidebar" id="adminSidebar">
+        <div class="admin-sidebar-header">
+          <h2>Canna<span>Grudge</span> Admin</h2>
+        </div>
+        <nav class="admin-sidebar-nav">
+          <button class="admin-nav-btn active" data-tab="dashboard">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            Dashboard
+          </button>
+          <button class="admin-nav-btn" data-tab="tickets">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a3 3 0 010-6h20a3 3 0 010 6"/><path d="M2 15a3 3 0 000 6h20a3 3 0 000-6"/><path d="M2 9v6"/><path d="M22 9v6"/></svg>
+            Tickets
+          </button>
+          <button class="admin-nav-btn" data-tab="orders">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+            Orders
+          </button>
+          <button class="admin-nav-btn" data-tab="promos">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg>
+            Promo Codes
+          </button>
+          <button class="admin-nav-btn" data-tab="sponsors">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+            Sponsors
+          </button>
+          <button class="admin-nav-btn" data-tab="invoices">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            Invoices
+          </button>
+          <button class="admin-nav-btn" data-tab="purchase-links">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+            Purchase Links
+          </button>
+          <button class="admin-nav-btn" data-tab="admins">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Admins
+          </button>
+        </nav>
+        <div class="admin-sidebar-footer">
+          <a href="index.html">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            Back to Site
+          </a>
+          <button id="signOutBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Sign Out
+          </button>
+        </div>
+      </aside>
+
+      <main class="admin-main">
+        <div class="admin-main-header">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <button class="mobile-menu-toggle" id="mobileMenuToggle">☰</button>
+            <h1 id="pageTitle">Dashboard</h1>
+          </div>
+        </div>
+
+        <div id="globalMsg"></div>
+
+        <div id="tab-dashboard" class="tab-content active">
+          <div class="stats-grid" id="statsGrid">
+            <div class="card stat-card"><div class="stat-value" id="statOrders">—</div><div class="stat-label">Total Orders</div></div>
+            <div class="card stat-card"><div class="stat-value" id="statRevenue">—</div><div class="stat-label">Revenue</div></div>
+            <div class="card stat-card"><div class="stat-value" id="statTickets">—</div><div class="stat-label">Tickets Sold</div></div>
+            <div class="card stat-card"><div class="stat-value" id="statSponsors">—</div><div class="stat-label">Pending Sponsors</div></div>
+          </div>
+          <div class="card" id="tierStatsCard" style="margin-top:16px;"></div>
+        </div>
+
+        <div id="tab-tickets" class="tab-content">
+          <div style="margin-bottom:16px;"><button class="btn btn-primary btn-sm" id="addTicketBtn">+ Add Ticket Tier</button></div>
+          <div class="admin-table-wrap"><table class="admin-table" id="ticketsTable"><thead><tr><th>Name</th><th>Price</th><th>Capacity</th><th>Sold</th><th>Active</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
+        </div>
+
+        <div id="tab-orders" class="tab-content">
+          <div class="admin-table-wrap"><table class="admin-table" id="ordersTable"><thead><tr><th>#</th><th>Date</th><th>Customer</th><th>Email</th><th>Items</th><th>Total</th><th>Discount</th><th>Promo</th><th>Status</th></tr></thead><tbody></tbody></table></div>
+        </div>
+
+        <div id="tab-promos" class="tab-content">
+          <div style="margin-bottom:16px;"><button class="btn btn-primary btn-sm" id="addPromoBtn">+ Create Promo</button></div>
+          <div class="admin-table-wrap"><table class="admin-table" id="promosTable"><thead><tr><th>Code</th><th>Type</th><th>Amount</th><th>Max Uses</th><th>Used</th><th>Status</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
+        </div>
+
+        <div id="tab-sponsors" class="tab-content">
+          <div class="admin-table-wrap"><table class="admin-table" id="sponsorsTable"><thead><tr><th>Company</th><th>Contact</th><th>Email</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
+        </div>
+
+        <div id="tab-invoices" class="tab-content">
+          <div style="margin-bottom:16px;"><button class="btn btn-primary btn-sm" id="addInvoiceBtn">+ Create Invoice</button></div>
+          <div class="admin-table-wrap"><table class="admin-table" id="invoicesTable"><thead><tr><th>#</th><th>Recipient</th><th>Company</th><th>Amount</th><th>Status</th><th>Due Date</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
+        </div>
+
+        <div id="tab-purchase-links" class="tab-content">
+          <div style="margin-bottom:16px;"><button class="btn btn-primary btn-sm" id="addPurchaseLinkBtn">+ Create Purchase Link</button></div>
+          <div class="admin-table-wrap"><table class="admin-table" id="purchaseLinksTable"><thead><tr><th>Email</th><th>Ticket Tier</th><th>Qty</th><th>Promo</th><th>Expires</th><th>Used</th><th>Link</th></tr></thead><tbody></tbody></table></div>
+        </div>
+
+        <div id="tab-admins" class="tab-content">
+          <h3 style="margin-bottom:16px;">Current Admins</h3>
+          <div class="admin-table-wrap"><table class="admin-table" id="adminsTable"><thead><tr><th>Name</th><th>Email</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
+          <div style="margin:32px 0 16px;display:flex;align-items:center;gap:16px;">
+            <h3>Pending Invites</h3>
+            <button class="btn btn-primary btn-sm" id="inviteAdminBtn">+ Invite Admin</button>
+          </div>
+          <div class="admin-table-wrap"><table class="admin-table" id="invitesTable"><thead><tr><th>Email</th><th>Expires</th><th>Status</th></tr></thead><tbody></tbody></table></div>
+        </div>
+      </main>
     </div>
-    <!-- Simplified site map: only the key pages are linked -->
-    <div class="footer__links">
-      <a href="event.html#info">Event Info</a>
-      <a href="event.html#vendors">Vendors</a>
-      <a href="event.html#tickets">Tickets</a>
-      <a href="tos.html">Terms &amp; Conditions</a>
-      <a href="privacy.html">Privacy Policy</a>
+  </div>
+
+  <div class="modal-overlay" id="ticketModal">
+    <div class="modal-card">
+      <button class="modal-close" onclick="closeModal('ticketModal')">&times;</button>
+      <h3 id="ticketModalTitle">Add Ticket Tier</h3>
+      <form id="ticketForm">
+        <input type="hidden" id="ticketId">
+        <div class="form-group"><label class="label">Name</label><input class="input" id="ticketName" required></div>
+        <div class="form-row">
+          <div class="form-group"><label class="label">Price ($)</label><input class="input" type="number" step="0.01" min="0" id="ticketPrice" required></div>
+          <div class="form-group"><label class="label">Capacity</label><input class="input" type="number" min="0" id="ticketCapacity" value="0"></div>
+        </div>
+        <div class="form-group"><label class="label">Description</label><input class="input" id="ticketDesc"></div>
+        <div class="form-group"><label class="label">Features (one per line)</label><textarea class="input" id="ticketFeatures" rows="4"></textarea></div>
+        <div class="form-row">
+          <div class="form-group"><label class="label">Sort Order</label><input class="input" type="number" id="ticketSort" value="0"></div>
+          <div class="form-group">
+            <label class="label">Active</label>
+            <div class="toggle-wrap"><div class="toggle active" id="ticketActive" data-val="true"></div><span id="ticketActiveLabel" style="font-size:13px;color:var(--cg-text-secondary);">Yes</span></div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="label">Sale Start</label><input class="input" type="datetime-local" id="ticketSaleStart"></div>
+          <div class="form-group"><label class="label">Sale End</label><input class="input" type="datetime-local" id="ticketSaleEnd"></div>
+        </div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:24px;">
+          <button type="button" class="btn btn-ghost" onclick="closeModal('ticketModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
     </div>
-    <div class="footer__legal">© CannaGrudge. All rights reserved.</div>
-  </footer>
+  </div>
 
-  <dialog id="loginModal" style="border:none; border-radius:16px; padding:0; width: 92vw; max-width:420px;">
-    <div class="card" style="border:none;">
-      <h2 class="display" style="margin-bottom:8px;">Sign in</h2>
-      <p class="muted" style="margin:0 0 12px;">Fast login to save your tickets.</p>
-      <div style="display:grid; gap:10px; margin-bottom:12px;">
-        <button class="button button--primary" style="background:#000; color:#fff;">Continue with Apple</button>
-        <button class="button button--primary" style="background:#0F9D58; color:#fff;">Continue with Google</button>
-        <button class="button button--ghost">Continue with Email</button>
-      </div>
-      <div style="display:flex; justify-content:flex-end; gap:8px;">
-        <button class="button button--ghost" data-close-modal>Close</button>
-      </div>
+  <div class="modal-overlay" id="promoModal">
+    <div class="modal-card">
+      <button class="modal-close" onclick="closeModal('promoModal')">&times;</button>
+      <h3 id="promoModalTitle">Create Promo Code</h3>
+      <form id="promoForm">
+        <input type="hidden" id="promoId">
+        <div class="form-group"><label class="label">Code</label><input class="input" id="promoCode" required style="text-transform:uppercase;"></div>
+        <div class="form-row">
+          <div class="form-group"><label class="label">Type</label><select class="input" id="promoType"><option value="percent">Percent</option><option value="fixed">Fixed ($)</option></select></div>
+          <div class="form-group"><label class="label">Amount</label><input class="input" type="number" min="0" id="promoAmount" required></div>
+        </div>
+        <div class="form-group"><label class="label">Max Uses (0 = unlimited)</label><input class="input" type="number" min="0" id="promoMaxUses" value="0"></div>
+        <div class="form-row">
+          <div class="form-group"><label class="label">Start Date</label><input class="input" type="datetime-local" id="promoStart"></div>
+          <div class="form-group"><label class="label">End Date</label><input class="input" type="datetime-local" id="promoEnd"></div>
+        </div>
+        <div class="form-group">
+          <label class="label">Active</label>
+          <div class="toggle-wrap"><div class="toggle active" id="promoActive" data-val="true"></div><span id="promoActiveLabel" style="font-size:13px;color:var(--cg-text-secondary);">Yes</span></div>
+        </div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:24px;">
+          <button type="button" class="btn btn-ghost" onclick="closeModal('promoModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
     </div>
-  </dialog>
+  </div>
 
-  <script src="app.js"></script>
+  <div class="modal-overlay" id="invoiceModal">
+    <div class="modal-card">
+      <button class="modal-close" onclick="closeModal('invoiceModal')">&times;</button>
+      <h3 id="invoiceModalTitle">Create Invoice</h3>
+      <form id="invoiceForm">
+        <input type="hidden" id="invoiceId">
+        <div class="form-row">
+          <div class="form-group"><label class="label">Recipient Name</label><input class="input" id="invoiceRecipient" required></div>
+          <div class="form-group"><label class="label">Email</label><input class="input" type="email" id="invoiceEmail" required></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="label">Company</label><input class="input" id="invoiceCompany"></div>
+          <div class="form-group"><label class="label">Amount ($)</label><input class="input" type="number" step="0.01" min="0" id="invoiceAmount" required></div>
+        </div>
+        <div class="form-group"><label class="label">Description</label><textarea class="input" id="invoiceDescription" rows="3"></textarea></div>
+        <div class="form-group"><label class="label">Due Date</label><input class="input" type="date" id="invoiceDueDate"></div>
+        <div class="form-group"><label class="label">Notes</label><textarea class="input" id="invoiceNotes" rows="2"></textarea></div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:24px;">
+          <button type="button" class="btn btn-ghost" onclick="closeModal('invoiceModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
-  <!-- Fixed bottom CTA dock left as-is -->
+  <div class="modal-overlay" id="purchaseLinkModal">
+    <div class="modal-card">
+      <button class="modal-close" onclick="closeModal('purchaseLinkModal')">&times;</button>
+      <h3>Create Purchase Link</h3>
+      <form id="purchaseLinkForm">
+        <div class="form-group"><label class="label">Email</label><input class="input" type="email" id="plEmail" required></div>
+        <div class="form-group"><label class="label">Ticket Tier</label><select class="input" id="plTier" required></select></div>
+        <div class="form-row">
+          <div class="form-group"><label class="label">Quantity</label><input class="input" type="number" min="1" value="1" id="plQty"></div>
+          <div class="form-group"><label class="label">Expires In (days)</label><input class="input" type="number" min="1" value="7" id="plExpires"></div>
+        </div>
+        <div class="form-group"><label class="label">Promo Code (optional)</label><input class="input" id="plPromo"></div>
+        <div id="plResult" style="margin-top:16px;"></div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:24px;">
+          <button type="button" class="btn btn-ghost" onclick="closeModal('purchaseLinkModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
-  <nav class="bottom-nav">
-    <a href="event.html">Event Info</a>
-    <a href="index.html" class="home" aria-label="Home">
-      <img src="assets/Icons/home.png" alt="Home" width="22" height="22" />
-      <span class="sr-only">Home</span>
-    </a>
-    <a href="dashboard.html">Dashboard</a>
-  </nav>
+  <div class="modal-overlay" id="inviteModal">
+    <div class="modal-card">
+      <button class="modal-close" onclick="closeModal('inviteModal')">&times;</button>
+      <h3>Invite Admin</h3>
+      <form id="inviteForm">
+        <div class="form-group"><label class="label">Email Address</label><input class="input" type="email" id="inviteEmail" required></div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:24px;">
+          <button type="button" class="btn btn-ghost" onclick="closeModal('inviteModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Send Invite</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
+  <script src="firebase-config.js" type="module"></script>
+  <script src="app.js?v=2"></script>
+  <script type="module">
+    const { auth, onAuthStateChanged, signOut } = window.__cgAuth || {};
+
+    const $ = id => document.getElementById(id);
+
+    function waitForAuth() {
+      return new Promise(resolve => {
+        if (window.__cgAuth) return resolve();
+        const iv = setInterval(() => { if (window.__cgAuth) { clearInterval(iv); resolve(); } }, 50);
+        setTimeout(() => { clearInterval(iv); resolve(); }, 5000);
+      });
+    }
+
+    async function getToken() {
+      const u = window.__cgAuth?.auth?.currentUser;
+      if (!u) return null;
+      return u.getIdToken();
+    }
+
+    async function apiFetch(url, opts = {}) {
+      const token = await getToken();
+      if (!token) throw new Error('Not authenticated');
+      const headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', ...(opts.headers || {}) };
+      const res = await fetch(url, { ...opts, headers });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Request failed');
+      return data;
+    }
+
+    function fmtMoney(cents) { return '$' + (Number(cents || 0) / 100).toFixed(2); }
+
+    function fmtDate(d) {
+      if (!d) return '—';
+      const dt = new Date(d);
+      if (isNaN(dt)) return d;
+      return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+
+    function fmtDateTime(d) {
+      if (!d) return '—';
+      const dt = new Date(d);
+      if (isNaN(dt)) return d;
+      return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
+    }
+
+    function statusBadge(status) {
+      const cls = status === 'completed' || status === 'paid' || status === 'approved' ? 'badge-green' : status === 'refunded' || status === 'denied' ? 'badge-red' : 'badge-gold';
+      return `<span class="badge ${cls}">${status}</span>`;
+    }
+
+    function showMsg(msg, type = 'success') {
+      const el = $('globalMsg');
+      el.innerHTML = `<div class="msg msg-${type}">${msg}</div>`;
+      if (type === 'success') setTimeout(() => { el.innerHTML = ''; }, 3000);
+    }
+
+    window.closeModal = function(id) { $(id).classList.remove('open'); };
+    function openModal(id) { $(id).classList.add('open'); }
+
+    document.querySelectorAll('.toggle').forEach(t => {
+      t.addEventListener('click', () => {
+        const active = t.classList.toggle('active');
+        t.dataset.val = active;
+        const labelEl = t.nextElementSibling;
+        if (labelEl) labelEl.textContent = active ? 'Yes' : 'No';
+      });
+    });
+
+    const tabs = document.querySelectorAll('.admin-nav-btn[data-tab]');
+    const tabTitles = { dashboard: 'Dashboard', tickets: 'Tickets', orders: 'Orders', promos: 'Promo Codes', sponsors: 'Sponsors', invoices: 'Invoices', 'purchase-links': 'Purchase Links', admins: 'Admins' };
+
+    tabs.forEach(btn => {
+      btn.addEventListener('click', () => {
+        tabs.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+        const tabId = btn.dataset.tab;
+        $('tab-' + tabId).classList.add('active');
+        $('pageTitle').textContent = tabTitles[tabId] || tabId;
+        loadTab(tabId);
+        $('adminSidebar').classList.remove('open');
+        $('sidebarOverlay').classList.remove('open');
+      });
+    });
+
+    $('mobileMenuToggle').addEventListener('click', () => {
+      $('adminSidebar').classList.add('open');
+      $('sidebarOverlay').classList.add('open');
+    });
+
+    $('sidebarOverlay').addEventListener('click', () => {
+      $('adminSidebar').classList.remove('open');
+      $('sidebarOverlay').classList.remove('open');
+    });
+
+    $('signOutBtn').addEventListener('click', async () => {
+      try {
+        await window.__cgAuth.signOut(window.__cgAuth.auth);
+        localStorage.clear();
+        location.href = 'index.html';
+      } catch (e) {}
+    });
+
+    async function loadTab(tab) {
+      try {
+        if (tab === 'dashboard') await loadDashboard();
+        else if (tab === 'tickets') await loadTickets();
+        else if (tab === 'orders') await loadOrders();
+        else if (tab === 'promos') await loadPromos();
+        else if (tab === 'sponsors') await loadSponsors();
+        else if (tab === 'invoices') await loadInvoices();
+        else if (tab === 'purchase-links') await loadPurchaseLinks();
+        else if (tab === 'admins') await loadAdmins();
+      } catch (e) {
+        showMsg(e.message, 'error');
+      }
+    }
+
+    async function loadDashboard() {
+      const data = await apiFetch('/api/admin/stats');
+      $('statOrders').textContent = data.orders || 0;
+      $('statRevenue').textContent = fmtMoney(data.revenue);
+      $('statTickets').textContent = data.tickets_sold || 0;
+      $('statSponsors').textContent = data.pending_sponsors || 0;
+      if (data.tiers && data.tiers.length) {
+        $('tierStatsCard').innerHTML = '<h3 style="font-size:16px;font-weight:800;margin-bottom:16px;">Ticket Tiers</h3>' +
+          data.tiers.map(t => {
+            const pct = t.capacity > 0 ? Math.round(t.sold / t.capacity * 100) : 0;
+            return `<div style="margin-bottom:12px;"><div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:14px;"><span>${t.name}</span><span style="color:var(--cg-text-muted);">${t.sold}/${t.capacity || '∞'}</span></div><div style="height:6px;background:var(--cg-surface-3);border-radius:3px;overflow:hidden;"><div style="height:100%;background:var(--cg-gold);width:${t.capacity > 0 ? pct : 0}%;border-radius:3px;"></div></div></div>`;
+          }).join('');
+      } else {
+        $('tierStatsCard').innerHTML = '<p style="color:var(--cg-text-muted);font-size:14px;">No active ticket tiers</p>';
+      }
+    }
+
+    let ticketTiers = [];
+
+    async function loadTickets() {
+      const data = await apiFetch('/api/admin/tickets');
+      ticketTiers = data;
+      const tbody = $('ticketsTable').querySelector('tbody');
+      if (!data.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--cg-text-muted);padding:32px;">No ticket tiers</td></tr>'; return; }
+      tbody.innerHTML = data.map(t => `<tr>
+        <td style="color:var(--cg-text);font-weight:600;">${t.name}</td>
+        <td>${fmtMoney(t.price_cents)}</td>
+        <td>${t.capacity || '∞'}</td>
+        <td>${t.sold || 0}</td>
+        <td>${t.active ? statusBadge('active') : '<span class="badge badge-red">inactive</span>'}</td>
+        <td><div class="actions"><button class="btn btn-ghost btn-sm" onclick="editTicket(${t.id})">Edit</button><button class="btn btn-ghost btn-sm" style="color:var(--cg-red);" onclick="deleteTicket(${t.id})">Delete</button></div></td>
+      </tr>`).join('');
+    }
+
+    $('addTicketBtn').addEventListener('click', () => {
+      $('ticketModalTitle').textContent = 'Add Ticket Tier';
+      $('ticketForm').reset();
+      $('ticketId').value = '';
+      const tog = $('ticketActive');
+      tog.classList.add('active');
+      tog.dataset.val = 'true';
+      tog.nextElementSibling.textContent = 'Yes';
+      openModal('ticketModal');
+    });
+
+    window.editTicket = function(id) {
+      const t = ticketTiers.find(x => x.id === id);
+      if (!t) return;
+      $('ticketModalTitle').textContent = 'Edit Ticket Tier';
+      $('ticketId').value = t.id;
+      $('ticketName').value = t.name;
+      $('ticketPrice').value = (t.price_cents / 100).toFixed(2);
+      $('ticketCapacity').value = t.capacity || 0;
+      $('ticketDesc').value = t.description || '';
+      $('ticketFeatures').value = (t.features || []).join('\n');
+      $('ticketSort').value = t.sort_order || 0;
+      const tog = $('ticketActive');
+      if (t.active) { tog.classList.add('active'); tog.dataset.val = 'true'; tog.nextElementSibling.textContent = 'Yes'; }
+      else { tog.classList.remove('active'); tog.dataset.val = 'false'; tog.nextElementSibling.textContent = 'No'; }
+      $('ticketSaleStart').value = t.sale_start ? t.sale_start.slice(0, 16) : '';
+      $('ticketSaleEnd').value = t.sale_end ? t.sale_end.slice(0, 16) : '';
+      openModal('ticketModal');
+    };
+
+    window.deleteTicket = async function(id) {
+      if (!confirm('Delete this ticket tier?')) return;
+      try {
+        await apiFetch(`/api/admin/tickets/${id}`, { method: 'DELETE' });
+        showMsg('Ticket tier deleted');
+        loadTickets();
+      } catch (e) { showMsg(e.message, 'error'); }
+    };
+
+    $('ticketForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = $('ticketId').value;
+      const body = {
+        name: $('ticketName').value,
+        price_cents: Math.round(parseFloat($('ticketPrice').value) * 100),
+        description: $('ticketDesc').value,
+        features: $('ticketFeatures').value.split('\n').filter(f => f.trim()),
+        capacity: parseInt($('ticketCapacity').value) || 0,
+        sort_order: parseInt($('ticketSort').value) || 0,
+        active: $('ticketActive').dataset.val === 'true',
+        sale_start: $('ticketSaleStart').value || null,
+        sale_end: $('ticketSaleEnd').value || null
+      };
+      try {
+        if (id) await apiFetch(`/api/admin/tickets/${id}`, { method: 'PUT', body: JSON.stringify(body) });
+        else await apiFetch('/api/admin/tickets', { method: 'POST', body: JSON.stringify(body) });
+        closeModal('ticketModal');
+        showMsg(id ? 'Ticket updated' : 'Ticket created');
+        loadTickets();
+      } catch (e) { showMsg(e.message, 'error'); }
+    });
+
+    async function loadOrders() {
+      const data = await apiFetch('/api/admin/orders');
+      const tbody = $('ordersTable').querySelector('tbody');
+      if (!data.length) { tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--cg-text-muted);padding:32px;">No orders</td></tr>'; return; }
+      tbody.innerHTML = data.map(o => {
+        const items = (o.items || []).map(i => `${i.qty}x ${i.tier_name}`).join(', ');
+        return `<tr>
+          <td style="color:var(--cg-text);font-weight:600;">${o.id}</td>
+          <td>${fmtDateTime(o.created_at)}</td>
+          <td>${o.name || '—'}</td>
+          <td>${o.email || '—'}</td>
+          <td>${items || '—'}</td>
+          <td>${fmtMoney(o.total_cents)}</td>
+          <td>${o.discount_cents ? fmtMoney(o.discount_cents) : '—'}</td>
+          <td>${o.promo_code || '—'}</td>
+          <td>${statusBadge(o.status)}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    async function loadPromos() {
+      const data = await apiFetch('/api/admin/promos');
+      const tbody = $('promosTable').querySelector('tbody');
+      if (!data.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--cg-text-muted);padding:32px;">No promo codes</td></tr>'; return; }
+      tbody.innerHTML = data.map(p => `<tr>
+        <td style="color:var(--cg-text);font-weight:600;">${p.code}</td>
+        <td>${p.discount_type}</td>
+        <td>${p.discount_type === 'percent' ? p.discount_amount + '%' : fmtMoney(p.discount_amount)}</td>
+        <td>${p.max_uses || '∞'}</td>
+        <td>${p.uses || 0}</td>
+        <td>${p.active ? statusBadge('active') : '<span class="badge badge-red">inactive</span>'}</td>
+        <td><div class="actions"><button class="btn btn-ghost btn-sm" onclick="editPromo(${p.id})">Edit</button><button class="btn btn-ghost btn-sm" style="color:var(--cg-red);" onclick="deletePromo(${p.id})">Delete</button></div></td>
+      </tr>`).join('');
+      window._promos = data;
+    }
+
+    $('addPromoBtn').addEventListener('click', () => {
+      $('promoModalTitle').textContent = 'Create Promo Code';
+      $('promoForm').reset();
+      $('promoId').value = '';
+      const tog = $('promoActive');
+      tog.classList.add('active');
+      tog.dataset.val = 'true';
+      tog.nextElementSibling.textContent = 'Yes';
+      openModal('promoModal');
+    });
+
+    window.editPromo = function(id) {
+      const p = (window._promos || []).find(x => x.id === id);
+      if (!p) return;
+      $('promoModalTitle').textContent = 'Edit Promo Code';
+      $('promoId').value = p.id;
+      $('promoCode').value = p.code;
+      $('promoType').value = p.discount_type;
+      $('promoAmount').value = p.discount_type === 'fixed' ? (p.discount_amount / 100).toFixed(2) : p.discount_amount;
+      $('promoMaxUses').value = p.max_uses || 0;
+      $('promoStart').value = p.starts_at ? p.starts_at.slice(0, 16) : '';
+      $('promoEnd').value = p.ends_at ? p.ends_at.slice(0, 16) : '';
+      const tog = $('promoActive');
+      if (p.active) { tog.classList.add('active'); tog.dataset.val = 'true'; tog.nextElementSibling.textContent = 'Yes'; }
+      else { tog.classList.remove('active'); tog.dataset.val = 'false'; tog.nextElementSibling.textContent = 'No'; }
+      openModal('promoModal');
+    };
+
+    window.deletePromo = async function(id) {
+      if (!confirm('Delete this promo code?')) return;
+      try {
+        await apiFetch(`/api/admin/promos/${id}`, { method: 'DELETE' });
+        showMsg('Promo deleted');
+        loadPromos();
+      } catch (e) { showMsg(e.message, 'error'); }
+    };
+
+    $('promoForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = $('promoId').value;
+      const type = $('promoType').value;
+      const body = {
+        code: $('promoCode').value,
+        discount_type: type,
+        discount_amount: type === 'fixed' ? Math.round(parseFloat($('promoAmount').value) * 100) : parseInt($('promoAmount').value),
+        max_uses: parseInt($('promoMaxUses').value) || 0,
+        starts_at: $('promoStart').value || null,
+        ends_at: $('promoEnd').value || null,
+        active: $('promoActive').dataset.val === 'true'
+      };
+      try {
+        if (id) await apiFetch(`/api/admin/promos/${id}`, { method: 'PUT', body: JSON.stringify(body) });
+        else await apiFetch('/api/admin/promos', { method: 'POST', body: JSON.stringify(body) });
+        closeModal('promoModal');
+        showMsg(id ? 'Promo updated' : 'Promo created');
+        loadPromos();
+      } catch (e) { showMsg(e.message, 'error'); }
+    });
+
+    async function loadSponsors() {
+      const data = await apiFetch('/api/admin/sponsors');
+      const tbody = $('sponsorsTable').querySelector('tbody');
+      if (!data.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--cg-text-muted);padding:32px;">No sponsor requests</td></tr>'; return; }
+      tbody.innerHTML = data.map(s => {
+        let actions = '';
+        if (s.status === 'pending') {
+          actions = `<div class="actions"><button class="btn btn-primary btn-sm" onclick="approveSponsor(${s.id})">Approve</button><button class="btn btn-ghost btn-sm" style="color:var(--cg-red);" onclick="denySponsor(${s.id})">Deny</button></div>`;
+        } else if (s.status === 'approved' && s.deck_token) {
+          actions = `<div class="copy-link"><span>/deck.html?token=${s.deck_token}</span><button onclick="copyText('/deck.html?token=${s.deck_token}')">Copy</button></div>`;
+        } else {
+          actions = '—';
+        }
+        return `<tr>
+          <td style="color:var(--cg-text);font-weight:600;">${s.company}</td>
+          <td>${s.contact_name}</td>
+          <td>${s.email}</td>
+          <td>${statusBadge(s.status)}</td>
+          <td>${fmtDate(s.created_at)}</td>
+          <td>${actions}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    window.approveSponsor = async function(id) {
+      try {
+        const res = await apiFetch(`/api/admin/sponsors/${id}/approve`, { method: 'POST' });
+        showMsg('Sponsor approved');
+        loadSponsors();
+      } catch (e) { showMsg(e.message, 'error'); }
+    };
+
+    window.denySponsor = async function(id) {
+      if (!confirm('Deny this sponsor request?')) return;
+      try {
+        await apiFetch(`/api/admin/sponsors/${id}/deny`, { method: 'POST' });
+        showMsg('Sponsor denied');
+        loadSponsors();
+      } catch (e) { showMsg(e.message, 'error'); }
+    };
+
+    window.copyText = function(text) {
+      navigator.clipboard.writeText(location.origin + text).then(() => showMsg('Copied to clipboard'));
+    };
+
+    async function loadInvoices() {
+      const data = await apiFetch('/api/admin/invoices');
+      window._invoices = data;
+      const tbody = $('invoicesTable').querySelector('tbody');
+      if (!data.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--cg-text-muted);padding:32px;">No invoices</td></tr>'; return; }
+      tbody.innerHTML = data.map(inv => {
+        let actions = `<div class="actions">`;
+        if (inv.status === 'draft') actions += `<button class="btn btn-ghost btn-sm" onclick="editInvoice(${inv.id})">Edit</button><button class="btn btn-primary btn-sm" onclick="sendInvoice(${inv.id})">Send</button>`;
+        if (inv.status === 'sent') actions += `<button class="btn btn-primary btn-sm" onclick="markInvoicePaid(${inv.id})">Mark Paid</button>`;
+        if (inv.view_token) actions += `<a href="/invoice.html?token=${inv.view_token}" target="_blank" class="btn btn-ghost btn-sm">View</a>`;
+        actions += `</div>`;
+        return `<tr>
+          <td style="color:var(--cg-text);font-weight:600;">${inv.id}</td>
+          <td>${inv.recipient_name}</td>
+          <td>${inv.company || '—'}</td>
+          <td>${fmtMoney(inv.amount_cents)}</td>
+          <td>${statusBadge(inv.status)}</td>
+          <td>${fmtDate(inv.due_date)}</td>
+          <td>${actions}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    $('addInvoiceBtn').addEventListener('click', () => {
+      $('invoiceModalTitle').textContent = 'Create Invoice';
+      $('invoiceForm').reset();
+      $('invoiceId').value = '';
+      openModal('invoiceModal');
+    });
+
+    window.editInvoice = function(id) {
+      const inv = (window._invoices || []).find(x => x.id === id);
+      if (!inv) return;
+      $('invoiceModalTitle').textContent = 'Edit Invoice';
+      $('invoiceId').value = inv.id;
+      $('invoiceRecipient').value = inv.recipient_name;
+      $('invoiceEmail').value = inv.recipient_email;
+      $('invoiceCompany').value = inv.company || '';
+      $('invoiceAmount').value = (inv.amount_cents / 100).toFixed(2);
+      $('invoiceDescription').value = inv.description || '';
+      $('invoiceDueDate').value = inv.due_date ? inv.due_date.slice(0, 10) : '';
+      $('invoiceNotes').value = inv.notes || '';
+      openModal('invoiceModal');
+    };
+
+    $('invoiceForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = $('invoiceId').value;
+      const body = {
+        recipient_name: $('invoiceRecipient').value,
+        recipient_email: $('invoiceEmail').value,
+        company: $('invoiceCompany').value,
+        amount_cents: Math.round(parseFloat($('invoiceAmount').value) * 100),
+        description: $('invoiceDescription').value,
+        due_date: $('invoiceDueDate').value || null,
+        notes: $('invoiceNotes').value,
+        status: 'draft'
+      };
+      try {
+        if (id) await apiFetch(`/api/admin/invoices/${id}`, { method: 'PUT', body: JSON.stringify(body) });
+        else await apiFetch('/api/admin/invoices', { method: 'POST', body: JSON.stringify(body) });
+        closeModal('invoiceModal');
+        showMsg(id ? 'Invoice updated' : 'Invoice created');
+        loadInvoices();
+      } catch (e) { showMsg(e.message, 'error'); }
+    });
+
+    window.sendInvoice = async function(id) {
+      try {
+        await apiFetch(`/api/admin/invoices/${id}/send`, { method: 'POST' });
+        showMsg('Invoice sent');
+        loadInvoices();
+      } catch (e) { showMsg(e.message, 'error'); }
+    };
+
+    window.markInvoicePaid = async function(id) {
+      try {
+        await apiFetch(`/api/admin/invoices/${id}`, { method: 'PUT', body: JSON.stringify({ ...(window._invoices || []).find(x => x.id === id), status: 'paid', amount_cents: (window._invoices || []).find(x => x.id === id)?.amount_cents }) });
+        showMsg('Invoice marked as paid');
+        loadInvoices();
+      } catch (e) { showMsg(e.message, 'error'); }
+    };
+
+    async function loadPurchaseLinks() {
+      const data = await apiFetch('/api/admin/purchase-links');
+      const tbody = $('purchaseLinksTable').querySelector('tbody');
+      if (!data.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--cg-text-muted);padding:32px;">No purchase links</td></tr>'; return; }
+      tbody.innerHTML = data.map(l => `<tr>
+        <td>${l.email || '—'}</td>
+        <td>${l.tier_name || '—'}</td>
+        <td>${l.qty}</td>
+        <td>${l.promo_code || '—'}</td>
+        <td>${fmtDate(l.expires_at)}</td>
+        <td>${l.used_at ? '<span class="badge badge-green">Yes</span>' : '<span class="badge badge-gold">No</span>'}</td>
+        <td><div class="copy-link"><span>/tickets.html?invite=${l.token}</span><button onclick="copyText('/tickets.html?invite=${l.token}')">Copy</button></div></td>
+      </tr>`).join('');
+    }
+
+    $('addPurchaseLinkBtn').addEventListener('click', async () => {
+      $('purchaseLinkForm').reset();
+      $('plResult').innerHTML = '';
+      const tierSelect = $('plTier');
+      tierSelect.innerHTML = '<option value="">Loading...</option>';
+      openModal('purchaseLinkModal');
+      try {
+        const tiers = await apiFetch('/api/admin/tickets');
+        tierSelect.innerHTML = tiers.map(t => `<option value="${t.id}">${t.name} (${fmtMoney(t.price_cents)})</option>`).join('');
+      } catch (e) { tierSelect.innerHTML = '<option value="">Failed to load</option>'; }
+    });
+
+    $('purchaseLinkForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const body = {
+        email: $('plEmail').value,
+        tier_id: parseInt($('plTier').value),
+        qty: parseInt($('plQty').value) || 1,
+        promo_code: $('plPromo').value || null,
+        expires_days: parseInt($('plExpires').value) || 7
+      };
+      try {
+        const res = await apiFetch('/api/admin/purchase-links', { method: 'POST', body: JSON.stringify(body) });
+        const fullUrl = location.origin + res.url;
+        $('plResult').innerHTML = `<div class="msg msg-success">Link created!</div><div class="copy-link"><span>${fullUrl}</span><button onclick="navigator.clipboard.writeText('${fullUrl}');this.textContent='Copied!'">Copy</button></div>`;
+        loadPurchaseLinks();
+      } catch (e) { $('plResult').innerHTML = `<div class="msg msg-error">${e.message}</div>`; }
+    });
+
+    async function loadAdmins() {
+      const data = await apiFetch('/api/admin/admins');
+      const adminsBody = $('adminsTable').querySelector('tbody');
+      const invitesBody = $('invitesTable').querySelector('tbody');
+
+      if (!data.admins?.length) { adminsBody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--cg-text-muted);padding:32px;">No admins</td></tr>'; }
+      else {
+        adminsBody.innerHTML = data.admins.map(a => `<tr>
+          <td style="color:var(--cg-text);font-weight:600;">${a.name || '—'}</td>
+          <td>${a.email}</td>
+          <td><button class="btn btn-ghost btn-sm" style="color:var(--cg-red);" onclick="removeAdmin(${a.id})">Remove</button></td>
+        </tr>`).join('');
+      }
+
+      if (!data.invites?.length) { invitesBody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--cg-text-muted);padding:32px;">No pending invites</td></tr>'; }
+      else {
+        invitesBody.innerHTML = data.invites.map(i => {
+          const expired = new Date(i.expires_at) < new Date();
+          return `<tr>
+            <td>${i.email}</td>
+            <td>${fmtDateTime(i.expires_at)}</td>
+            <td>${expired ? '<span class="badge badge-red">expired</span>' : '<span class="badge badge-gold">pending</span>'}</td>
+          </tr>`;
+        }).join('');
+      }
+    }
+
+    $('inviteAdminBtn').addEventListener('click', () => {
+      $('inviteForm').reset();
+      openModal('inviteModal');
+    });
+
+    $('inviteForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        await apiFetch('/api/admin/admins/invite', { method: 'POST', body: JSON.stringify({ email: $('inviteEmail').value }) });
+        closeModal('inviteModal');
+        showMsg('Admin invite sent');
+        loadAdmins();
+      } catch (e) { showMsg(e.message, 'error'); }
+    });
+
+    window.removeAdmin = async function(id) {
+      if (!confirm('Remove this admin?')) return;
+      try {
+        await apiFetch(`/api/admin/admins/${id}/remove`, { method: 'POST' });
+        showMsg('Admin removed');
+        loadAdmins();
+      } catch (e) { showMsg(e.message, 'error'); }
+    };
+
+    async function init() {
+      await waitForAuth();
+      const authObj = window.__cgAuth;
+      if (!authObj) {
+        $('adminLoading').style.display = 'none';
+        $('accessDenied').style.display = 'flex';
+        return;
+      }
+
+      authObj.onAuthStateChanged(authObj.auth, async (user) => {
+        if (!user) {
+          $('adminLoading').style.display = 'none';
+          $('accessDenied').style.display = 'flex';
+          $('accessDenied').querySelector('p').textContent = 'Please sign in to access the admin dashboard.';
+          $('accessDenied').querySelector('a').href = 'login.html';
+          $('accessDenied').querySelector('a').textContent = 'Sign In';
+          return;
+        }
+
+        try {
+          const token = await user.getIdToken();
+          const res = await fetch('/api/admin/verify', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+          });
+          const data = await res.json();
+
+          if (!data.is_admin) {
+            $('adminLoading').style.display = 'none';
+            $('accessDenied').style.display = 'flex';
+            return;
+          }
+
+          $('adminLoading').style.display = 'none';
+          $('adminApp').style.display = 'block';
+          loadDashboard();
+        } catch (e) {
+          $('adminLoading').style.display = 'none';
+          $('accessDenied').style.display = 'flex';
+        }
+      });
+    }
+
+    init();
+  </script>
 </body>
 </html>

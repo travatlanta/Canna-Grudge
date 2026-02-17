@@ -157,8 +157,13 @@
     }
   </style>
 </head>
-<body class="with-dock">
-  <main class="deck-container">
+<body class="page-padded">
+  <div id="deckGate" style="max-width:500px;margin:120px auto;padding:0 20px;text-align:center;">
+    <h2 style="font-family:var(--cg-font-display,sans-serif);font-size:28px;font-weight:800;margin-bottom:12px;">Sponsorship Deck</h2>
+    <p id="gateMsg" style="color:var(--cg-text-secondary,#999);margin-bottom:24px;">Verifying access...</p>
+    <a href="sponsors.html" class="btn btn-primary" style="display:none;" id="gateRequestBtn">Request Access</a>
+  </div>
+  <main class="deck-container" id="deckMain" style="display:none;">
     <h1 data-animate>Sponsorship Deck</h1>
     <p data-animate>Swipe or use the controls to view the CannaGrudge sponsorship deck one page at a time.</p>
 
@@ -235,7 +240,41 @@
     </form>
   </main>
 
-  <script src="app.js"></script>
+  <script src="app.js?v=2"></script>
+  <script type="module" src="./firebase-config.js"></script>
+
+  <script>
+  (function() {
+    const params = new URLSearchParams(location.search);
+    const token = params.get('token');
+    const gate = document.getElementById('deckGate');
+    const main = document.getElementById('deckMain');
+    const msg = document.getElementById('gateMsg');
+    const reqBtn = document.getElementById('gateRequestBtn');
+
+    if (!token) {
+      msg.textContent = 'Access to the sponsorship deck requires a valid invitation link.';
+      reqBtn.style.display = '';
+      return;
+    }
+
+    fetch('/api/sponsors/deck-access?token=' + encodeURIComponent(token))
+      .then(r => r.json())
+      .then(data => {
+        if (data.access) {
+          gate.style.display = 'none';
+          main.style.display = '';
+        } else {
+          msg.textContent = data.error || 'Access denied. Your link may have expired.';
+          reqBtn.style.display = '';
+        }
+      })
+      .catch(() => {
+        msg.textContent = 'Could not verify access. Please try again.';
+        reqBtn.style.display = '';
+      });
+  })();
+  </script>
 
   <script>
   (function() {

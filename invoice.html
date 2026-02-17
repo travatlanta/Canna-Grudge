@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Invoice • CannaGrudge</title>
+  <link rel="stylesheet" href="theme.css">
+</head>
+<body class="page-padded">
+
+  <main style="min-height: calc(100vh - var(--cg-nav-height)); display: flex; align-items: center;">
+    <div class="container-sm">
+      <div class="card" style="max-width: 600px; margin: 0 auto; padding: 40px;">
+
+        <div id="invoiceLoading" style="text-align: center;">
+          <p class="text-secondary">Loading invoice...</p>
+        </div>
+
+        <div id="invoiceError" style="display: none;">
+          <p id="errorMessage" style="color: var(--cg-red); text-align: center;"></p>
+        </div>
+
+        <div id="invoiceContent" style="display: none;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="font-family: var(--cg-font-display); font-size: 24px; font-weight: 900;">Canna<span style="color: var(--cg-gold);">Grudge</span></div>
+            <div class="text-muted" style="font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em;">INVOICE</div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div style="display: flex; justify-content: space-between;">
+            <div>
+              <p class="label">Bill To</p>
+              <p id="invName" style="font-weight: 600;"></p>
+              <p id="invCompany" class="text-secondary" style="font-size: 14px;"></p>
+              <p id="invEmail" class="text-secondary" style="font-size: 14px;"></p>
+            </div>
+            <div style="text-align: right;">
+              <p style="font-size: 14px;"><span class="text-muted">Invoice #</span> <span id="invNumber" style="font-weight: 600;"></span></p>
+              <p style="font-size: 14px;"><span class="text-muted">Date:</span> <span id="invDate"></span></p>
+              <p style="font-size: 14px;"><span class="text-muted">Due Date:</span> <span id="invDue"></span></p>
+              <p style="margin-top: 8px;"><span id="invStatus" class="badge"></span></p>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div>
+            <p class="label">Description</p>
+            <p id="invDescription" class="text-secondary" style="font-size: 14px;"></p>
+          </div>
+
+          <div class="divider"></div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <p class="label" style="margin-bottom: 0;">Amount Due</p>
+            <p id="invAmount" style="font-family: var(--cg-font-display); font-size: 36px; font-weight: 900; color: var(--cg-gold);"></p>
+          </div>
+
+          <div id="notesSection" style="display: none;">
+            <div class="divider"></div>
+            <p class="label">Notes</p>
+            <p id="invNotes" class="text-secondary" style="font-size: 14px;"></p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <div class="footer-brand">Canna<span>Grudge</span></div>
+          <p class="footer-desc">The ultimate cannabis boxing event. Live fights, music, vendors, and more in Litchfield Park, AZ.</p>
+          <div class="footer-social">
+            <a href="https://www.instagram.com/" target="_blank" aria-label="Instagram"><img src="assets/Icons/instagram.png" alt="Instagram"></a>
+            <a href="https://www.facebook.com/" target="_blank" aria-label="Facebook"><img src="assets/Icons/facebook.png" alt="Facebook"></a>
+            <a href="https://twitter.com/" target="_blank" aria-label="X"><img src="assets/Icons/twitter.png" alt="X"></a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h4>Event</h4>
+          <a href="index.html">Home</a>
+          <a href="event.html">Event Info</a>
+          <a href="tickets.html">Tickets</a>
+        </div>
+        <div class="footer-col">
+          <h4>Support</h4>
+          <a href="event.html#faq">FAQ</a>
+          <a href="event.html#contact">Contact</a>
+          <a href="tos.html">Terms &amp; Conditions</a>
+        </div>
+        <div class="footer-col">
+          <h4>Legal</h4>
+          <a href="privacy.html">Privacy Policy</a>
+          <a href="delete-data.html">Delete Data</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; 2026 CannaGrudge. All rights reserved.</span>
+        <div>
+          <a href="privacy.html">Privacy</a> &nbsp;&middot;&nbsp; <a href="tos.html">Terms</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module" src="firebase-config.js"></script>
+  <script src="app.js?v=2"></script>
+  <script>
+document.addEventListener('DOMContentLoaded', async () => {
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('token');
+  const loadingEl = document.getElementById('invoiceLoading');
+  const errorEl = document.getElementById('invoiceError');
+  const contentEl = document.getElementById('invoiceContent');
+  const errorMsg = document.getElementById('errorMessage');
+
+  if (!token) {
+    loadingEl.style.display = 'none';
+    errorEl.style.display = 'block';
+    errorMsg.textContent = 'No invoice token provided.';
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/invoices/' + encodeURIComponent(token));
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.error || 'Invoice not found.');
+    }
+    const inv = await res.json();
+
+    document.getElementById('invName').textContent = inv.recipient_name || '';
+    document.getElementById('invCompany').textContent = inv.company || '';
+    document.getElementById('invEmail').textContent = inv.recipient_email || '';
+    document.getElementById('invNumber').textContent = inv.invoice_number || '';
+    document.getElementById('invDate').textContent = formatDate(inv.created_at);
+    document.getElementById('invDue').textContent = formatDate(inv.due_date);
+    document.getElementById('invDescription').textContent = inv.description || '';
+    document.getElementById('invAmount').textContent = '$' + (inv.amount / 100).toFixed(2);
+
+    const statusEl = document.getElementById('invStatus');
+    const status = (inv.status || 'draft').toLowerCase();
+    statusEl.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+    if (status === 'paid') {
+      statusEl.style.background = 'rgba(34,197,94,.15)';
+      statusEl.style.color = 'var(--cg-green)';
+      statusEl.style.borderColor = 'rgba(34,197,94,.3)';
+    } else if (status === 'draft') {
+      statusEl.style.background = 'rgba(113,113,122,.15)';
+      statusEl.style.color = 'var(--cg-text-muted)';
+      statusEl.style.borderColor = 'rgba(113,113,122,.3)';
+    }
+
+    if (inv.notes) {
+      document.getElementById('notesSection').style.display = 'block';
+      document.getElementById('invNotes').textContent = inv.notes;
+    }
+
+    loadingEl.style.display = 'none';
+    contentEl.style.display = 'block';
+  } catch (err) {
+    loadingEl.style.display = 'none';
+    errorEl.style.display = 'block';
+    errorMsg.textContent = err.message;
+  }
+});
+
+function formatDate(d) {
+  if (!d) return '—';
+  const date = new Date(d);
+  if (isNaN(date.getTime())) return d;
+  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+  </script>
+</body>
+</html>
