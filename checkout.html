@@ -191,6 +191,7 @@
     </div>
   </footer>
 
+  <script src="api-config.js"></script>
   <script src="app.js?v=2"></script>
   <script type="module" src="./firebase-config.js"></script>
   <script>
@@ -202,7 +203,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   if (inviteToken) {
     try {
-      const invRes = await fetch('/api/purchase-links/' + encodeURIComponent(inviteToken));
+      const invRes = await fetch(window.CG_API_BASE + '/api/purchase-links/' + encodeURIComponent(inviteToken));
       if (invRes.ok) {
         const invData = await invRes.json();
         cart = [{
@@ -281,7 +282,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     try {
-      const res = await fetch('/api/promos/validate', {
+      const res = await fetch(window.CG_API_BASE + '/api/promos/validate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code: code })
@@ -319,7 +320,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   try {
-    const configRes = await fetch('/api/square-config');
+    const configRes = await fetch(window.CG_API_BASE + '/api/square-config');
     const config = await configRes.json();
 
     if (!config.applicationId) {
@@ -355,7 +356,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           throw new Error(result.errors?.[0]?.message || 'Card verification failed');
         }
 
-        const payRes = await fetch('/api/create-payment', {
+        const payRes = await fetch(window.CG_API_BASE + '/api/create-payment', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

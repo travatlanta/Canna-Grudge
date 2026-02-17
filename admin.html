@@ -580,6 +580,7 @@
     </div>
   </div>
 
+  <script src="api-config.js"></script>
   <script src="firebase-config.js" type="module"></script>
   <script src="app.js?v=2"></script>
   <script type="module">
@@ -605,7 +606,8 @@
       const token = await getToken();
       if (!token) throw new Error('Not authenticated');
       const headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', ...(opts.headers || {}) };
-      const res = await fetch(url, { ...opts, headers });
+      const fullUrl = (window.CG_API_BASE || '') + url;
+      const res = await fetch(fullUrl, { ...opts, headers });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Request failed');
       return data;
@@ -1135,7 +1137,7 @@
 
         try {
           const token = await user.getIdToken();
-          const res = await fetch('/api/admin/verify', {
+          const res = await fetch(window.CG_API_BASE + '/api/admin/verify', {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
           });

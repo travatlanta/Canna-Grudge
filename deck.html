@@ -240,6 +240,7 @@
     </form>
   </main>
 
+  <script src="api-config.js"></script>
   <script src="app.js?v=2"></script>
   <script type="module" src="./firebase-config.js"></script>
 
@@ -258,7 +259,7 @@
       return;
     }
 
-    fetch('/api/sponsors/deck-access?token=' + encodeURIComponent(token))
+    fetch(window.CG_API_BASE + '/api/sponsors/deck-access?token=' + encodeURIComponent(token))
       .then(r => r.json())
       .then(data => {
         if (data.access) {

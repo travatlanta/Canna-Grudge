@@ -7,11 +7,13 @@ import psycopg2.extras
 from datetime import datetime, timedelta, timezone
 from functools import wraps
 from flask import Flask, send_from_directory, request, jsonify
+from flask_cors import CORS
 
 import firebase_admin
 from firebase_admin import credentials, auth as fb_auth
 
 app = Flask(__name__, static_folder='.', static_url_path='')
+CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
 
 DATABASE_URL = os.environ.get('DATABASE_URL', '')
 SQUARE_ACCESS_TOKEN = os.environ.get('SQUARE_ACCESS_TOKEN', '')

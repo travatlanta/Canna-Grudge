@@ -164,6 +164,7 @@
     </div>
   </footer>
 
+  <script src="api-config.js"></script>
   <script src="app.js?v=2"></script>
   <script type="module" src="./firebase-config.js"></script>
   <script>
@@ -184,7 +185,7 @@
           message: document.getElementById('messageInput').value
         };
 
-        fetch('/api/sponsors/request', {
+        fetch(window.CG_API_BASE + '/api/sponsors/request', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data)

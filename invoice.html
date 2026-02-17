@@ -107,6 +107,7 @@
     </div>
   </footer>
 
+  <script src="api-config.js"></script>
   <script type="module" src="firebase-config.js"></script>
   <script src="app.js?v=2"></script>
   <script>
@@ -126,7 +127,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   try {
-    const res = await fetch('/api/invoices/' + encodeURIComponent(token));
+    const res = await fetch(window.CG_API_BASE + '/api/invoices/' + encodeURIComponent(token));
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
       throw new Error(data.error || 'Invoice not found.');
