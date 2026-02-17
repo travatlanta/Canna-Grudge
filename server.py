@@ -6,6 +6,7 @@ import psycopg2
 import psycopg2.extras
 from datetime import datetime, timedelta, timezone
 from functools import wraps
+from werkzeug.utils import secure_filename
 from flask import Flask, send_from_directory, request, jsonify
 from flask_cors import CORS
 
@@ -15,6 +16,11 @@ from firebase_admin import credentials, auth as fb_auth
 
 app = Flask(__name__, static_folder='.', static_url_path='')
 CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
+
+UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+ALLOWED_EXTENSIONS = {'pdf', 'doc', 'docx', 'png', 'jpg', 'jpeg'}
+MAX_FILE_SIZE = 10 * 1024 * 1024
 
 DATABASE_URL = os.environ.get('DATABASE_URL', '')
 SQUARE_ACCESS_TOKEN = os.environ.get('SQUARE_ACCESS_TOKEN', '')
@@ -564,6 +570,73 @@ def admin_send_invoice(iid):
         })
     return jsonify(inv)
 
+@app.route('/api/admin/invoices/<int:iid>/upload', methods=['POST'])
+@verify_admin
+def admin_upload_invoice_attachment(iid):
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file provided'}), 400
+    f = request.files['file']
+    if not f.filename:
+        return jsonify({'error': 'No file selected'}), 400
+    ext = f.filename.rsplit('.', 1)[-1].lower() if '.' in f.filename else ''
+    if ext not in ALLOWED_EXTENSIONS:
+        return jsonify({'error': f'File type .{ext} not allowed. Use PDF, DOC, DOCX, PNG, JPG.'}), 400
+    f.seek(0, 2)
+    size = f.tell()
+    f.seek(0)
+    if size > MAX_FILE_SIZE:
+        return jsonify({'error': 'File too large. Maximum 10MB.'}), 400
+    safe_name = secure_filename(f.filename)
+    stored_name = f"{uuid.uuid4().hex}_{safe_name}"
+    filepath = os.path.join(UPLOAD_FOLDER, stored_name)
+    f.save(filepath)
+    inv = execute_db(
+        'UPDATE invoices SET attachment_filename=%s, attachment_path=%s WHERE id=%s RETURNING *',
+        (safe_name, stored_name, iid)
+    )
+    if inv:
+        for k in ['created_at', 'due_date']:
+            if inv.get(k):
+                inv[k] = inv[k].isoformat() if hasattr(inv[k], 'isoformat') else str(inv[k])
+    return jsonify(inv)
+
+@app.route('/api/admin/invoices/<int:iid>/attachment', methods=['DELETE'])
+@verify_admin
+def admin_delete_invoice_attachment(iid):
+    inv = query_db('SELECT attachment_path FROM invoices WHERE id = %s', (iid,), one=True)
+    if inv and inv.get('attachment_path'):
+        fpath = os.path.join(UPLOAD_FOLDER, inv['attachment_path'])
+        if os.path.exists(fpath):
+            os.remove(fpath)
+    updated = execute_db(
+        'UPDATE invoices SET attachment_filename=NULL, attachment_path=NULL WHERE id=%s RETURNING *',
+        (iid,)
+    )
+    if updated:
+        for k in ['created_at', 'due_date']:
+            if updated.get(k):
+                updated[k] = updated[k].isoformat() if hasattr(updated[k], 'isoformat') else str(updated[k])
+    return jsonify(updated)
+
+@app.route('/api/invoices/<token>/attachment', methods=['GET'])
+def download_invoice_attachment(token):
+    inv = query_db('SELECT attachment_filename, attachment_path FROM invoices WHERE view_token = %s', (token,), one=True)
+    if not inv or not inv.get('attachment_path'):
+        return jsonify({'error': 'No attachment found'}), 404
+    return send_from_directory(UPLOAD_FOLDER, inv['attachment_path'],
+                               download_name=inv['attachment_filename'],
+                               as_attachment=True)
+
+@app.route('/api/admin/invoices/<int:iid>/download', methods=['GET'])
+@verify_admin
+def admin_download_attachment(iid):
+    inv = query_db('SELECT attachment_filename, attachment_path FROM invoices WHERE id = %s', (iid,), one=True)
+    if not inv or not inv.get('attachment_path'):
+        return jsonify({'error': 'No attachment found'}), 404
+    return send_from_directory(UPLOAD_FOLDER, inv['attachment_path'],
+                               download_name=inv['attachment_filename'],
+                               as_attachment=True)
+
 @app.route('/api/invoices/<token>', methods=['GET'])
 def view_invoice(token):
     inv = query_db('SELECT * FROM invoices WHERE view_token = %s', (token,), one=True)
@@ -572,6 +645,7 @@ def view_invoice(token):
     for k in ['created_at', 'due_date']:
         if inv.get(k):
             inv[k] = inv[k].isoformat() if hasattr(inv[k], 'isoformat') else str(inv[k])
+    inv.pop('attachment_path', None)
     return jsonify(inv)
 
 

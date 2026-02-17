@@ -443,7 +443,7 @@
 
         <div id="tab-invoices" class="tab-content">
           <div style="margin-bottom:16px;"><button class="btn btn-primary btn-sm" id="addInvoiceBtn">+ Create Invoice</button></div>
-          <div class="admin-table-wrap"><table class="admin-table" id="invoicesTable"><thead><tr><th>#</th><th>Recipient</th><th>Company</th><th>Amount</th><th>Status</th><th>Due Date</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
+          <div class="admin-table-wrap"><table class="admin-table" id="invoicesTable"><thead><tr><th>#</th><th>Recipient</th><th>Company</th><th>Amount</th><th>Status</th><th>Due Date</th><th>File</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
         </div>
 
         <div id="tab-purchase-links" class="tab-content">
@@ -549,6 +549,37 @@
         <div class="form-group"><label class="label">Description</label><textarea class="input" id="invoiceDescription" rows="3"></textarea></div>
         <div class="form-group"><label class="label">Due Date</label><input class="input" type="date" id="invoiceDueDate"></div>
         <div class="form-group"><label class="label">Notes</label><textarea class="input" id="invoiceNotes" rows="2"></textarea></div>
+        <div class="form-group">
+          <label class="label">Attachment (Contract/Document)</label>
+          <div id="invoiceAttachmentArea">
+            <div id="invoiceNoAttachment">
+              <label for="invoiceFileInput" style="display:flex;align-items:center;gap:12px;padding:16px;border:2px dashed var(--cg-border);border-radius:8px;cursor:pointer;transition:border-color 0.2s;" onmouseover="this.style.borderColor='var(--cg-gold)'" onmouseout="this.style.borderColor='var(--cg-border)'">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+                <div>
+                  <div style="color:var(--cg-text);font-weight:500;">Click to attach a file</div>
+                  <div style="color:var(--cg-text-muted);font-size:12px;">PDF, DOC, DOCX, PNG, JPG — Max 10MB</div>
+                </div>
+              </label>
+              <input type="file" id="invoiceFileInput" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" style="display:none;">
+            </div>
+            <div id="invoiceHasAttachment" style="display:none;padding:12px;background:var(--cg-surface);border-radius:8px;border:1px solid var(--cg-border);">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <svg width="20" height="20" fill="none" stroke="var(--cg-gold)" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                <span id="invoiceAttachmentName" style="color:var(--cg-text);font-weight:500;flex:1;"></span>
+                <button type="button" class="btn btn-ghost btn-sm" id="invoiceDownloadBtn" style="font-size:12px;">Download</button>
+                <button type="button" class="btn btn-ghost btn-sm" onclick="removeInvoiceAttachment()" style="font-size:12px;color:var(--cg-red);">Remove</button>
+              </div>
+            </div>
+            <div id="invoiceUploadProgress" style="display:none;padding:12px;">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div style="flex:1;height:4px;background:var(--cg-border);border-radius:2px;overflow:hidden;">
+                  <div id="invoiceProgressBar" style="height:100%;background:var(--cg-gold);border-radius:2px;width:0%;transition:width 0.3s;"></div>
+                </div>
+                <span style="color:var(--cg-text-muted);font-size:12px;">Uploading...</span>
+              </div>
+            </div>
+          </div>
+        </div>
         <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:24px;">
           <button type="button" class="btn btn-ghost" onclick="closeModal('invoiceModal')">Cancel</button>
           <button type="submit" class="btn btn-primary">Save</button>
@@ -996,13 +1027,16 @@
       const data = await apiFetch('/api/admin/invoices');
       window._invoices = data;
       const tbody = $('invoicesTable').querySelector('tbody');
-      if (!data.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--cg-text-muted);padding:32px;">No invoices</td></tr>'; return; }
+      if (!data.length) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--cg-text-muted);padding:32px;">No invoices</td></tr>'; return; }
       tbody.innerHTML = data.map(inv => {
         let actions = `<div class="actions">`;
         if (inv.status === 'draft') actions += `<button class="btn btn-ghost btn-sm" onclick="editInvoice(${inv.id})">Edit</button><button class="btn btn-primary btn-sm" onclick="sendInvoice(${inv.id})">Send</button>`;
         if (inv.status === 'sent') actions += `<button class="btn btn-primary btn-sm" onclick="markInvoicePaid(${inv.id})">Mark Paid</button>`;
         if (inv.view_token) actions += `<a href="/invoice.html?token=${inv.view_token}" target="_blank" class="btn btn-ghost btn-sm">View</a>`;
         actions += `</div>`;
+        const fileCol = inv.attachment_filename
+          ? `<a href="${window.CG_API_BASE || ''}/api/admin/invoices/${inv.id}/download" target="_blank" title="${inv.attachment_filename}" style="color:var(--cg-gold);display:inline-flex;align-items:center;gap:4px;"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>${inv.attachment_filename.length > 15 ? inv.attachment_filename.slice(0,12) + '...' : inv.attachment_filename}</a>`
+          : '<span style="color:var(--cg-text-muted);">—</span>';
         return `<tr>
           <td style="color:var(--cg-text);font-weight:600;">${inv.id}</td>
           <td>${inv.recipient_name}</td>
@@ -1010,15 +1044,80 @@
           <td>${fmtMoney(inv.amount_cents)}</td>
           <td>${statusBadge(inv.status)}</td>
           <td>${fmtDate(inv.due_date)}</td>
+          <td>${fileCol}</td>
           <td>${actions}</td>
         </tr>`;
       }).join('');
+    }
+
+    let pendingInvoiceFile = null;
+    let currentInvoiceAttachment = null;
+    let attachmentRemoved = false;
+
+    function resetAttachmentUI() {
+      pendingInvoiceFile = null;
+      currentInvoiceAttachment = null;
+      attachmentRemoved = false;
+      $('invoiceFileInput').value = '';
+      $('invoiceNoAttachment').style.display = 'block';
+      $('invoiceHasAttachment').style.display = 'none';
+      $('invoiceUploadProgress').style.display = 'none';
+    }
+
+    function showAttachment(filename, downloadUrl) {
+      $('invoiceNoAttachment').style.display = 'none';
+      $('invoiceHasAttachment').style.display = 'block';
+      $('invoiceUploadProgress').style.display = 'none';
+      $('invoiceAttachmentName').textContent = filename;
+      $('invoiceDownloadBtn').onclick = () => { if (downloadUrl) window.open(downloadUrl, '_blank'); };
+      $('invoiceDownloadBtn').style.display = downloadUrl ? '' : 'none';
+    }
+
+    $('invoiceFileInput').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      if (file.size > 10 * 1024 * 1024) { showMsg('File too large. Maximum 10MB.', 'error'); return; }
+      pendingInvoiceFile = file;
+      attachmentRemoved = false;
+      showAttachment(file.name, null);
+    });
+
+    window.removeInvoiceAttachment = function() {
+      const id = $('invoiceId').value;
+      if (currentInvoiceAttachment && id) {
+        attachmentRemoved = true;
+      }
+      pendingInvoiceFile = null;
+      currentInvoiceAttachment = null;
+      resetAttachmentUI();
+    };
+
+    async function uploadAttachment(invoiceId, file) {
+      const formData = new FormData();
+      formData.append('file', file);
+      const token = await firebase.auth().currentUser.getIdToken();
+      $('invoiceUploadProgress').style.display = 'block';
+      $('invoiceNoAttachment').style.display = 'none';
+      $('invoiceHasAttachment').style.display = 'none';
+      $('invoiceProgressBar').style.width = '30%';
+      const res = await fetch((window.CG_API_BASE || '') + `/api/admin/invoices/${invoiceId}/upload`, {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token },
+        body: formData
+      });
+      $('invoiceProgressBar').style.width = '100%';
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || 'Upload failed');
+      }
+      return await res.json();
     }
 
     $('addInvoiceBtn').addEventListener('click', () => {
       $('invoiceModalTitle').textContent = 'Create Invoice';
       $('invoiceForm').reset();
       $('invoiceId').value = '';
+      resetAttachmentUI();
       openModal('invoiceModal');
     });
 
@@ -1034,6 +1133,11 @@
       $('invoiceDescription').value = inv.description || '';
       $('invoiceDueDate').value = inv.due_date ? inv.due_date.slice(0, 10) : '';
       $('invoiceNotes').value = inv.notes || '';
+      resetAttachmentUI();
+      if (inv.attachment_filename) {
+        currentInvoiceAttachment = inv.attachment_filename;
+        showAttachment(inv.attachment_filename, (window.CG_API_BASE || '') + `/api/admin/invoices/${inv.id}/download`);
+      }
       openModal('invoiceModal');
     };
 
@@ -1051,8 +1155,19 @@
         status: 'draft'
       };
       try {
-        if (id) await apiFetch(`/api/admin/invoices/${id}`, { method: 'PUT', body: JSON.stringify(body) });
-        else await apiFetch('/api/admin/invoices', { method: 'POST', body: JSON.stringify(body) });
+        let result;
+        if (id) {
+          result = await apiFetch(`/api/admin/invoices/${id}`, { method: 'PUT', body: JSON.stringify(body) });
+        } else {
+          result = await apiFetch('/api/admin/invoices', { method: 'POST', body: JSON.stringify(body) });
+        }
+        const invoiceId = result.id || id;
+        if (attachmentRemoved && invoiceId) {
+          await apiFetch(`/api/admin/invoices/${invoiceId}/attachment`, { method: 'DELETE' });
+        }
+        if (pendingInvoiceFile && invoiceId) {
+          await uploadAttachment(invoiceId, pendingInvoiceFile);
+        }
         closeModal('invoiceModal');
         showMsg(id ? 'Invoice updated' : 'Invoice created');
         loadInvoices();
