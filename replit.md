@@ -1,7 +1,7 @@
 # CannaGrudge
 
 ## Overview
-CannaGrudge is a static website for a cannabis boxing/entertainment event in Litchfield Park, AZ. It features event information, ticket purchasing, user authentication via Firebase, and an admin dashboard.
+CannaGrudge is a static website for a cannabis boxing/entertainment event on April 25, 2026 in Litchfield Park, AZ. It features event information, ticket purchasing, user authentication via Firebase, and an admin dashboard.
 
 ## Project Architecture
 - **Type**: Static website (HTML, CSS, vanilla JavaScript)
