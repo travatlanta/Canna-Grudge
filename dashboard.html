@@ -29,8 +29,8 @@
         <p class="text-muted" id="provider">-</p>
         <div class="divider"></div>
         <div style="display:flex;flex-direction:column;gap:8px;">
+          <a href="admin.html" class="btn btn-primary btn-block btn-sm" id="adminLink" style="display:none;">Admin Dashboard</a>
           <button class="btn btn-outline btn-block btn-sm" id="editProfile">Edit Profile</button>
-          <a href="settings.html" class="btn btn-ghost btn-block btn-sm">Settings</a>
           <button class="btn btn-ghost btn-block btn-sm" id="logout" style="color:var(--cg-red);">Sign Out</button>
         </div>
       </div>
@@ -98,7 +98,7 @@ const profileImageEl = document.getElementById('profileImage');
 const changePhotoBtn = document.getElementById('changePhoto');
 const profileUpload = document.getElementById('profileUpload');
 
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
   if (!user) {
     location.href = 'login.html?return=' + encodeURIComponent(location.pathname);
     return;
@@ -109,6 +109,18 @@ onAuthStateChanged(auth, (user) => {
   const storedAvatar = localStorage.getItem('avatar');
   const photo = user.photoURL || storedAvatar;
   if (photo) profileImageEl.src = photo;
+
+  try {
+    const token = await user.getIdToken();
+    const verifyRes = await fetch('/api/admin/verify', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }
+    });
+    const verifyData = await verifyRes.json();
+    if (verifyData.is_admin) {
+      document.getElementById('adminLink').style.display = '';
+    }
+  } catch(e) {}
 
   const lastOrder = localStorage.getItem('cg_last_order');
   if (lastOrder) {
