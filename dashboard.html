@@ -21,7 +21,8 @@
     <div class="dash-grid">
 
       <div class="card" style="padding:24px;text-align:center;">
-        <img id="profileImage" class="profile-avatar" src="assets/Icons/avatar-placeholder.png" alt="Profile" style="margin:0 auto 12px;">
+        <div id="profileInitials" style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--cg-gold),#b8922e);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-family:var(--cg-font-display);font-size:28px;font-weight:800;color:#1a1a1a;"></div>
+        <img id="profileImage" class="profile-avatar" alt="Profile" style="display:none;margin:0 auto 12px;">
         <input type="file" id="profileUpload" accept="image/*" style="display:none;">
         <button class="btn btn-ghost btn-sm" id="changePhoto">Change Photo</button>
         <h2 id="name" style="margin-top:12px;">Loading...</h2>
@@ -103,12 +104,21 @@ onAuthStateChanged(auth, async (user) => {
     location.href = 'login.html?return=' + encodeURIComponent(location.pathname);
     return;
   }
-  document.getElementById('name').textContent = user.displayName || 'CannaGrudge User';
+  const displayName = user.displayName || 'CannaGrudge User';
+  document.getElementById('name').textContent = displayName;
   document.getElementById('email').textContent = user.email || '-';
   document.getElementById('provider').textContent = (user.providerData[0]?.providerId) || '-';
+
+  const initials = displayName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 3);
+  document.getElementById('profileInitials').textContent = initials;
+
   const storedAvatar = localStorage.getItem('avatar');
   const photo = user.photoURL || storedAvatar;
-  if (photo) profileImageEl.src = photo;
+  if (photo) {
+    profileImageEl.src = photo;
+    profileImageEl.style.display = '';
+    document.getElementById('profileInitials').style.display = 'none';
+  }
 
   try {
     const token = await user.getIdToken();
