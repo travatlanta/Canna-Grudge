@@ -9,6 +9,7 @@ from functools import wraps
 from flask import Flask, send_from_directory, request, jsonify
 from flask_cors import CORS
 
+import resend
 import firebase_admin
 from firebase_admin import credentials, auth as fb_auth
 
@@ -26,6 +27,9 @@ if not firebase_admin._apps:
         firebase_admin.initialize_app(cred)
     else:
         firebase_admin.initialize_app()
+
+resend.api_key = os.environ.get('RESEND_API_KEY', '')
+RESEND_FROM_EMAIL = os.environ.get('RESEND_FROM_EMAIL', 'CannaGrudge <onboarding@resend.dev>')
 
 def get_db():
     conn = psycopg2.connect(DATABASE_URL)
@@ -81,6 +85,45 @@ def verify_admin(f):
             return jsonify({'error': 'Invalid token', 'detail': str(e)}), 401
         return f(*args, **kwargs)
     return decorated
+
+def seed_email_templates():
+    from email_templates import DEFAULT_TEMPLATES
+    for tmpl in DEFAULT_TEMPLATES:
+        existing = query_db('SELECT id FROM email_templates WHERE slug = %s', (tmpl['slug'],), one=True)
+        if not existing:
+            execute_db(
+                'INSERT INTO email_templates (slug, name, subject, html_body, description) VALUES (%s, %s, %s, %s, %s)',
+                (tmpl['slug'], tmpl['name'], tmpl['subject'], tmpl['html_body'], tmpl['description'])
+            )
+
+try:
+    seed_email_templates()
+except Exception as e:
+    print(f"[EMAIL SEED] {e}")
+
+def send_email(to_email, template_slug, variables=None):
+    variables = variables or {}
+    tmpl = query_db('SELECT * FROM email_templates WHERE slug = %s', (template_slug,), one=True)
+    if not tmpl:
+        print(f"[EMAIL] Template '{template_slug}' not found")
+        return None
+    subject = tmpl['subject']
+    html = tmpl['html_body']
+    for key, val in variables.items():
+        subject = subject.replace('{{' + key + '}}', str(val))
+        html = html.replace('{{' + key + '}}', str(val))
+    try:
+        r = resend.Emails.send({
+            'from': RESEND_FROM_EMAIL,
+            'to': [to_email],
+            'subject': subject,
+            'html': html,
+        })
+        print(f"[EMAIL] Sent '{template_slug}' to {to_email}")
+        return r
+    except Exception as e:
+        print(f"[EMAIL ERROR] {e}")
+        return None
 
 @app.after_request
 def add_headers(response):
@@ -230,6 +273,21 @@ def create_payment():
         if li['tier_id']:
             execute_db('UPDATE ticket_tiers SET sold = sold + %s WHERE id = %s', (li['qty'], li['tier_id']))
 
+    if email:
+        items_html = ''
+        for li in order_line_items:
+            items_html += f'<tr><td style="padding:10px 12px;border-bottom:1px solid #2a2a2a;color:#ffffff;">{li["tier_name"]}</td><td style="padding:10px 12px;border-bottom:1px solid #2a2a2a;color:#ffffff;text-align:center;">{li["qty"]}</td><td style="padding:10px 12px;border-bottom:1px solid #2a2a2a;color:#d4a843;text-align:right;">${li["unit_price"] * li["qty"] / 100:.2f}</td></tr>'
+        send_email(email, 'purchase_confirmation', {
+            'buyer_name': buyer_name or 'Guest',
+            'order_id': str(order['id']),
+            'order_items': items_html,
+            'subtotal': f'${total / 100:.2f}',
+            'discount': f'${discount / 100:.2f}',
+            'total': f'${charge_amount / 100:.2f}',
+            'receipt_url': receipt_url or '#',
+            'payment_id': payment_id,
+        })
+
     return jsonify({
         'success': True,
         'payment': {
@@ -261,6 +319,11 @@ def admin_verify():
                 'INSERT INTO users (firebase_uid, email, name, is_admin) VALUES (%s, %s, %s, %s) RETURNING *',
                 (uid, email, decoded.get('name', ''), is_first)
             )
+            if email:
+                send_email(email, 'welcome_email', {
+                    'user_name': decoded.get('name', '') or email.split('@')[0],
+                    'user_email': email,
+                })
         invite = query_db(
             'SELECT * FROM admin_invites WHERE LOWER(email) = LOWER(%s) AND used_at IS NULL AND expires_at > NOW()',
             (email,), one=True
@@ -490,6 +553,15 @@ def admin_update_invoice(iid):
 @verify_admin
 def admin_send_invoice(iid):
     inv = execute_db('UPDATE invoices SET status=%s WHERE id=%s RETURNING *', ('sent', iid))
+    if inv and inv.get('recipient_email'):
+        base_url = request.host_url.rstrip('/')
+        send_email(inv['recipient_email'], 'invoice_notification', {
+            'recipient_name': inv.get('recipient_name', ''),
+            'amount': f'${inv["amount_cents"] / 100:.2f}',
+            'description': inv.get('description', ''),
+            'due_date': inv['due_date'].strftime('%B %d, %Y') if hasattr(inv.get('due_date'), 'strftime') else str(inv.get('due_date', '')),
+            'invoice_url': f'{base_url}/invoice.html?token={inv["view_token"]}',
+        })
     return jsonify(inv)
 
 @app.route('/api/invoices/<token>', methods=['GET'])
@@ -604,6 +676,82 @@ def admin_stats():
         'outstanding_invoice_total': pending_invoices['total']
     })
 
+
+@app.route('/api/admin/email-templates', methods=['GET'])
+@verify_admin
+def admin_get_email_templates():
+    templates = query_db('SELECT * FROM email_templates ORDER BY id')
+    for t in templates:
+        if t.get('updated_at') and hasattr(t['updated_at'], 'isoformat'):
+            t['updated_at'] = t['updated_at'].isoformat()
+        if t.get('created_at') and hasattr(t['created_at'], 'isoformat'):
+            t['created_at'] = t['created_at'].isoformat()
+    return jsonify(templates)
+
+@app.route('/api/admin/email-templates/<int:tid>', methods=['PUT'])
+@verify_admin
+def admin_update_email_template(tid):
+    data = request.get_json()
+    tmpl = execute_db(
+        'UPDATE email_templates SET subject=%s, html_body=%s, updated_at=NOW() WHERE id=%s RETURNING *',
+        (data.get('subject', ''), data.get('html_body', ''), tid)
+    )
+    if not tmpl:
+        return jsonify({'error': 'Template not found'}), 404
+    return jsonify(tmpl)
+
+@app.route('/api/admin/email-templates/<int:tid>/reset', methods=['POST'])
+@verify_admin
+def admin_reset_email_template(tid):
+    from email_templates import DEFAULT_TEMPLATES
+    tmpl = query_db('SELECT slug FROM email_templates WHERE id = %s', (tid,), one=True)
+    if not tmpl:
+        return jsonify({'error': 'Template not found'}), 404
+    default = next((t for t in DEFAULT_TEMPLATES if t['slug'] == tmpl['slug']), None)
+    if not default:
+        return jsonify({'error': 'No default template available'}), 404
+    updated = execute_db(
+        'UPDATE email_templates SET subject=%s, html_body=%s, updated_at=NOW() WHERE id=%s RETURNING *',
+        (default['subject'], default['html_body'], tid)
+    )
+    return jsonify(updated)
+
+@app.route('/api/admin/email-templates/<int:tid>/test', methods=['POST'])
+@verify_admin
+def admin_test_email_template(tid):
+    data = request.get_json()
+    test_email = data.get('email', request.admin_user.get('email', ''))
+    if not test_email:
+        return jsonify({'error': 'No email provided'}), 400
+    tmpl = query_db('SELECT * FROM email_templates WHERE id = %s', (tid,), one=True)
+    if not tmpl:
+        return jsonify({'error': 'Template not found'}), 404
+    sample_vars = {
+        'buyer_name': 'John Doe', 'order_id': '12345',
+        'order_items': '<tr><td style="padding:10px 12px;border-bottom:1px solid #2a2a2a;color:#ffffff;">VIP Ringside</td><td style="padding:10px 12px;border-bottom:1px solid #2a2a2a;color:#ffffff;text-align:center;">2</td><td style="padding:10px 12px;border-bottom:1px solid #2a2a2a;color:#d4a843;text-align:right;">$240.00</td></tr>',
+        'subtotal': '$240.00', 'discount': '$0.00', 'total': '$240.00',
+        'receipt_url': '#', 'payment_id': 'TEST-abc123',
+        'user_name': 'John Doe', 'user_email': test_email,
+        'status': 'confirmed',
+        'recipient_name': 'Jane Smith', 'amount': '$500.00',
+        'description': 'Sponsorship Package', 'due_date': 'March 15, 2026',
+        'invoice_url': '#',
+    }
+    subject = tmpl['subject']
+    html = tmpl['html_body']
+    for key, val in sample_vars.items():
+        subject = subject.replace('{{' + key + '}}', str(val))
+        html = html.replace('{{' + key + '}}', str(val))
+    try:
+        resend.Emails.send({
+            'from': RESEND_FROM_EMAIL,
+            'to': [test_email],
+            'subject': '[TEST] ' + subject,
+            'html': html,
+        })
+        return jsonify({'success': True, 'message': f'Test email sent to {test_email}'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/<path:path>')
 def static_files(path):

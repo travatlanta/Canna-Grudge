@@ -382,6 +382,10 @@
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
             Purchase Links
           </button>
+          <button class="admin-nav-btn" data-tab="emails">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            Email Templates
+          </button>
           <button class="admin-nav-btn" data-tab="admins">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
             Admins
@@ -445,6 +449,14 @@
         <div id="tab-purchase-links" class="tab-content">
           <div style="margin-bottom:16px;"><button class="btn btn-primary btn-sm" id="addPurchaseLinkBtn">+ Create Purchase Link</button></div>
           <div class="admin-table-wrap"><table class="admin-table" id="purchaseLinksTable"><thead><tr><th>Email</th><th>Ticket Tier</th><th>Qty</th><th>Promo</th><th>Expires</th><th>Used</th><th>Link</th></tr></thead><tbody></tbody></table></div>
+        </div>
+
+        <div id="tab-emails" class="tab-content">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+            <h3>Email Templates</h3>
+            <p style="color:var(--cg-text-muted);font-size:13px;margin:0;">Edit, preview, and test your automated email templates</p>
+          </div>
+          <div id="emailTemplatesList"></div>
         </div>
 
         <div id="tab-admins" class="tab-content">
@@ -580,6 +592,47 @@
     </div>
   </div>
 
+  <div class="modal-overlay" id="emailEditorModal" style="z-index:10001;">
+    <div class="modal-card" style="max-width:900px;width:95%;max-height:90vh;overflow-y:auto;">
+      <button class="modal-close" onclick="closeModal('emailEditorModal')">&times;</button>
+      <h3 id="emailEditorTitle">Edit Email Template</h3>
+      <div style="margin-top:16px;">
+        <div class="form-group">
+          <label class="label">Subject Line</label>
+          <input class="input" id="emailSubjectInput">
+        </div>
+        <div class="form-group">
+          <label class="label" style="display:flex;justify-content:space-between;align-items:center;">
+            HTML Body
+            <div style="display:flex;gap:8px;">
+              <button type="button" class="btn btn-ghost btn-sm" id="emailTogglePreview" style="font-size:12px;">Preview</button>
+            </div>
+          </label>
+          <div id="emailCodeView">
+            <textarea class="input" id="emailHtmlInput" rows="20" style="font-family:monospace;font-size:12px;line-height:1.5;white-space:pre;"></textarea>
+          </div>
+          <div id="emailPreviewView" style="display:none;background:#fff;border-radius:8px;padding:0;overflow:hidden;min-height:400px;">
+            <iframe id="emailPreviewFrame" sandbox="" style="width:100%;min-height:500px;border:none;"></iframe>
+          </div>
+        </div>
+        <div class="form-group" style="background:var(--cg-surface);border-radius:8px;padding:12px;">
+          <label class="label" style="font-size:12px;color:var(--cg-text-muted);margin-bottom:4px;">Available Variables</label>
+          <div id="emailVarsInfo" style="font-size:12px;color:var(--cg-text-secondary);font-family:monospace;"></div>
+        </div>
+        <div style="display:flex;gap:8px;justify-content:space-between;align-items:center;margin-top:24px;flex-wrap:wrap;">
+          <div style="display:flex;gap:8px;">
+            <button type="button" class="btn btn-ghost btn-sm" id="emailResetBtn" style="color:var(--cg-red);">Reset to Default</button>
+            <button type="button" class="btn btn-outline btn-sm" id="emailTestBtn">Send Test Email</button>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button type="button" class="btn btn-ghost" onclick="closeModal('emailEditorModal')">Cancel</button>
+            <button type="button" class="btn btn-primary" id="emailSaveBtn">Save Template</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="api-config.js"></script>
   <script src="firebase-config.js" type="module"></script>
   <script src="app.js?v=2"></script>
@@ -696,6 +749,7 @@
         else if (tab === 'sponsors') await loadSponsors();
         else if (tab === 'invoices') await loadInvoices();
         else if (tab === 'purchase-links') await loadPurchaseLinks();
+        else if (tab === 'emails') await loadEmailTemplates();
         else if (tab === 'admins') await loadAdmins();
       } catch (e) {
         showMsg(e.message, 'error');
@@ -1115,6 +1169,177 @@
         loadAdmins();
       } catch (e) { showMsg(e.message, 'error'); }
     };
+
+    const TEMPLATE_VARS = {
+      purchase_confirmation: ['buyer_name', 'order_id', 'order_items', 'subtotal', 'discount', 'total', 'receipt_url', 'payment_id'],
+      welcome_email: ['user_name', 'user_email'],
+      order_status_update: ['buyer_name', 'order_id', 'status', 'order_items'],
+      invoice_notification: ['recipient_name', 'amount', 'description', 'due_date', 'invoice_url'],
+    };
+
+    let emailTemplates = [];
+    let currentEditTemplate = null;
+    let emailPreviewMode = false;
+
+    async function loadEmailTemplates() {
+      try {
+        const data = await apiFetch('/api/admin/email-templates');
+        emailTemplates = data;
+        const container = $('emailTemplatesList');
+        if (!data.length) {
+          container.innerHTML = '<p style="color:var(--cg-text-muted);text-align:center;padding:32px;">No email templates found</p>';
+          return;
+        }
+        container.innerHTML = data.map(t => {
+          const vars = TEMPLATE_VARS[t.slug] || [];
+          return `<div style="background:var(--cg-surface);border:1px solid var(--cg-border);border-radius:12px;padding:20px;margin-bottom:16px;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;">
+              <div style="flex:1;min-width:200px;">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                  <span style="font-size:15px;font-weight:600;color:var(--cg-text);">${t.name}</span>
+                  <span class="badge badge-outline" style="font-size:10px;">${t.slug}</span>
+                </div>
+                <p style="color:var(--cg-text-muted);font-size:13px;margin:0 0 8px;">${t.description || ''}</p>
+                <p style="color:var(--cg-text-secondary);font-size:12px;margin:0;">Subject: <span style="color:var(--cg-gold);">${t.subject}</span></p>
+                ${vars.length ? `<p style="color:var(--cg-text-muted);font-size:11px;margin:6px 0 0;font-family:monospace;">Variables: ${vars.map(v => '{{' + v + '}}').join(', ')}</p>` : ''}
+              </div>
+              <div style="display:flex;gap:8px;flex-shrink:0;">
+                <button class="btn btn-outline btn-sm" onclick="previewEmailTemplate(${t.id})">Preview</button>
+                <button class="btn btn-primary btn-sm" onclick="editEmailTemplate(${t.id})">Edit</button>
+                <button class="btn btn-ghost btn-sm" onclick="testEmailTemplate(${t.id})">Test</button>
+              </div>
+            </div>
+          </div>`;
+        }).join('');
+      } catch (e) { showMsg(e.message, 'error'); }
+    }
+
+    window.previewEmailTemplate = function(id) {
+      const tmpl = emailTemplates.find(t => t.id === id);
+      if (!tmpl) return;
+      const sample = {
+        buyer_name: 'John Doe', order_id: '12345',
+        order_items: '<tr><td style="padding:10px 12px;border-bottom:1px solid #2a2a2a;color:#ffffff;">VIP Ringside</td><td style="padding:10px 12px;border-bottom:1px solid #2a2a2a;color:#ffffff;text-align:center;">2</td><td style="padding:10px 12px;border-bottom:1px solid #2a2a2a;color:#d4a843;text-align:right;">$240.00</td></tr>',
+        subtotal: '$240.00', discount: '$0.00', total: '$240.00',
+        receipt_url: '#', payment_id: 'PAY-abc123',
+        user_name: 'John Doe', user_email: 'john@example.com',
+        status: 'confirmed',
+        recipient_name: 'Jane Smith', amount: '$500.00',
+        description: 'Sponsorship Package', due_date: 'March 15, 2026',
+        invoice_url: '#',
+      };
+      let html = tmpl.html_body;
+      for (const [k, v] of Object.entries(sample)) html = html.replaceAll('{{' + k + '}}', v);
+      currentEditTemplate = tmpl;
+      $('emailEditorTitle').textContent = 'Preview: ' + tmpl.name;
+      $('emailSubjectInput').value = tmpl.subject;
+      $('emailHtmlInput').value = tmpl.html_body;
+      $('emailCodeView').style.display = 'none';
+      $('emailPreviewView').style.display = 'block';
+      emailPreviewMode = true;
+      $('emailTogglePreview').textContent = 'Code';
+      const frame = $('emailPreviewFrame');
+      frame.srcdoc = html;
+      const vars = TEMPLATE_VARS[tmpl.slug] || [];
+      $('emailVarsInfo').textContent = vars.map(v => '{{' + v + '}}').join('  ');
+      openModal('emailEditorModal');
+    };
+
+    window.editEmailTemplate = function(id) {
+      const tmpl = emailTemplates.find(t => t.id === id);
+      if (!tmpl) return;
+      currentEditTemplate = tmpl;
+      $('emailEditorTitle').textContent = 'Edit: ' + tmpl.name;
+      $('emailSubjectInput').value = tmpl.subject;
+      $('emailHtmlInput').value = tmpl.html_body;
+      $('emailCodeView').style.display = 'block';
+      $('emailPreviewView').style.display = 'none';
+      emailPreviewMode = false;
+      $('emailTogglePreview').textContent = 'Preview';
+      const vars = TEMPLATE_VARS[tmpl.slug] || [];
+      $('emailVarsInfo').textContent = vars.map(v => '{{' + v + '}}').join('  ');
+      openModal('emailEditorModal');
+    };
+
+    window.testEmailTemplate = async function(id) {
+      const email = prompt('Send test email to:');
+      if (!email) return;
+      try {
+        const res = await apiFetch(`/api/admin/email-templates/${id}/test`, {
+          method: 'POST',
+          body: JSON.stringify({ email }),
+        });
+        showMsg(res.message || 'Test email sent!');
+      } catch (e) { showMsg(e.message, 'error'); }
+    };
+
+    $('emailTogglePreview').addEventListener('click', () => {
+      emailPreviewMode = !emailPreviewMode;
+      if (emailPreviewMode) {
+        $('emailCodeView').style.display = 'none';
+        $('emailPreviewView').style.display = 'block';
+        $('emailTogglePreview').textContent = 'Code';
+        const sample = {
+          buyer_name: 'John Doe', order_id: '12345',
+          order_items: '<tr><td style="padding:10px 12px;border-bottom:1px solid #2a2a2a;color:#ffffff;">VIP Ringside</td><td style="padding:10px 12px;border-bottom:1px solid #2a2a2a;color:#ffffff;text-align:center;">2</td><td style="padding:10px 12px;border-bottom:1px solid #2a2a2a;color:#d4a843;text-align:right;">$240.00</td></tr>',
+          subtotal: '$240.00', discount: '$0.00', total: '$240.00',
+          receipt_url: '#', payment_id: 'PAY-abc123',
+          user_name: 'John Doe', user_email: 'john@example.com',
+          status: 'confirmed',
+          recipient_name: 'Jane Smith', amount: '$500.00',
+          description: 'Sponsorship Package', due_date: 'March 15, 2026',
+          invoice_url: '#',
+        };
+        let html = $('emailHtmlInput').value;
+        for (const [k, v] of Object.entries(sample)) html = html.replaceAll('{{' + k + '}}', v);
+        $('emailPreviewFrame').srcdoc = html;
+      } else {
+        $('emailCodeView').style.display = 'block';
+        $('emailPreviewView').style.display = 'none';
+        $('emailTogglePreview').textContent = 'Preview';
+      }
+    });
+
+    $('emailSaveBtn').addEventListener('click', async () => {
+      if (!currentEditTemplate) return;
+      try {
+        await apiFetch(`/api/admin/email-templates/${currentEditTemplate.id}`, {
+          method: 'PUT',
+          body: JSON.stringify({
+            subject: $('emailSubjectInput').value,
+            html_body: $('emailHtmlInput').value,
+          }),
+        });
+        closeModal('emailEditorModal');
+        showMsg('Template saved!');
+        loadEmailTemplates();
+      } catch (e) { showMsg(e.message, 'error'); }
+    });
+
+    $('emailResetBtn').addEventListener('click', async () => {
+      if (!currentEditTemplate) return;
+      if (!confirm('Reset this template to default? Your customizations will be lost.')) return;
+      try {
+        const res = await apiFetch(`/api/admin/email-templates/${currentEditTemplate.id}/reset`, { method: 'POST' });
+        $('emailSubjectInput').value = res.subject;
+        $('emailHtmlInput').value = res.html_body;
+        showMsg('Template reset to default');
+        loadEmailTemplates();
+      } catch (e) { showMsg(e.message, 'error'); }
+    });
+
+    $('emailTestBtn').addEventListener('click', async () => {
+      if (!currentEditTemplate) return;
+      const email = prompt('Send test email to:');
+      if (!email) return;
+      try {
+        const res = await apiFetch(`/api/admin/email-templates/${currentEditTemplate.id}/test`, {
+          method: 'POST',
+          body: JSON.stringify({ email }),
+        });
+        showMsg(res.message || 'Test email sent!');
+      } catch (e) { showMsg(e.message, 'error'); }
+    });
 
     async function init() {
       await waitForAuth();

@@ -5,7 +5,7 @@ CannaGrudge is a website for a cannabis boxing/entertainment event on April 25, 
 
 ## Project Architecture
 - **Type**: Flask web app serving static HTML/CSS/JS with backend API
-- **Backend**: Python Flask (server.py) with Square Payments API, Firebase Admin SDK, PostgreSQL
+- **Backend**: Python Flask (server.py) with Square Payments API, Firebase Admin SDK, Resend Email, PostgreSQL
 - **Database**: PostgreSQL (Neon-backed via Replit) with psycopg2
 - **Authentication**: Firebase Auth (Google, Facebook, Apple sign-in) + Firebase Admin SDK server-side verification
 - **Payments**: Square Web Payments SDK (frontend) + Square Payments API (backend), server-side price validation
@@ -22,9 +22,11 @@ CannaGrudge is a website for a cannabis boxing/entertainment event on April 25, 
 - `invoices` - recipient info, amount_cents, description, status, due_date, view_token, notes
 - `admin_invites` - email, token, expires_at, used_at, created_by
 - `purchase_links` - token, email, tier_id, qty, promo_code, expires_at, used_at
+- `email_templates` - slug, name, subject, html_body, description, created_at, updated_at
 
 ## Key Files
-- `server.py` - Flask server: 25+ API routes, Firebase Admin auth, admin middleware, Square payments, DB operations
+- `server.py` - Flask server: 30+ API routes, Firebase Admin auth, admin middleware, Square payments, Resend emails, DB operations
+- `email_templates.py` - Default HTML email template definitions (purchase confirmation, welcome, order status, invoice)
 - `theme.css` - Complete design system: colors, typography, components, layouts, animations
 - `app.js` - Dynamic navbar, mobile hamburger menu, cart system (localStorage), scroll animations
 - `firebase-config.js` - Firebase project configuration and auth providers
@@ -115,7 +117,16 @@ CannaGrudge is a website for a cannabis boxing/entertainment event on April 25, 
 4. Recipient views invoice at invoice.html?token=xxx
 5. Admin can mark as paid
 
+## Email System
+- **Provider**: Resend API (RESEND_API_KEY secret)
+- **Templates**: 4 customizable templates stored in DB (purchase_confirmation, welcome_email, order_status_update, invoice_notification)
+- **Defaults**: Defined in email_templates.py, seeded on server start
+- **Admin UI**: Email Templates tab in admin dashboard with preview, edit, test send, and reset to default
+- **Triggers**: Purchase confirmation (after payment), welcome email (first sign-in), invoice notification (admin sends invoice)
+- **Template variables**: {{name}}, {{email}}, {{order_id}}, {{total}}, {{items}}, {{invoice_url}}, etc.
+
 ## Recent Changes
+- 2026-02-17: Email system - Added Resend integration with 4 premium dark/gold HTML email templates, admin template editor with preview/test/reset, automated sending on purchase and account creation
 - 2026-02-17: Admin dashboard - Built comprehensive admin system with 25+ API routes, 8-tab admin dashboard, Firebase Admin SDK auth, server-side payment validation, promo codes, sponsor management, invoice system, purchase links, admin invite system
 - 2026-02-17: Complete redesign - New theme.css with Outfit+Inter fonts, charcoal/gold palette. New app.js with dynamic top navbar, mobile hamburger, cart drawer. Rebuilt all pages. Added Flask backend with Square payment API.
 - 2026-02-17: Initial Replit setup.
