@@ -268,4 +268,22 @@ document.addEventListener('DOMContentLoaded', () => {
   // Update login modal if present and attach listeners
   updateLoginModal();
   attachSocialListeners();
+
+  // === Global scroll animation observer ===
+  // Elements with [data-animate] start hidden (via theme.css) and become
+  // visible when they scroll into view. A single shared observer handles
+  // all pages so per-page inline scripts are unnecessary.
+  if ('IntersectionObserver' in window) {
+    const animObs = new IntersectionObserver((entries, obs) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          obs.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('[data-animate]').forEach(el => animObs.observe(el));
+  } else {
+    document.querySelectorAll('[data-animate]').forEach(el => el.classList.add('visible'));
+  }
 });

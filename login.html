@@ -6,34 +6,42 @@
   <title>Login • CannaGrudge</title>
   <link rel="stylesheet" href="theme.css">
   <style>
-    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;margin:0;background:#0f1012;color:#eaecef}
-    .wrap{max-width:720px;margin:24px auto;padding:16px}
-    .card{background:#181b20;border:1px solid #2a2f36;border-radius:16px;padding:16px;box-shadow:0 4px 24px rgba(0,0,0,.28)}
-    .btn{display:block;width:100%;margin:10px 0;padding:14px 16px;border-radius:999px;border:1px solid rgba(255,255,255,.1);
-         font-weight:800;text-align:center;cursor:pointer;transition:.12s all}
-    .btn:active{transform:translateY(1px) scale(.995)}
-    .g{background:#0F9D58;color:#fff}
-    .f{background:#1877F2;color:#fff}
-    .a{background:#000;color:#fff;border-color:#333}
-    .muted{opacity:.8;font-size:14px;margin-top:8px}
+    .login-wrap{max-width:420px;margin:60px auto 24px;padding:16px;text-align:center}
+    .login-title{font-size:2.2rem;font-weight:1000;margin-bottom:24px}
+    .text-gradient{background:linear-gradient(135deg,var(--cg-gold-300),var(--cg-gold-200));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .login-card{background:var(--cg-surface);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(245,184,26,.12);border-radius:var(--cg-r-lg);padding:32px 24px;box-shadow:var(--cg-elev),0 0 30px rgba(245,184,26,.06);transition:border-color .3s ease,box-shadow .3s ease}
+    .login-card:hover{border-color:rgba(245,184,26,.2);box-shadow:var(--cg-elev),0 0 40px rgba(245,184,26,.1)}
+    .login-card h1{margin:0 0 6px;color:var(--cg-text-strong)}
+    .login-card .muted{color:var(--cg-text-dim);font-size:14px;margin-bottom:20px}
+    .auth-btn{display:block;width:100%;margin:10px 0;padding:14px 16px;border-radius:var(--cg-r-pill);border:1px solid rgba(255,255,255,.08);font-weight:800;font-size:15px;text-align:center;cursor:pointer;color:#fff;transition:transform .1s ease,box-shadow .25s ease,border-color .25s ease;letter-spacing:.01em}
+    .auth-btn:active{transform:translateY(1px) scale(.995)}
+    .auth-btn:hover{box-shadow:0 0 20px rgba(255,255,255,.08);border-color:rgba(255,255,255,.18)}
+    .auth-btn.g{background:linear-gradient(135deg,#0F9D58,#0a7a42)}
+    .auth-btn.g:hover{box-shadow:0 0 20px rgba(15,157,88,.3)}
+    .auth-btn.f{background:linear-gradient(135deg,#1877F2,#0d5bbf)}
+    .auth-btn.f:hover{box-shadow:0 0 20px rgba(24,119,242,.3)}
+    .auth-btn.a{background:linear-gradient(135deg,#333,#111);border-color:rgba(255,255,255,.12)}
+    .auth-btn.a:hover{box-shadow:0 0 20px rgba(255,255,255,.08);border-color:rgba(255,255,255,.2)}
+    .login-footer-note{color:var(--cg-text-dim);opacity:.8;font-size:13px;margin-top:16px}
+    [data-animate]{opacity:0;transform:translateY(24px);transition:opacity .6s ease,transform .6s ease}
+    [data-animate].visible{opacity:1;transform:translateY(0)}
   </style>
 </head>
 <body class="with-dock">
-  <!-- Use a main container so the bottom nav can compute proper padding -->
   <main class="container">
-    <div class="card" style="max-width:720px;margin:24px auto 8px;padding:16px;">
-      <h1 style="margin:0 0 6px;">Sign in</h1>
-      <div class="muted">Use a provider below to access your dashboard.</div>
-
-      <!-- Use Firebase providers for real authentication -->
-      <button id="btnGoogle" class="btn g">Continue with Google</button>
-      <button id="btnFacebook" class="btn f">Continue with Facebook</button>
-      <button id="btnApple" class="btn a">Continue with Apple</button>
-      <div class="muted">If a provider isn't enabled yet, you'll get an error. Start with Google.</div>
+    <div class="login-wrap">
+      <div class="login-title text-gradient">CannaGrudge</div>
+      <div class="login-card" data-animate>
+        <h1>Sign in</h1>
+        <div class="muted">Use a provider below to access your dashboard.</div>
+        <button id="btnGoogle" class="auth-btn g">Continue with Google</button>
+        <button id="btnFacebook" class="auth-btn f">Continue with Facebook</button>
+        <button id="btnApple" class="auth-btn a">Continue with Apple</button>
+        <div class="login-footer-note">If a provider isn't enabled yet, you'll get an error. Start with Google.</div>
+      </div>
     </div>
   </main>
 
-  <!-- Restore Firebase providers for real authentication. -->
   <script type="module" src="./firebase-config.js"></script>
   <script type="module">
     const { auth, signInWithPopup, googleProvider, facebookProvider, appleProvider, onAuthStateChanged } = window.__cgAuth;

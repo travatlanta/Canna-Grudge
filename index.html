@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -8,12 +8,8 @@
   <link rel="apple-touch-icon" href="assets/favicon-gloves.png">
   <link rel="stylesheet" href="theme.css">
   <style>
-    /* Removed redundant bottom-nav styles and manual padding; rely on theme.css and app.js for layout */
     .hero-min { min-height: 62vh; }
-    /* Use the global promo-wrap definition from theme.css for the full‑bleed event image.  Do not constrain the width here. */
 
-    /* Expand the main container on the home page so content spans the full width with gentle gutters on mobile.
-       On larger screens introduce a maximum width to prevent overly wide layouts. */
     body.index .container {
       max-width: none;
       width: 100%;
@@ -21,7 +17,6 @@
       padding-right: 4%;
     }
 
-    /* On wide viewports, center the container and cap its width */
     @media (min-width: 992px) {
       body.index .container {
         max-width: 1200px;
@@ -32,27 +27,11 @@
       }
     }
 
-    /* The hero content inherits its max width from the global theme.  No additional
-       overrides are required here; see theme.css for responsive sizing. */
-
-    /* Desktop layout for the home page: arrange the intro card and poster side by side.  The
-       container becomes a flex container on large screens.  On smaller screens the default
-       stacked layout and full‑bleed image from theme.css remain in effect. */
     @media (min-width: 992px) {
-      /*
-        Desktop layout: split the intro column and the poster.  Use
-        flex-start alignment so the intro content isn’t forced to match
-        the height of the poster.  Allocate slightly more width to the
-        poster (approx 52%) per user feedback and the remainder to
-        the left column (approx 48%).
-      */
       body.index main.container {
         display: flex;
         flex-direction: row;
         gap: 24px;
-        /* Stretch children vertically so the poster matches the height of the
-           left column.  The intro column retains its natural height, and
-           the poster will crop via object-fit. */
         align-items: stretch;
       }
       body.index main.container .intro-column {
@@ -65,21 +44,12 @@
         position: static;
         left: 0;
         right: 0;
-        /* Use flexbox to center the contained image horizontally.  Stretch
-           the image vertically so the column height matches the left
-           column.  Overflow hidden prevents the image from spilling
-           outside its container. */
         display: flex;
         justify-content: center;
         align-items: stretch;
         overflow: hidden;
       }
       body.index main.container .promo-wrap img {
-        /* Display the inline image on desktop and scale it to fully fit
-           inside the container without cropping.  Both width and height
-           are set to 100% so that object-fit: contain can determine
-           the appropriate scale.  The image is centered within the
-           container. */
         display: block;
         width: 100%;
         height: 100%;
@@ -88,7 +58,6 @@
       }
     }
 
-    /* Feature list styling for desktop; hidden on small screens */
     .feature-list {
       display: flex;
       flex-wrap: wrap;
@@ -101,82 +70,70 @@
       gap: 6px;
       font-size: 14px;
       color: var(--cg-text);
-      background: rgba(255, 255, 255, 0.05);
-      padding: 4px 8px;
-      border-radius: 8px;
+      background: rgba(245, 184, 26, .06);
+      padding: 6px 12px;
+      border-radius: var(--cg-r-pill);
+      border: 1px solid rgba(245, 184, 26, .1);
+      transition: border-color .3s ease, box-shadow .3s ease;
+    }
+    .feature-item:hover {
+      border-color: rgba(245, 184, 26, .3);
+      box-shadow: 0 0 10px rgba(245, 184, 26, .15);
     }
     .feature-icon {
       font-size: 1.2em;
     }
     @media (max-width: 991px) {
-      /* Show the feature list on small screens instead of hiding it */
       .feature-list {
         display: flex;
         flex-wrap: wrap;
       }
     }
 
-    /*
-      Desktop feature overview
-      -----------------------
-      The home page includes a section of feature cards that call out key
-      attractions.  On small screens the section remains hidden so the
-      stacked mobile layout isn’t cluttered.  Once the viewport is at
-      least 992px wide the grid becomes visible and lays the cards out
-      in a responsive grid.  Each card uses the theme variables for
-      surface color, border radius and elevation so they sit nicely on
-      the dark background.
-    */
     .features-grid {
       display: none;
     }
     @media (min-width: 992px) {
       .features-grid {
         display: grid;
-        /* Two columns to fit beneath the intro card on desktop */
         grid-template-columns: repeat(2, 1fr);
         gap: 16px;
         margin-top: 24px;
       }
     }
     .feature-card {
-      background: var(--cg-surface);
+      background: rgba(18, 21, 28, .7);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       border-radius: var(--cg-r-lg);
-      border: 1px solid var(--cg-border);
+      border: 1px solid rgba(245, 184, 26, .08);
       box-shadow: var(--cg-elev);
       padding: 20px;
       text-align: center;
       display: flex;
       flex-direction: column;
       align-items: center;
+      transition: transform .3s ease, border-color .3s ease, box-shadow .3s ease;
+    }
+    .feature-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(245, 184, 26, .35);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, .4), 0 0 20px rgba(245, 184, 26, .15);
     }
     .feature-card__icon {
       font-size: 32px;
       margin-bottom: 10px;
       color: var(--cg-primary);
     }
-    /* When an icon uses an img instead of an emoji, size the image to
-       match the text‑based icons and apply a bottom margin so it
-       aligns with the title consistently. */
     .feature-card__icon img {
-      /* Increase the icon size so that all custom icons appear at a
-         consistent, readable scale.  A 48px square works well for
-         desktop cards without overwhelming the text. */
       width: 48px;
       height: 48px;
       margin-bottom: 10px;
+      filter: drop-shadow(0 0 8px rgba(245, 184, 26, .3));
     }
 
-    /* Mobile feature overview styles
-       -----------------------------
-       When displayed on small screens, the replicated feature cards
-       should stack in a single column and use the same aesthetic as
-       the desktop grid.  This section is hidden on viewports
-       wider than 992px. */
     .features-grid-mobile {
       display: grid;
-      /* Display cards in a two‑column grid on mobile to match the desktop
-         square grid aesthetic.  Each card spans half the available width. */
       grid-template-columns: repeat(2, 1fr);
       gap: 16px;
       margin-top: 24px;
@@ -198,40 +155,158 @@
       color: var(--cg-text);
     }
 
-    /* Placeholder boxes below the poster on the home page.  These boxes
-       announce upcoming content such as featured fights and select
-       sponsors.  They use the same card styling as the feature cards
-       for visual consistency. */
     .placeholder-box {
-      background: var(--cg-surface);
+      background: rgba(18, 21, 28, .7);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       border-radius: var(--cg-r-lg);
-      border: 1px solid var(--cg-border);
-      box-shadow: var(--cg-elev);
-      padding: 20px;
+      border: 1px solid rgba(245, 184, 26, .15);
+      box-shadow: var(--cg-elev), 0 0 15px rgba(245, 184, 26, .05);
+      padding: 28px 20px;
       margin-top: 24px;
       text-align: center;
+      transition: border-color .3s ease, box-shadow .3s ease, transform .3s ease;
+    }
+    .placeholder-box:hover {
+      border-color: rgba(245, 184, 26, .35);
+      box-shadow: var(--cg-elev), 0 0 25px rgba(245, 184, 26, .12);
+      transform: translateY(-2px);
     }
     .placeholder-box h3 {
       margin: 0 0 6px;
       font-size: 24px;
       font-weight: 700;
-      color: var(--cg-text-strong);
+      color: var(--cg-primary);
+      text-shadow: 0 0 20px rgba(245, 184, 26, .2);
     }
     .placeholder-box p {
       margin: 0;
       font-size: 15px;
       color: var(--cg-text);
     }
+
+    .hero__title {
+      font-size: clamp(52px, 10vw, 72px) !important;
+      line-height: .9 !important;
+      font-weight: 1000 !important;
+      text-shadow: 0 0 40px rgba(245, 184, 26, .4), 0 8px 24px rgba(0, 0, 0, .6) !important;
+    }
+
+    .text-gradient {
+      background: linear-gradient(135deg, var(--cg-gold-100), var(--cg-gold-300), var(--cg-gold-200));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .countdown-section {
+      padding: 32px 16px;
+      text-align: center;
+    }
+    .countdown-panel {
+      max-width: 600px;
+      margin: 0 auto;
+      background: rgba(18, 21, 28, .8);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(245, 184, 26, .15);
+      border-radius: var(--cg-r-lg);
+      padding: 28px 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, .4), 0 0 20px rgba(245, 184, 26, .08);
+    }
+    .countdown-label {
+      font-family: var(--cg-font-display);
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      color: var(--cg-primary);
+      margin-bottom: 16px;
+      text-shadow: 0 0 12px rgba(245, 184, 26, .3);
+    }
+    .countdown-boxes {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+    }
+    .countdown-box {
+      background: rgba(245, 184, 26, .06);
+      border: 1px solid rgba(245, 184, 26, .2);
+      border-radius: var(--cg-r-md);
+      padding: 14px 16px;
+      min-width: 72px;
+      text-align: center;
+      transition: border-color .3s ease, box-shadow .3s ease;
+    }
+    .countdown-box:hover {
+      border-color: rgba(245, 184, 26, .4);
+      box-shadow: 0 0 16px rgba(245, 184, 26, .15);
+    }
+    .countdown-number {
+      font-family: var(--cg-font-display);
+      font-size: 32px;
+      font-weight: 900;
+      color: var(--cg-primary);
+      line-height: 1;
+      text-shadow: 0 0 16px rgba(245, 184, 26, .4);
+    }
+    .countdown-unit {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--cg-text-dim);
+      margin-top: 4px;
+    }
+    @media (max-width: 480px) {
+      .countdown-box { min-width: 60px; padding: 10px 8px; }
+      .countdown-number { font-size: 24px; }
+    }
+
+    [data-animate] {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity .6s ease-out, transform .6s ease-out;
+    }
+    [data-animate].visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    [data-animate="fade"] {
+      transform: none;
+    }
+
+    #hero-particles {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 1;
+    }
+    .hero__content { z-index: 2; position: absolute; }
+    .hero__veil { z-index: 1; }
+
+    .section-divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(245, 184, 26, .3), transparent);
+      margin: 8px 0;
+      border: none;
+    }
+
+    .glow-border {
+      border-color: rgba(245, 184, 26, .2) !important;
+      box-shadow: 0 0 15px rgba(245, 184, 26, .08) !important;
+    }
   </style>
 </head>
 <body class="with-dock index">
-  <header class="hero hero--ring">
+  <header class="hero hero--ring" style="position:relative;">
+    <div id="hero-particles"></div>
     <img class="hero__img" src="assets/hero-ring.png" alt="Arena lights and ring">
     <div class="hero__veil"></div>
     <div class="hero__content">
-      <div class="display hero__title">Canna<span style="color:var(--cg-primary)">Grudge</span></div>
-      <!-- Update: display the correct host city for the event. -->
-      <p class="muted" style="margin:10px 0 14px;">Litchfield Park, AZ • Feb 28th 2026</p>
+      <div class="display hero__title">Canna<span class="text-gradient">Grudge</span></div>
+      <p class="muted" style="margin:10px 0 14px; font-size:16px; letter-spacing:.02em;">Litchfield Park, AZ • Apr 25th 2026</p>
       <div style="display:flex; gap:10px;">
         <a href="event.html" class="button button--ghost">Event Info</a>
         <a href="event.html#featured" class="button button--primary">Get Tickets</a>
@@ -239,106 +314,112 @@
     </div>
   </header>
 
+  <section class="countdown-section" data-animate>
+    <div class="countdown-panel">
+      <div class="countdown-label">⚡ Fight Night Countdown ⚡</div>
+      <div class="countdown-boxes" id="countdown">
+        <div class="countdown-box">
+          <div class="countdown-number" id="cd-days">--</div>
+          <div class="countdown-unit">Days</div>
+        </div>
+        <div class="countdown-box">
+          <div class="countdown-number" id="cd-hours">--</div>
+          <div class="countdown-unit">Hours</div>
+        </div>
+        <div class="countdown-box">
+          <div class="countdown-number" id="cd-mins">--</div>
+          <div class="countdown-unit">Mins</div>
+        </div>
+        <div class="countdown-box">
+          <div class="countdown-number" id="cd-secs">--</div>
+          <div class="countdown-unit">Secs</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <main class="container">
-    <!-- Wrap the intro content and feature cards in a single column so
-         they occupy the left side of the desktop layout.  On mobile
-         this wrapper simply stacks its children vertically. -->
     <div class="intro-column">
-    <section class="card card--intro">
-      <h2 class="display" style="font-size:28px;">High Stakes & Heavy Hits</h2>
+    <section class="card card--intro" data-animate>
+      <h2 class="display" style="font-size:28px;">High Stakes &amp; Heavy Hits</h2>
+      <hr class="section-divider">
       <p class="muted">The biggest cannabis brands from across the industry step out of the dispensary and into the ring. Live boxing, mud wrestling, music, and vendor showcases collide in one arena. CannaGrudge is part festival, part fight night, an all-out celebration of cannabis culture and competition.</p>
 
-      <!-- Feature list to highlight key attractions on desktop.  Hidden on small screens to preserve space. -->
       <div class="feature-list">
-        <!-- Highlight only items not already represented as large cards -->
         <div class="feature-item"><span class="feature-icon">🍔</span><span class="feature-label">Food &amp; Drink</span></div>
         <div class="feature-item"><span class="feature-icon">🎯</span><span class="feature-label">Games &amp; Awards</span></div>
         <div class="feature-item"><span class="feature-icon">🛍️</span><span class="feature-label">Cannabis Vendors</span></div>
       </div>
     </section>
 
-    <!-- Desktop feature overview highlighting key attractions.  On large
-         screens this grid appears directly below the intro card within
-         the same column; on small screens it remains hidden. -->
     <section class="features-grid">
-      <div class="feature-card">
+      <div class="feature-card" data-animate>
         <div class="feature-card__icon">
-          <!-- Custom icon for Live Boxing -->
           <img src="assets/Icons/live boxing.png" alt="Live Boxing icon">
         </div>
         <h3 class="feature-card__title">Live Boxing</h3>
         <p class="feature-card__text">Watch top fighters go glove-to-glove in the ring.</p>
       </div>
-      <div class="feature-card">
+      <div class="feature-card" data-animate>
         <div class="feature-card__icon">
-          <!-- Custom icon for Mud Wrestling -->
           <img src="assets/Icons/mud wrestling.png" alt="Mud Wrestling icon">
         </div>
         <h3 class="feature-card__title">Mud Wrestling</h3>
-        <p class="feature-card__text">Dive into the dirtiest showdown you’ve ever seen.</p>
+        <p class="feature-card__text">Dive into the dirtiest showdown you've ever seen.</p>
       </div>
-      <div class="feature-card">
+      <div class="feature-card" data-animate>
         <div class="feature-card__icon">
-          <!-- Custom icon for Music & Entertainment -->
           <img src="assets/Icons/Music & Entertainment.png" alt="Live music icon">
         </div>
         <h3 class="feature-card__title">Live Music</h3>
         <p class="feature-card__text">Groove to live acts and DJs all night long.</p>
       </div>
-      <div class="feature-card">
+      <div class="feature-card" data-animate>
         <div class="feature-card__icon">
-          <!-- Custom icon for Vendors & Samples -->
           <img src="assets/Icons/vendors.png" alt="Vendors & Samples icon">
         </div>
         <h3 class="feature-card__title">Vendors &amp; Samples</h3>
         <p class="feature-card__text">Explore the best of cannabis culture with top brands.</p>
       </div>
     </section>
-    </div> <!-- /.intro-column -->
+    </div>
 
-    <!-- Replaced Featured section with the uploaded Event Highlights image -->
-    <a class="promo-wrap" href="event.html#info" aria-label="Event Highlights">
+    <a class="promo-wrap" href="event.html#info" aria-label="Event Highlights" data-animate="fade">
       <img src="assets/Event Highlights.png" alt="Event Highlights: mud wrestling, midget wrestling, two rings, live music, games, awards, food, drinks and cannabis samples">
     </a>
 
-    <!-- Placeholder content sections to tease future updates.  These cards
-         will be replaced with dynamic content once featured fights and
-         sponsor showcases are ready to publish. -->
-    <div class="placeholder-box">
-      <h3>Featured Fights</h3>
+    <div class="placeholder-box" data-animate>
+      <h3>🥊 Featured Fights</h3>
       <p>This section will highlight our biggest match‑ups. Stay tuned!</p>
     </div>
-    <div class="placeholder-box">
-      <h3>Select Sponsors</h3>
+    <div class="placeholder-box" data-animate>
+      <h3>🏆 Select Sponsors</h3>
       <p>Coming soon: spotlights on our premier sponsors.</p>
     </div>
 
-    <!-- Mobile feature overview: replicate the feature cards below the poster on small screens.  This
-         section becomes visible only on viewports narrower than 992px.  On desktop the existing
-         features-grid in the intro column remains in place. -->
     <section class="features-grid-mobile">
-      <div class="feature-card">
+      <div class="feature-card" data-animate>
         <div class="feature-card__icon">
           <img src="assets/Icons/live boxing.png" alt="Live Boxing icon">
         </div>
         <h3 class="feature-card__title">Live Boxing</h3>
         <p class="feature-card__text">Watch top fighters go glove-to-glove in the ring.</p>
       </div>
-      <div class="feature-card">
+      <div class="feature-card" data-animate>
         <div class="feature-card__icon">
           <img src="assets/Icons/mud wrestling.png" alt="Mud Wrestling icon">
         </div>
         <h3 class="feature-card__title">Mud Wrestling</h3>
-        <p class="feature-card__text">Dive into the dirtiest showdown you’ve ever seen.</p>
+        <p class="feature-card__text">Dive into the dirtiest showdown you've ever seen.</p>
       </div>
-      <div class="feature-card">
+      <div class="feature-card" data-animate>
         <div class="feature-card__icon">
           <img src="assets/Icons/Music & Entertainment.png" alt="Live music icon">
         </div>
         <h3 class="feature-card__title">Live Music</h3>
         <p class="feature-card__text">Groove to live acts and DJs all night long.</p>
       </div>
-      <div class="feature-card">
+      <div class="feature-card" data-animate>
         <div class="feature-card__icon">
           <img src="assets/Icons/vendors.png" alt="Vendors &amp; Samples icon">
         </div>
@@ -348,10 +429,9 @@
     </section>
   </main>
 
-  <footer class="footer footer--stack">
+  <footer class="footer footer--stack" data-animate="fade">
     <div class="footer__share"><img src="assets/Icons/share-online.png" alt="Share Online" /></div>
     <div class="footer__icons">
-      <!-- Replace text abbreviations with actual social platform logos -->
       <a href="https://www.instagram.com/?url=https%3A%2F%2Fcannagrudge.com" target="_blank" data-share="instagram" title="Share on Instagram"><img src="assets/Icons/instagram.png" alt="Instagram" /></a>
       <a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fcannagrudge.com" target="_blank" data-share="facebook" title="Share on Facebook"><img src="assets/Icons/facebook.png" alt="Facebook" /></a>
       <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fcannagrudge.com" target="_blank" data-share="twitter" title="Share on X"><img src="assets/Icons/twitter.png" alt="X" /></a>
@@ -385,15 +465,8 @@
 
   <script src="app.js"></script>
 
-  <!--
-    Adjust the poster column height to match the height of the intro column
-    on desktop.  This ensures the promotional image does not exceed the
-    combined height of the text and feature boxes.  The poster scales
-    proportionally inside its container thanks to object-fit: contain.
-  -->
   <script>
     function adjustPosterHeight() {
-      // Apply only on desktop widths (>=992px); otherwise reset height
       const mq = window.matchMedia('(min-width: 992px)');
       const intro = document.querySelector('.intro-column');
       const promo = document.querySelector('body.index main.container .promo-wrap');
@@ -409,7 +482,56 @@
     window.addEventListener('resize', adjustPosterHeight);
   </script>
 
-  <!-- Fixed bottom CTA dock left as-is -->
+  <script>
+    (function() {
+      var target = new Date('2026-04-25T19:00:00Z');
+      function update() {
+        var now = Date.now();
+        var diff = target - now;
+        if (diff <= 0) {
+          document.getElementById('cd-days').textContent = '0';
+          document.getElementById('cd-hours').textContent = '0';
+          document.getElementById('cd-mins').textContent = '0';
+          document.getElementById('cd-secs').textContent = '0';
+          return;
+        }
+        var d = Math.floor(diff / 86400000);
+        var h = Math.floor((diff % 86400000) / 3600000);
+        var m = Math.floor((diff % 3600000) / 60000);
+        var s = Math.floor((diff % 60000) / 1000);
+        document.getElementById('cd-days').textContent = d;
+        document.getElementById('cd-hours').textContent = String(h).padStart(2, '0');
+        document.getElementById('cd-mins').textContent = String(m).padStart(2, '0');
+        document.getElementById('cd-secs').textContent = String(s).padStart(2, '0');
+      }
+      update();
+      setInterval(update, 1000);
+    })();
+  </script>
+
+  <script>
+    (function() {
+      var container = document.getElementById('hero-particles');
+      if (!container) return;
+      var count = 25;
+      for (var i = 0; i < count; i++) {
+        var dot = document.createElement('div');
+        var size = Math.random() * 3 + 1;
+        dot.style.cssText =
+          'position:absolute;border-radius:50%;pointer-events:none;' +
+          'background:rgba(245,184,26,' + (Math.random() * 0.5 + 0.2).toFixed(2) + ');' +
+          'width:' + size + 'px;height:' + size + 'px;' +
+          'left:' + (Math.random() * 100) + '%;' +
+          'top:' + (Math.random() * 100) + '%;' +
+          'animation:particleFloat ' + (Math.random() * 6 + 4) + 's ease-in-out infinite alternate;' +
+          'animation-delay:' + (Math.random() * 4) + 's;';
+        container.appendChild(dot);
+      }
+      var style = document.createElement('style');
+      style.textContent = '@keyframes particleFloat{0%{transform:translateY(0) translateX(0);opacity:.3}50%{opacity:.8}100%{transform:translateY(-' + 40 + 'px) translateX(' + 20 + 'px);opacity:.2}}';
+      document.head.appendChild(style);
+    })();
+  </script>
 
   <nav class="bottom-nav">
     <a href="event.html">Event Info</a>

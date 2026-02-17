@@ -1,111 +1,105 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>CannaGrudge — Event Info</title>
   <link rel="stylesheet" href="theme.css">
-  <!-- Local overrides for event tile styling -->
   <style>
-    /* Use a darker surface for event tiles to improve contrast; highlight the selected tile */
     .tile {
-      /* Lighten default tile background to help them stand out as buttons */
-      background: var(--cg-ink-700);
-      /* Reserve space for the border so the tile size doesn’t change when
-         selected.  A transparent border ensures consistent dimensions. */
-      border: 1px solid transparent;
+      background: rgba(30, 35, 48, .6);
+      border: 1px solid rgba(245, 184, 26, .06);
       box-sizing: border-box;
-
-      /* Ensure all tiles have a consistent height and center their
-         contents.  This prevents selected tiles from appearing larger.
-         The height is chosen to accommodate the icon and label comfortably. */
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       height: 100px;
+      transition: transform .25s ease, box-shadow .3s ease, border-color .3s ease;
+    }
+    .tile:hover {
+      transform: scale(1.07);
+      border-color: rgba(245, 184, 26, .35);
+      box-shadow: 0 0 20px rgba(245, 184, 26, .2), 0 4px 16px rgba(0, 0, 0, .35);
+    }
+    .tile:active {
+      transform: scale(.97);
     }
     .tile.selected {
       border-color: var(--cg-primary);
-      background: var(--cg-ink-600);
-      /* Maintain the same height when selected */
+      background: rgba(39, 45, 59, .85);
+      box-shadow: 0 0 16px rgba(245, 184, 26, .25), 0 2px 8px rgba(0, 0, 0, .3);
       height: 100px;
     }
 
-    /* Adjust the main container on the event page: add gentle gutters but allow
-       the global max‑width from theme.css to control the overall width on larger screens. */
     body.event-info .container {
       padding-left: 4%;
       padding-right: 4%;
     }
 
-    /* No additional scroll padding on the event page.  Offsets are
-       handled directly in JavaScript when scrolling on mobile. */
-
-    /* Align the tile grid with the container gutters */
     body.event-info .tile-grid {
       margin-left: 0;
       margin-right: 0;
     }
 
-    /* Override promo image margins on the event page to avoid full‑bleed offset.
-       The event page uses a dedicated `.event-image` container instead of
-       `.promo-wrap`, so no margin adjustments are needed here. */
-
-    /* Icon images inside tiles */
     .tile__icon-img {
       width: 36px;
       height: 36px;
       margin-bottom: 6px;
       object-fit: contain;
+      filter: drop-shadow(0 0 4px rgba(245, 184, 26, .15));
+      transition: filter .3s ease;
+    }
+    .tile:hover .tile__icon-img {
+      filter: drop-shadow(0 0 8px rgba(245, 184, 26, .35));
     }
 
-    /* Desktop layout adjustments for the event page */
-    /* By default, the main container stacks its children on small screens. */
     body.event-info main.container {
       display: block;
     }
 
-    /* Position the tile grid wrapper relative so popups can overlay without
-       altering layout height */
     .tile-grid-container {
       position: relative;
     }
+
     .tile-popup {
-      background: var(--cg-ink-600);
-      border: 1px solid rgba(245, 184, 26, .25);
+      background: rgba(18, 21, 28, .75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(245, 184, 26, .2);
       border-radius: var(--cg-r-lg);
-      box-shadow: 0 2px 10px rgba(0,0,0,.3);
-      padding: 16px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, .4), 0 0 12px rgba(245, 184, 26, .08);
+      padding: 20px;
       margin-top: 12px;
+      animation: popupFadeIn .3s ease forwards;
     }
-    /* Allow the information panel to sit below the tile grid and push the
-       page content downward instead of overlaying the footer. */
+    @keyframes popupFadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .tile-popup h3 {
+      color: var(--cg-text-strong);
+      border-bottom: 2px solid rgba(245, 184, 26, .15);
+      padding-bottom: 8px;
+    }
+
     .tile-grid-container .tile-popup {
       position: static;
       width: 100%;
     }
-    /* On wider screens (992px and up) lay the poster and tile grid side-by-side
-       similar to the home page layout.  Use flexbox to align the two columns
-       and ensure they stretch to the same height. */
+
     @media (min-width: 992px) {
       body.event-info main.container {
         display: flex;
         flex-direction: row;
         gap: 24px;
-        /* Align children to the top of the row rather than stretching
-           them to equal heights.  This ensures the tile section starts
-           level with the top of the poster on desktop. */
         align-items: flex-start;
       }
-      /* Left column with event image */
       body.event-info main.container .event-image {
         flex: 1 1 48%;
         margin: 0;
         width: auto;
         position: static;
-        /* Center the contained image horizontally and stretch it
-           vertically to match the height of the tile column. */
         display: flex;
         justify-content: center;
         align-items: stretch;
@@ -118,16 +112,11 @@
         object-fit: contain;
         object-position: center;
       }
-      /* Right column with tiles */
       body.event-info main.container .event-content {
         flex: 1 1 52%;
       }
     }
 
-    /* Mobile adjustments (below 992px) for the event page.  When the
-       viewport is narrow, stack the tiles above the image, center
-       everything, and ensure the halftime poster fits within the
-       viewport without cropping. */
     @media (max-width: 991px) {
       body.event-info main.container {
         display: flex;
@@ -139,7 +128,7 @@
       body.event-info main.container .event-image {
         order: 2;
         width: 100%;
-        margin: 0; /* remove side gutters so image can stretch */
+        margin: 0;
       }
       body.event-info main.container .event-image img {
         width: 100%;
@@ -148,17 +137,11 @@
         object-position: center;
         display: block;
       }
-    /* On small screens, offset the promo image to compensate for the
-       container’s side padding.  By stretching the width and
-       applying negative margins equal to the container gutters,
-       the image can extend edge‑to‑edge while the tile section
-       retains its left/right margin. */
-    body.event-info main.container .event-image {
-      width: calc(100% + 8%);
-      margin-left: -4%;
-      margin-right: -4%;
-    }
-      /* Center the tile grid and allow it to wrap nicely on small screens */
+      body.event-info main.container .event-image {
+        width: calc(100% + 8%);
+        margin-left: -4%;
+        margin-right: -4%;
+      }
       .tile-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
@@ -167,88 +150,128 @@
       }
     }
 
-    /* Remove scroll-margin-top override from the mobile tiles column.  We
-       will handle offsetting the scroll via JavaScript instead. */
-
-    /* Style the mini calendar in the schedule popup to look more like a
-       standalone calendar.  Add borders, subtle shading and consistent
-       cell spacing so the calendar is visually distinct and easy to read. */
     .tile-popup .calendar {
-      border: 1px solid var(--cg-border);
+      border: 1px solid rgba(245, 184, 26, .12);
       border-radius: var(--cg-r-md);
-      background: var(--cg-ink-700);
+      background: var(--cg-ink-900);
       overflow: hidden;
     }
     .tile-popup .calendar caption {
       font-weight: 700;
       margin-bottom: 4px;
+      color: var(--cg-text-strong);
     }
     .tile-popup .calendar th,
     .tile-popup .calendar td {
-      padding: 6px;
-      border-top: 1px solid var(--cg-border);
-      border-right: 1px solid var(--cg-border);
+      padding: 8px 6px;
+      border-top: 1px solid rgba(245, 184, 26, .06);
+      border-right: 1px solid rgba(245, 184, 26, .06);
+      color: var(--cg-text);
+      font-size: 12px;
     }
     .tile-popup .calendar th:last-child,
     .tile-popup .calendar td:last-child {
       border-right: none;
     }
     .tile-popup .calendar thead th {
-      background: var(--cg-ink-600);
-      font-weight: 600;
+      background: var(--cg-ink-850);
+      font-weight: 700;
+      color: var(--cg-gold-300);
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: .05em;
     }
     .tile-popup .calendar tbody tr:first-child td {
       border-top: none;
     }
+    .tile-popup .calendar tbody tr:hover {
+      background: rgba(245, 184, 26, .03);
+    }
 
-    /* FAQ styling – distinguish each question and answer pair.  Wrap each
-       <details> in a bubble with its own border and subtle background.  Make
-       the question (summary) bold and larger to differentiate it from the
-       answer. */
     .tile-popup details {
-      background: var(--cg-ink-700);
-      border: 1px solid var(--cg-border);
+      background: rgba(18, 21, 28, .5);
+      border: 1px solid rgba(245, 184, 26, .1);
       border-radius: var(--cg-r-md);
-      padding: 8px;
-      margin-bottom: 6px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      transition: border-color .25s ease, box-shadow .25s ease;
+    }
+    .tile-popup details:hover {
+      border-color: rgba(245, 184, 26, .25);
+      box-shadow: 0 0 8px rgba(245, 184, 26, .06);
     }
     .tile-popup details summary {
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
       font-size: 14px;
       outline: none;
+      color: var(--cg-text-strong);
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .tile-popup details summary::before {
+      content: "▸";
+      color: var(--cg-gold-300);
+      font-size: 12px;
+      transition: transform .2s ease;
+    }
+    .tile-popup details[open] summary::before {
+      transform: rotate(90deg);
+    }
+    .tile-popup details summary::-webkit-details-marker {
+      display: none;
     }
     .tile-popup details p {
-      margin: 4px 0 0;
+      margin: 6px 0 0;
       font-size: 13px;
+      line-height: 1.5;
     }
-
-    /* When a FAQ entry is expanded, separate the question and answer with
-       a divider and give the answer its own shaded background.  This
-       improves visual differentiation between the question and the
-       response. */
     .tile-popup details[open] summary {
-      border-bottom: 1px solid var(--cg-border);
-      margin-bottom: 4px;
-      padding-bottom: 4px;
+      border-bottom: 1px solid rgba(245, 184, 26, .1);
+      margin-bottom: 6px;
+      padding-bottom: 6px;
     }
     .tile-popup details[open] p {
-      background: var(--cg-ink-600);
+      background: rgba(30, 35, 48, .5);
       border-radius: 0 0 var(--cg-r-md) var(--cg-r-md);
-      padding: 6px;
+      padding: 8px 10px;
+    }
+
+    .hero__veil--strong {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(80% 50% at 50% 15%, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, .5) 45%, rgba(0, 0, 0, .9) 100%),
+        linear-gradient(180deg, transparent 30%, rgba(8, 10, 14, .95) 100%);
+    }
+
+    .popup-input {
+      width: 100%;
+      padding: 8px 12px;
+      border-radius: var(--cg-r-sm);
+      border: 1px solid rgba(245, 184, 26, .12);
+      background: var(--cg-ink-900);
+      color: var(--cg-text);
+      font-size: 14px;
+      transition: border-color .2s ease, box-shadow .2s ease;
+    }
+    .popup-input:focus {
+      outline: none;
+      border-color: rgba(245, 184, 26, .35);
+      box-shadow: 0 0 8px rgba(245, 184, 26, .1);
     }
   </style>
   <link rel="icon" type="image/png" href="assets/favicon-gloves.png">
 </head>
 <body class="with-dock event-info">
-  <!-- Hero with image and veil restored -->
-  <header class="hero hero--ring">
+  <header class="hero hero--ring" data-animate>
     <img class="hero__img" src="assets/hero-ring.png" alt="Arena lights and ring">
-    <div class="hero__veil"></div>
+    <div class="hero__veil--strong"></div>
     <div class="hero__content">
-      <div class="display hero__title">Event <span style="color:var(--cg-primary)">Info</span></div>
-      <!-- Update: display the correct host city for the event. -->
-      <p class="muted" style="margin:10px 0 14px;">Litchfield Park, AZ • Feb 28th 2026</p>
+      <div class="display hero__title">Event <span class="text-gradient">Info</span></div>
+      <p class="muted" style="margin:10px 0 14px;">Litchfield Park, AZ • Apr 25th 2026</p>
       <div style="display:flex; gap:10px;">
         <a href="#featured" class="button button--primary">Tickets</a>
         <a href="#vendors" class="button button--ghost">Vendors</a>
@@ -257,13 +280,11 @@
   </header>
 
   <main class="container">
-    <!-- Desktop layout: place the promo image in its own column and the tiles in another. -->
-    <div class="event-image">
+    <div class="event-image" data-animate>
       <img src="assets/Halftime Show.png" alt="Little People Wrestling Halftime Show">
     </div>
     <div class="event-content">
-      <section class="card event-tiles" id="info">
-        <!-- Wrap the grid in a container so popups can overlay without affecting layout -->
+      <section class="card event-tiles glass" id="info" data-animate>
         <div class="tile-grid-container">
           <div class="tile-grid">
             <a class="tile" href="#about"><img class="tile__icon-img" src="assets/Icons/about.png" alt="About" /><div class="tile__label">About</div></a>
@@ -275,16 +296,15 @@
             <a class="tile" href="#parking"><img class="tile__icon-img" src="assets/Icons/parking-sign.png" alt="Parking" /><div class="tile__label">Parking</div></a>
             <a class="tile" href="#lodging"><img class="tile__icon-img" src="assets/Icons/lodging.png" alt="Lodging" /><div class="tile__label">Lodging</div></a>
             <a class="tile" href="#contact"><img class="tile__icon-img" src="assets/Icons/contact.png" alt="Contact" /><div class="tile__label">Contact</div></a>
-          </div> <!-- /.tile-grid -->
-        </div> <!-- /.tile-grid-container -->
+          </div>
+        </div>
       </section>
-    </div><!-- /.event-content -->
+    </div>
   </main>
 
-  <footer class="footer footer--stack">
+  <footer class="footer footer--stack" data-animate>
     <div class="footer__share"><img src="assets/Icons/share-online.png" alt="Share Online" /></div>
     <div class="footer__icons">
-      <!-- Replace text abbreviations with actual social platform logos -->
       <a href="https://www.instagram.com/?url=https%3A%2F%2Fcannagrudge.com" target="_blank" data-share="instagram" title="Share on Instagram"><img src="assets/Icons/instagram.png" alt="Instagram" /></a>
       <a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fcannagrudge.com" target="_blank" data-share="facebook" title="Share on Facebook"><img src="assets/Icons/facebook.png" alt="Facebook" /></a>
       <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fcannagrudge.com" target="_blank" data-share="twitter" title="Share on X"><img src="assets/Icons/twitter.png" alt="X" /></a>
@@ -302,17 +322,8 @@
   </footer>
   <script src="app.js"></script>
 
-  <!-- Inline script to handle tile pop‑ups on the event page.
-       When a tile is clicked, display an informational panel below the grid.
-       The panel's content is defined in the `contentMap` object keyed off
-       the tile's href (e.g. `#about` becomes `about`).  It adds a
-       `.selected` class to the active tile and removes any existing
-       pop‑up before inserting the new one. -->
   <script>
     document.addEventListener('DOMContentLoaded', function () {
-      // Define content for each section.  Feel free to update the HTML
-      // snippets below with richer copy or markup as the event details
-      // become available.
       const contentMap = {
         about: `
           <h3 style="margin-top:0;margin-bottom:8px;">About CannaGrudge</h3>
@@ -321,7 +332,7 @@
             celebration that blends festival vibes with competitive bouts. Enjoy
             live boxing, mud wrestling, music and DJ performances, games and
             awards, plus a bustling vendor expo featuring cannabis products,
-            accessories, apparel and more. It’s part fight night, part
+            accessories, apparel and more. It's part fight night, part
             festival—and all about celebrating cannabis culture in Litchfield Park on
             February&nbsp;28,&nbsp;2026.
           </p>
@@ -330,8 +341,8 @@
           <h3 style="margin-top:0;margin-bottom:8px;">Event Schedule</h3>
           <p class="muted" style="margin:0 0 8px;">
             CannaGrudge takes place on <strong>Saturday, February&nbsp;28,&nbsp;2026</strong>
-            at Dunn’s&nbsp;Arena. Gates open at <strong>12:00&nbsp;PM</strong> and the
-            festivities continue late into the night. Here’s a look at the day:
+            at Dunn's&nbsp;Arena. Gates open at <strong>12:00&nbsp;PM</strong> and the
+            festivities continue late into the night. Here's a look at the day:
           </p>
           <ul style="padding-left:18px;margin:0 0 12px;">
             <li><strong>12:00&nbsp;PM:</strong> Gates open, vendor showcases &amp; games begin</li>
@@ -340,19 +351,19 @@
             <li><strong>10:00&nbsp;PM:</strong> After‑party starts and runs late</li>
           </ul>
           <div class="calendar-wrapper" style="margin-top:12px;">
-            <table class="calendar" style="width:100%;border-collapse:collapse;text-align:center;font-size:12px;">
+            <table class="calendar" style="width:100%;border-collapse:collapse;text-align:center;">
               <caption style="font-weight:700;margin-bottom:4px;">February&nbsp;2026</caption>
               <thead><tr>
-                <th style="padding:4px;">Sun</th><th style="padding:4px;">Mon</th><th style="padding:4px;">Tue</th>
-                <th style="padding:4px;">Wed</th><th style="padding:4px;">Thu</th><th style="padding:4px;">Fri</th>
-                <th style="padding:4px;">Sat</th>
+                <th>Sun</th><th>Mon</th><th>Tue</th>
+                <th>Wed</th><th>Thu</th><th>Fri</th>
+                <th>Sat</th>
               </tr></thead>
               <tbody>
                 <tr><td></td><td></td><td></td><td></td><td></td><td></td><td>1</td></tr>
                 <tr><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td><td>8</td></tr>
                 <tr><td>9</td><td>10</td><td>11</td><td>12</td><td>13</td><td>14</td><td>15</td></tr>
                 <tr><td>16</td><td>17</td><td>18</td><td>19</td><td>20</td><td>21</td><td>22</td></tr>
-                <tr><td>23</td><td>24</td><td>25</td><td>26</td><td>27</td><td><strong style="color:var(--cg-primary);">28</strong></td><td>29</td></tr>
+                <tr><td>23</td><td>24</td><td>25</td><td>26</td><td>27</td><td><strong style="color:var(--cg-gold-300);text-shadow:0 0 8px rgba(245,184,26,.4);">28</strong></td><td>29</td></tr>
               </tbody>
             </table>
           </div>
@@ -380,7 +391,7 @@
           <h3 style="margin-top:0;margin-bottom:8px;">Venue &amp; Directions</h3>
           <p class="muted" style="margin:0 0 8px;">
             <strong>Date:</strong> February&nbsp;28,&nbsp;2026<br>
-            <strong>Location:</strong> Dunn’s Arena, 7653&nbsp;N&nbsp;Sarival&nbsp;Ave,
+            <strong>Location:</strong> Dunn's Arena, 7653&nbsp;N&nbsp;Sarival&nbsp;Ave,
             Litchfield Park, AZ&nbsp;85340
           </p>
           <p class="muted" style="margin:0 0 12px;">
@@ -388,27 +399,27 @@
             preferred map app.
           </p>
           <a href="https://www.google.com/maps/search/?api=1&amp;query=Dunns+Arena+Litchfield+Park+AZ" target="_blank" class="button button--primary" style="display:inline-block;padding:6px 14px;font-size:14px;margin-bottom:12px;">Get&nbsp;Directions</a>
-          <div style="margin-top:0;">
+          <div style="margin-top:0;border-radius:var(--cg-r-md);overflow:hidden;">
             <iframe src="https://maps.google.com/maps?q=7653%20N%20Sarival%20Ave,%20Litchfield%20Park,%20AZ%2085340&amp;output=embed" width="100%" height="200" style="border:0;" allowfullscreen loading="lazy"></iframe>
           </div>
         `,
         faq: `
           <h3 style="margin-top:0;margin-bottom:8px;">Frequently Asked Questions</h3>
-          <details style="margin-bottom:6px;"><summary>Is the event 21+?</summary>
-            <p class="muted" style="margin:4px 0 0;">Yes, CannaGrudge is strictly
+          <details><summary>Is the event 21+?</summary>
+            <p class="muted">Yes, CannaGrudge is strictly
             21&nbsp;and over. Please bring a valid government‑issued ID.</p>
           </details>
-          <details style="margin-bottom:6px;"><summary>Can I bring my own cannabis?</summary>
-            <p class="muted" style="margin:4px 0 0;">Outside cannabis is not
+          <details><summary>Can I bring my own cannabis?</summary>
+            <p class="muted">Outside cannabis is not
             permitted. Licensed vendors will have products available for
             purchase and consumption where local regulations allow.</p>
           </details>
-          <details style="margin-bottom:6px;"><summary>Are children allowed?</summary>
-            <p class="muted" style="margin:4px 0 0;">No, minors are not allowed
+          <details><summary>Are children allowed?</summary>
+            <p class="muted">No, minors are not allowed
             due to age restrictions and onsite cannabis consumption.</p>
           </details>
-          <details style="margin-bottom:6px;"><summary>What should I bring?</summary>
-            <p class="muted" style="margin:4px 0 0;">Bring a valid ID, cash or
+          <details><summary>What should I bring?</summary>
+            <p class="muted">Bring a valid ID, cash or
             card for vendors, and comfortable clothes. Personal bags may be
             subject to security screening.</p>
           </details>
@@ -443,13 +454,13 @@
           <ul style="padding-left:18px;margin:0;list-style:none;">
             <li style="margin-bottom:8px;">
               <strong>The&nbsp;Wigwam&nbsp;Resort</strong><br>
-              <span style="font-size:13px;">300&nbsp;E. Wigwam&nbsp;Boulevard, Litchfield Park, AZ&nbsp;85340</span><br>
+              <span style="font-size:13px;color:var(--cg-text-dim);">300&nbsp;E. Wigwam&nbsp;Boulevard, Litchfield Park, AZ&nbsp;85340</span><br>
               <a href="https://www.wigwamarizona.com" target="_blank" class="button button--ghost" style="padding:6px 12px;font-size:13px;margin-right:6px;display:inline-block;">Website</a>
               <a href="tel:+18669766894" class="button button--primary" style="padding:6px 12px;font-size:13px;display:inline-block;">Call</a>
             </li>
             <li style="margin-bottom:8px;">
               <strong>Best&nbsp;Western&nbsp;Phoenix&nbsp;Goodyear&nbsp;Inn</strong><br>
-              <span style="font-size:13px;">55&nbsp;N&nbsp;Litchfield&nbsp;Rd, Goodyear, AZ&nbsp;85338</span><br>
+              <span style="font-size:13px;color:var(--cg-text-dim);">55&nbsp;N&nbsp;Litchfield&nbsp;Rd, Goodyear, AZ&nbsp;85338</span><br>
               <a href="https://www.bestwestern.com" target="_blank" class="button button--ghost" style="padding:6px 12px;font-size:13px;margin-right:6px;display:inline-block;">Website</a>
               <a href="tel:+16239323210" class="button button--primary" style="padding:6px 12px;font-size:13px;display:inline-block;">Call</a>
             </li>
@@ -458,24 +469,24 @@
         contact: `
           <h3 style="margin-top:0;margin-bottom:8px;">Contact Us</h3>
           <p class="muted" style="margin:0 0 8px;">Email us at
-            <a href="mailto:production@Diablocanna.co">production@Diablocanna.co</a>
+            <a href="mailto:production@Diablocanna.co" style="color:var(--cg-gold-300);">production@Diablocanna.co</a>
             or send us a message using the form below.</p>
-          <form id="contactForm" style="display:flex;flex-direction:column;gap:8px;">
+          <form id="contactForm" style="display:flex;flex-direction:column;gap:10px;">
             <div>
-              <label for="contactName" style="display:block;font-size:12px;margin-bottom:2px;">Name</label>
-              <input id="contactName" type="text" required style="width:100%;padding:6px;border-radius:4px;border:1px solid var(--cg-border);background:var(--cg-ink-700);color:var(--cg-text);">
+              <label for="contactName" style="display:block;font-size:12px;margin-bottom:4px;color:var(--cg-text-dim);">Name</label>
+              <input id="contactName" type="text" required class="popup-input">
             </div>
             <div>
-              <label for="contactEmail" style="display:block;font-size:12px;margin-bottom:2px;">Email</label>
-              <input id="contactEmail" type="email" required style="width:100%;padding:6px;border-radius:4px;border:1px solid var(--cg-border);background:var(--cg-ink-700);color:var(--cg-text);">
+              <label for="contactEmail" style="display:block;font-size:12px;margin-bottom:4px;color:var(--cg-text-dim);">Email</label>
+              <input id="contactEmail" type="email" required class="popup-input">
             </div>
             <div>
-              <label for="contactMessage" style="display:block;font-size:12px;margin-bottom:2px;">Message</label>
-              <textarea id="contactMessage" rows="3" required style="width:100%;padding:6px;border-radius:4px;border:1px solid var(--cg-border);background:var(--cg-ink-700);color:var(--cg-text);"></textarea>
+              <label for="contactMessage" style="display:block;font-size:12px;margin-bottom:4px;color:var(--cg-text-dim);">Message</label>
+              <textarea id="contactMessage" rows="3" required class="popup-input" style="resize:vertical;"></textarea>
             </div>
             <button type="submit" class="button button--primary">Send Message</button>
           </form>
-          <p class="muted" id="formMessage" style="display:none;margin-top:8px;">Thanks! We&#39;ll be in touch soon.</p>
+          <p class="muted" id="formMessage" style="display:none;margin-top:8px;color:var(--cg-success);">Thanks! We&#39;ll be in touch soon.</p>
         `
       };
 
@@ -485,51 +496,30 @@
 
       tiles.forEach(tile => {
         tile.addEventListener('click', function (e) {
-          // Only handle clicks on the tile itself, not the inner SVG or label.
           e.preventDefault();
-          // Remove selection from all tiles
           tiles.forEach(t => t.classList.remove('selected'));
           this.classList.add('selected');
-          // Remove any existing popup
           const existing = document.querySelector('.tile-popup');
           if (existing) existing.remove();
-          // Determine key from the tile href (e.g. '#about' -> 'about')
           const href = this.getAttribute('href') || '';
           const key = href.replace(/^#/, '');
           const html = contentMap[key] || `<p class="muted">Information not available.</p>`;
-          // Create popup container with internal padding to avoid text being
-          // cramped against the border.  The .tile-popup class provides
-          // background/border styling, but no padding by default.
           const div = document.createElement('div');
           div.className = 'tile-popup';
-          // Use innerHTML to insert markup safely
           div.innerHTML = html;
-          // Append the popup below the tile grid so the card expands
-          // downward and does not overlay the footer.  Placing the
-          // information panel outside the grid container allows the
-          // page to extend naturally.  We insert after the grid’s
-          // parent wrapper.
           const wrapper = grid.parentNode;
-          // Remove any previously inserted popup appended to the wrapper
-          // (handled above), then insert the new one after the wrapper
           wrapper.parentNode.appendChild(div);
-          // If the contact form is part of this popup, attach a submit handler
           if (key === 'contact') {
             const form = div.querySelector('#contactForm');
             const msg = div.querySelector('#formMessage');
             if (form) {
               form.addEventListener('submit', function (evt) {
                 evt.preventDefault();
-                // reset fields and show confirmation
                 form.reset();
                 if (msg) msg.style.display = 'block';
               });
             }
           }
-          // Scroll so that the hero date line ("Litchfield Park, AZ • Feb 28th 2026")
-          // appears at the top of the viewport on small screens.  This
-          // gives a consistent anchor point for all tiles.  Delay the
-          // scroll slightly to ensure the popup has been inserted.
           if (window.innerWidth < 992) {
             setTimeout(() => {
               const anchor = document.querySelector('header.hero .muted');
@@ -537,19 +527,11 @@
                 anchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
               }
             }, 50);
-          } else {
-            // On desktop, do not scroll.
           }
         });
       });
     });
   </script>
-
-
-
-  <!-- No height adjustment needed for the event poster; flexbox alignment
-       ensures the image column and tile column have equal height on
-       desktop via CSS. -->
 
   <nav class="bottom-nav">
     <a href="event.html">Event Info</a>
