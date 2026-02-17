@@ -20,7 +20,12 @@ SQUARE_ACCESS_TOKEN = os.environ.get('SQUARE_ACCESS_TOKEN', '')
 SQUARE_LOCATION_ID = os.environ.get('SQUARE_LOCATION_ID', '')
 
 if not firebase_admin._apps:
-    firebase_admin.initialize_app()
+    sa_key = os.environ.get('FIREBASE_SERVICE_ACCOUNT_KEY', '')
+    if sa_key:
+        cred = credentials.Certificate(json.loads(sa_key))
+        firebase_admin.initialize_app(cred)
+    else:
+        firebase_admin.initialize_app()
 
 def get_db():
     conn = psycopg2.connect(DATABASE_URL)
