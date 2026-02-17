@@ -5,46 +5,57 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Settings • CannaGrudge</title>
   <link rel="stylesheet" href="theme.css">
+  <style>
+    .settings-card{max-width:720px;margin:24px auto;padding:24px}
+    .settings-card h2{margin:0 0 20px;color:var(--cg-text-strong)}
+    .settings-card h3{margin:0 0 12px;padding-left:12px;border-left:3px solid var(--cg-primary);color:var(--cg-text-strong)}
+    .settings-card section{margin-bottom:28px}
+    .settings-card section:last-child{margin-bottom:0}
+    .form-label{display:block;margin-bottom:6px;color:var(--cg-text-dim);font-size:14px}
+    .form-input,.form-select,.form-textarea{width:100%;padding:10px 12px;background:var(--cg-ink-800);color:var(--cg-text);border:1px solid var(--cg-border);border-radius:var(--cg-r-sm);font-size:14px;font-family:inherit;transition:border-color .25s ease,box-shadow .25s ease;margin-bottom:14px}
+    .form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--cg-primary);box-shadow:0 0 8px rgba(245,184,26,.2);outline:none}
+    .form-textarea{resize:vertical}
+    .check-label{display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:8px 10px;border-radius:var(--cg-r-sm);cursor:pointer;transition:background .2s ease,box-shadow .25s ease;color:var(--cg-text)}
+    .check-label:hover{background:rgba(245,184,26,.04);box-shadow:0 0 8px rgba(245,184,26,.06)}
+    .check-label input[type="checkbox"]{accent-color:var(--cg-primary);width:16px;height:16px}
+    [data-animate]{opacity:0;transform:translateY(24px);transition:opacity .6s ease,transform .6s ease}
+    [data-animate].visible{opacity:1;transform:translateY(0)}
+  </style>
 </head>
 <body class="with-dock">
   <main class="container">
-    <div class="card" style="max-width:720px;margin:24px auto;padding:16px;">
-      <h2 style="margin-top:0;margin-bottom:16px;">Settings &amp; Preferences</h2>
-      <!-- Preferences -->
-      <section style="margin-bottom:24px;">
-        <h3 style="margin:0 0 8px;">Preferences</h3>
-        <label class="muted" style="display:block;margin-bottom:4px;">Dashboard Theme</label>
-        <select id="themeSelect" class="btn" style="background:#181b20;color:#eaecef;border:1px solid var(--cg-border);padding:6px 8px;margin-bottom:16px;">
+    <div class="card settings-card" data-animate>
+      <h2>Settings &amp; Preferences</h2>
+      <section data-animate>
+        <h3>Preferences</h3>
+        <label class="form-label">Dashboard Theme</label>
+        <select id="themeSelect" class="form-select">
           <option value="dark">Dark</option>
           <option value="light">Light</option>
           <option value="system">System</option>
         </select>
-        <label class="muted" style="display:block;margin-bottom:4px;">Bio</label>
-        <textarea id="bio" rows="3" style="width:100%;border-radius:12px;padding:8px;background:#181b20;color:#eaecef;border:1px solid var(--cg-border);" placeholder="Tell us about yourself"></textarea>
-        <label class="muted" style="display:block;margin:8px 0 4px;">Address</label>
-        <input type="text" id="addressInput" placeholder="Enter your address" style="width:100%;border-radius:12px;padding:8px;background:#181b20;color:#eaecef;border:1px solid var(--cg-border);">
+        <label class="form-label">Bio</label>
+        <textarea id="bio" rows="3" class="form-textarea" placeholder="Tell us about yourself"></textarea>
+        <label class="form-label">Address</label>
+        <input type="text" id="addressInput" class="form-input" placeholder="Enter your address">
       </section>
-      <!-- Notification Settings -->
-      <section style="margin-bottom:24px;">
-        <h3 style="margin:0 0 8px;">Notification Settings</h3>
-        <label style="display:block;margin-bottom:8px;"><input type="checkbox" id="notifPush"> Push Notifications</label>
-        <label style="display:block;margin-bottom:8px;"><input type="checkbox" id="notifEmail"> Email Notifications</label>
+      <section data-animate>
+        <h3>Notification Settings</h3>
+        <label class="check-label"><input type="checkbox" id="notifPush"> Push Notifications</label>
+        <label class="check-label"><input type="checkbox" id="notifEmail"> Email Notifications</label>
       </section>
-      <!-- Wallet & Billing -->
-      <section style="margin-bottom:24px;">
-        <h3 style="margin:0 0 8px;">Wallet &amp; Billing</h3>
+      <section data-animate>
+        <h3>Wallet &amp; Billing</h3>
         <div class="muted" style="margin-bottom:8px;">No saved payment methods.</div>
         <div class="muted">No billing history available.</div>
       </section>
-      <!-- Privacy & Security -->
-      <section style="margin-bottom:24px;">
-        <h3 style="margin:0 0 8px;">Privacy &amp; Security</h3>
-        <label style="display:block;margin-bottom:8px;"><input type="checkbox" id="hideProfile"> Hide my profile from public</label>
-        <label style="display:block;margin-bottom:8px;"><input type="checkbox" id="enable2FA"> Enable Two-Factor Authentication</label>
+      <section data-animate>
+        <h3>Privacy &amp; Security</h3>
+        <label class="check-label"><input type="checkbox" id="hideProfile"> Hide my profile from public</label>
+        <label class="check-label"><input type="checkbox" id="enable2FA"> Enable Two-Factor Authentication</label>
       </section>
-      <!-- Frequently Asked Questions -->
-      <section>
-        <h3 style="margin:0 0 8px;">Frequently Asked Questions</h3>
+      <section data-animate>
+        <h3>Frequently Asked Questions</h3>
         <div class="muted">Coming soon: We'll populate this section with helpful answers to common questions about events, tickets, and your account.</div>
       </section>
     </div>

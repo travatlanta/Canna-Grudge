@@ -1,60 +1,69 @@
-/* CannaGrudge Theme v2 — refined readability & contrast */
+/* ========================================================================
+   CannaGrudge Theme v3 — Premium Fight-Night Aesthetic
+   ======================================================================== */
 
+/* -----------------------------------------------------------------------
+   1. CSS Custom Properties (Design Tokens)
+   ----------------------------------------------------------------------- */
 :root {
-  --cg-nav-h: 64px; /* bottom nav height incl. padding */
-  /* Brand core (gold softened) */
-  --cg-gold-50:  #fff6cc;
-  --cg-gold-100: #ffe39a;
-  --cg-gold-200: #ffd067;
-  --cg-gold-300: #f5b81a;   /* Primary brand gold (softer than #ffc42e) */
-  --cg-gold-400: #d09a14;   /* Pressed/hover/outline */
+  --cg-nav-h: 64px;
 
-  --cg-scarlet-300: #ff6b6b;
+  /* Brand Gold */
+  --cg-gold-50:  #fff8e0;
+  --cg-gold-100: #ffe8a0;
+  --cg-gold-200: #ffd560;
+  --cg-gold-300: #f5b81a;
+  --cg-gold-400: #d09a14;
+
+  /* Scarlet / Fight Energy */
+  --cg-scarlet-300: #ff4757;
   --cg-scarlet-400: #ef4444;
 
-  --cg-ink-925:  #0b0b0c;   /* Deeper app background */
-  --cg-ink-900:  #0f1012;
-  --cg-ink-850:  #14161a;   /* Elevated surfaces */
-  --cg-ink-800:  #181b20;
-  --cg-ink-700:  #1f2329;
-  --cg-ink-600:  #2a2f36;
+  /* Ink – Deep Dark Blues */
+  --cg-ink-925:  #080a0e;
+  --cg-ink-900:  #0c0e14;
+  --cg-ink-850:  #12151c;
+  --cg-ink-800:  #181c26;
+  --cg-ink-700:  #1e2330;
+  --cg-ink-600:  #272d3b;
 
-  --cg-paper-50: #f7f7f8;
-  --cg-paper-100:#f0f0f2;
-  --cg-paper-200:#e7e7ea;
+  /* Paper – Light Theme */
+  --cg-paper-50:  #f7f7f8;
+  --cg-paper-100: #f0f0f2;
+  --cg-paper-200: #e7e7ea;
 
-  /* Softer text colors for dark mode readability */
-  --cg-text-strong: #131417;   /* light mode overridden below */
-  --cg-text:        #1a1b1f;
-  --cg-text-dim:    #5f6672;
+  /* Text – Dark-mode defaults */
+  --cg-text-strong: #eaecf0;
+  --cg-text:        #c8ccd4;
+  --cg-text-dim:    #7a8194;
 
   --cg-white: #ffffff;
   --cg-black: #000000;
 
-  /* App tokens */
-  --cg-bg: var(--cg-paper-50);
-  --cg-surface: var(--cg-white);
-  --cg-surface-2: #fbfbfc;               /* inner cards on light */
-  --cg-elev: 0 10px 20px rgba(0,0,0,.10), 0 2px 6px rgba(0,0,0,.06);
-  --cg-border: rgba(20,23,28,.12);
+  /* App Tokens – dark is default */
+  --cg-bg:        var(--cg-ink-925);
+  --cg-surface:   rgba(18, 21, 28, .8);
+  --cg-surface-2: rgba(24, 28, 38, .7);
+  --cg-elev:      0 12px 32px rgba(0, 0, 0, .5), 0 2px 8px rgba(0, 0, 0, .3);
+  --cg-border:    rgba(245, 184, 26, .08);
 
   /* Interactive */
-  --cg-primary: var(--cg-gold-300);
-  --cg-primary-ink: #211a06;
+  --cg-primary:       var(--cg-gold-300);
+  --cg-primary-ink:   #1a1400;
   --cg-primary-press: var(--cg-gold-400);
-  --cg-accent: var(--cg-scarlet-400);
-  --cg-ring: rgba(245,184,26,.45);
+  --cg-accent:        var(--cg-scarlet-400);
+  --cg-ring:          rgba(245, 184, 26, .45);
 
   /* Status */
   --cg-success: #16a34a;
   --cg-warning: #f59e0b;
   --cg-danger:  #dc2626;
 
-  /* Type */
+  /* Typography */
   --cg-font-display: "Segoe UI Variable Display", "Segoe UI", "SF Pro Display", "Inter", system-ui, sans-serif;
   --cg-font-sans:    "Segoe UI Variable Text", "SF Pro Text", "Inter", system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
 
-  --cg-lh-tight: 1.08;
+  --cg-lh-tight: 1.05;
   --cg-lh-body:  1.55;
 
   /* Radii */
@@ -64,44 +73,61 @@
   --cg-r-sm:   10px;
 
   --cg-safe-bottom: max(env(safe-area-inset-bottom), 12px);
+
+  /* CTA / Dock */
+  --cta-h:     68px;
+  --dock-h:    64px;
+  --footer-h:  0px;
+  --cta-margin: 12px;
 }
 
+/* -----------------------------------------------------------------------
+   2. Dark Theme (default via prefers-color-scheme)
+   ----------------------------------------------------------------------- */
 @media (prefers-color-scheme: dark) {
   :root {
-  --cg-nav-h: 64px; /* bottom nav height incl. padding */
-    --cg-bg: var(--cg-ink-925);
-    --cg-surface: var(--cg-ink-850);
-    --cg-surface-2: var(--cg-ink-800);       /* inner cards on dark */
-    --cg-elev: 0 12px 24px rgba(0,0,0,.38), 0 2px 8px rgba(0,0,0,.26);
-    --cg-border: rgba(255,255,255,.08);
-
-    /* toned whites */
-    --cg-text-strong: #eaecef;   /* was #f5f5f7 */
-    --cg-text:        #d7d9de;   /* softer body */
-    --cg-text-dim:    #a8adb6;   /* muted */
+    --cg-nav-h: 64px;
+    --cg-bg:        var(--cg-ink-925);
+    --cg-surface:   rgba(18, 21, 28, .8);
+    --cg-surface-2: rgba(24, 28, 38, .7);
+    --cg-elev:      0 12px 32px rgba(0, 0, 0, .5), 0 2px 8px rgba(0, 0, 0, .3);
+    --cg-border:    rgba(245, 184, 26, .08);
+    --cg-text-strong: #eaecf0;
+    --cg-text:        #c8ccd4;
+    --cg-text-dim:    #7a8194;
   }
 }
 
-/* Manual override */
-html[data-theme="light"] {
-  --cg-bg: var(--cg-paper-50);
-  --cg-surface: var(--cg-white);
-  --cg-surface-2: #fbfbfc;
-  --cg-text-strong: #121316;
-  --cg-text: #23262b;
-  --cg-text-dim: #616876;
-}
+/* -----------------------------------------------------------------------
+   3. Manual Theme Overrides (data-theme attribute)
+   ----------------------------------------------------------------------- */
 html[data-theme="dark"] {
-  --cg-bg: var(--cg-ink-925);
-  --cg-surface: var(--cg-ink-850);
-  --cg-surface-2: var(--cg-ink-800);
-  --cg-text-strong: #eaecef;
-  --cg-text: #d7d9de;
-  --cg-text-dim: #a8adb6;
+  --cg-bg:        var(--cg-ink-925);
+  --cg-surface:   rgba(18, 21, 28, .8);
+  --cg-surface-2: rgba(24, 28, 38, .7);
+  --cg-elev:      0 12px 32px rgba(0, 0, 0, .5), 0 2px 8px rgba(0, 0, 0, .3);
+  --cg-border:    rgba(245, 184, 26, .08);
+  --cg-text-strong: #eaecf0;
+  --cg-text:        #c8ccd4;
+  --cg-text-dim:    #7a8194;
 }
 
-/* Global */
+html[data-theme="light"] {
+  --cg-bg:        var(--cg-paper-50);
+  --cg-surface:   var(--cg-white);
+  --cg-surface-2: #fbfbfc;
+  --cg-elev:      0 10px 20px rgba(0, 0, 0, .10), 0 2px 6px rgba(0, 0, 0, .06);
+  --cg-border:    rgba(20, 23, 28, .12);
+  --cg-text-strong: #121316;
+  --cg-text:        #23262b;
+  --cg-text-dim:    #616876;
+}
+
+/* -----------------------------------------------------------------------
+   4. Global Reset & Base
+   ----------------------------------------------------------------------- */
 * { box-sizing: border-box; }
+
 html, body {
   height: 100%;
   background: var(--cg-bg);
@@ -111,262 +137,197 @@ html, body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   margin: 0;
-
-  /* Prevent horizontal scrolling when using full‑width promo images */
   overflow-x: hidden;
 }
 
+/* -----------------------------------------------------------------------
+   5. Typography
+   ----------------------------------------------------------------------- */
 h1, h2, h3, .display {
   font-family: var(--cg-font-display);
   line-height: var(--cg-lh-tight);
-  letter-spacing: .2px;
+  letter-spacing: -0.02em;
   margin: 0;
   color: var(--cg-text-strong);
+  font-weight: 900;
 }
 
-/* Buttons */
+h1 { font-size: 2rem; }
+h2 { font-size: 1.5rem; }
+h3 { font-size: 1.15rem; }
+
+.muted { color: var(--cg-text-dim); }
+
+.separator {
+  height: 1px;
+  background: var(--cg-border);
+  margin: 12px 0;
+}
+
+/* -----------------------------------------------------------------------
+   6. Accessibility
+   ----------------------------------------------------------------------- */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* -----------------------------------------------------------------------
+   7. Layout Containers
+   ----------------------------------------------------------------------- */
+.container {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.container > section,
+.container > .card {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+@media (min-width: 992px) {
+  .container { max-width: 1200px; }
+}
+
+/* -----------------------------------------------------------------------
+   8. Buttons
+   ----------------------------------------------------------------------- */
 .button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  padding: 14px 18px;
+  padding: 14px 20px;
   border-radius: var(--cg-r-pill);
   font-weight: 800;
+  font-size: 15px;
   text-decoration: none;
   cursor: pointer;
   border: 1px solid transparent;
-  transition: transform .08s ease, box-shadow .12s ease, background .12s ease, border-color .12s ease;
+  transition: transform .1s ease, box-shadow .25s ease, background .2s ease, border-color .2s ease;
   will-change: transform;
 }
+
 .button:focus-visible {
   outline: 2px solid transparent;
   box-shadow: 0 0 0 4px var(--cg-ring);
 }
-.button:active { transform: translateY(1px) scale(.995); }
+
+.button:active {
+  transform: translateY(1px) scale(.995);
+}
 
 .button--primary {
   background: var(--cg-primary);
   color: var(--cg-primary-ink);
-  box-shadow: var(--cg-elev);
+  box-shadow: 0 4px 16px rgba(245, 184, 26, .25);
+  text-shadow: 0 1px 1px rgba(0, 0, 0, .15);
 }
-.button--primary:hover { background: var(--cg-primary-press); }
 
-/* Dark ghost button made visible */
+.button--primary:hover {
+  background: var(--cg-primary-press);
+  box-shadow: 0 0 20px rgba(245, 184, 26, .4), 0 4px 16px rgba(245, 184, 26, .3);
+}
+
 .button--ghost {
-  background: rgba(255,255,255,.06);
+  background: rgba(255, 255, 255, .04);
   color: var(--cg-text-strong);
-  border-color: rgba(255,255,255,.12);
-  box-shadow: 0 1px 2px rgba(0,0,0,.18) inset;
+  border-color: rgba(255, 255, 255, .1);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
-html[data-theme="light"] .button--ghost {
-  background: rgba(0,0,0,.03);
-  border-color: rgba(20,23,28,.12);
-}
+
 .button--ghost:hover {
-  background: rgba(255,255,255,.10);
+  background: rgba(255, 255, 255, .08);
+  border-color: rgba(245, 184, 26, .2);
+  box-shadow: 0 0 12px rgba(245, 184, 26, .1);
 }
 
-/* Sticky bottom CTA */
-.sticky-cta {
-  position: fixed;
-  left: 16px;
-  right: 16px;
-  bottom: calc(var(--cg-safe-bottom));
-  z-index: 50;
-  display: flex;
-  justify-content: center;
+html[data-theme="light"] .button--ghost {
+  background: rgba(0, 0, 0, .03);
+  border-color: rgba(20, 23, 28, .12);
+  backdrop-filter: none;
 }
-.sticky-cta .button { width: 100%; }
 
-/* Tile grid
-   Use a three‑column CSS grid rather than flexbox to ensure each tile
-   maintains its dimensions and does not reflow when the adjacent popup
-   appears. The grid columns evenly divide the available space.  A small
-   horizontal margin (4%) on the grid container creates a consistent edge
-   regardless of content size. */
-.tile-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  margin-left: 4%;
-  margin-right: 4%;
-}
-/* Tiles occupy their full grid cell without flex sizing.  Define a
-   consistent appearance and transition effects. */
-.tile {
-  flex: none;
-  width: 100%;
-  max-width: 100%;
-  /* Make tiles slightly lighter than the surrounding card to emphasize that
-     they are interactive buttons. In dark mode, `ink-700` provides a
-     midtone that contrasts against the page background without
-     diminishing the gold icons. */
-  background: var(--cg-ink-700);
-  border: 1px solid var(--cg-border);
-  border-radius: var(--cg-r-lg);
-  padding: 14px 8px;
-  text-align: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, .06);
-  transition: transform .08s ease, box-shadow .12s ease, background .12s ease;
-}
-/* Provide a subtle scale effect when pressing a tile. */
-.tile:active { transform: scale(.98); }
-/* Highlight the selected tile using a gold border and slightly lighter
-   surface while preserving its original size. */
-.tile.selected {
-  border: 1px solid var(--cg-primary);
-  /* Use an even lighter shade when the tile is selected to provide
-     clear feedback. `ink-600` is lighter than both the default tile
-     and the surrounding cards. */
-  background: var(--cg-ink-600);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, .1);
-}
-.tile__icon { width: 28px; height: 28px; margin: 2px auto 6px; opacity: .95; }
-.tile__label { font-size: 12px; font-weight: 750; color: var(--cg-text-strong); }
-
-/* Cards */
-.container { max-width: 720px; margin: 0 auto; padding: 16px; }
+/* -----------------------------------------------------------------------
+   9. Cards – Glassmorphism
+   ----------------------------------------------------------------------- */
 .card {
-  background: var(--cg-surface);
-  border: 1px solid var(--cg-border);
+  background: rgba(18, 21, 28, .8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(245, 184, 26, .08);
   border-radius: var(--cg-r-lg);
-  box-shadow: 0 2px 10px rgba(0,0,0,.06);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, .25);
   padding: 16px;
+  transition: border-color .3s ease, box-shadow .3s ease;
 }
-.muted { color: var(--cg-text-dim); }
-.separator { height: 1px; background: var(--cg-border); margin: 12px 0; }
 
-/* Inner card styling for VIP/Standard containers (clear separation) */
+.card:hover {
+  border-color: rgba(245, 184, 26, .15);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, .3), 0 0 12px rgba(245, 184, 26, .06);
+}
+
 .card .card {
-  background: var(--cg-surface-2);
-  border-color: rgba(245,184,26,.18);
-  box-shadow: 0 1px 6px rgba(0,0,0,.14);
+  background: rgba(30, 35, 48, .6);
+  border-color: rgba(245, 184, 26, .12);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .2);
 }
 
-/* Hero */
+.card--intro {
+  padding-top: 31px;
+  padding-bottom: 31px;
+}
+
+html[data-theme="light"] .card {
+  background: var(--cg-white);
+  backdrop-filter: none;
+  border-color: rgba(20, 23, 28, .12);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, .06);
+}
+
+/* -----------------------------------------------------------------------
+   10. Hero Section
+   ----------------------------------------------------------------------- */
 .hero {
   position: relative;
   overflow: hidden;
   border-radius: 0 0 var(--cg-r-lg) var(--cg-r-lg);
   background: var(--cg-ink-900);
-  /*
-   * Ensure the hero section always has a visible height. Without an explicit
-   * height the header can collapse to zero if its contents don’t compute
-   * a height (for example when the image fails to load or isn’t measured
-   * yet). A minimum height also prevents other elements from sliding
-   * underneath the hero when the page is rendered. Using a viewport‑based
-   * unit keeps the hero proportional across devices while still allowing
-   * it to shrink on very small screens. You can adjust the value if you
-   * need the hero to be taller or shorter.
-   */
   min-height: 40vh;
 }
-.hero__img { width: 100%; display: block; object-fit: cover; }
 
-/*
- * Force the hero image to fill the height of the hero. Some browsers
- * require an explicit height on the image for object‑fit to apply
- * correctly; without it the image may collapse to zero height. Setting
- * height: 100% ties the image to its parent’s height (defined above
- * via min-height) so the hero background always appears.
- */
 .hero__img {
+  width: 100%;
   height: 100%;
+  display: block;
+  object-fit: cover;
 }
+
 .hero__veil {
-  position: absolute; inset: 0;
-  background: radial-gradient(80% 60% at 50% 20%, rgba(0,0,0,.0) 0%, rgba(0,0,0,.35) 60%, rgba(0,0,0,.70) 100%);
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(80% 50% at 50% 15%, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, .4) 50%, rgba(0, 0, 0, .85) 100%),
+    linear-gradient(180deg, transparent 40%, rgba(8, 10, 14, .9) 100%);
 }
+
 .hero__content {
-  position: absolute; inset: auto 16px 16px 16px;
+  position: absolute;
+  inset: auto 16px 16px 16px;
   color: #fff;
 }
-.hero__title { font-size: 40px; line-height: .98; text-shadow: 0 8px 24px rgba(0,0,0,.35); }
 
-/* Ticket */
-.ticket {
-  background: var(--cg-surface);
-  border: 1px dashed var(--cg-border);
-  border-radius: var(--cg-r-lg);
-  padding: 16px;
-  box-shadow: 0 3px 14px rgba(0,0,0,.10);
-}
-.ticket__header { display: flex; gap: 12px; align-items: center; }
-.ticket__meta { font-size: 12px; color: var(--cg-text-dim); }
-.ticket__qr { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--cg-border); display: flex; justify-content: center; }
-
-
-/* Stronger hero title only */
-.hero__title { font-weight: 1000; letter-spacing: .3px; }
-
-/* Ensure content isn't hidden behind sticky CTA + bottom nav */
-body.has-sticky-cta main { padding-bottom: 24px !important; } /* accommodates CTA + nav */
-
-/* Global footer */
-.footer {
-  margin: 16px auto 90px; /* leave space above bottom nav */
-  max-width: 720px;
-  padding: 16px 16px 70px;
-  border-radius: var(--cg-r-lg);
-  background: var(--cg-surface);
-  border: 1px solid var(--cg-border);
-  box-shadow: 0 2px 10px rgba(0,0,0,.06);
-  color: var(--cg-text);
-}
-.footer__grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px 18px;
-}
-.footer a { color: var(--cg-text-strong); text-decoration: none; }
-.footer a:hover { text-decoration: underline; }
-.footer__legal { margin-top: 14px; margin-bottom: 14px; font-size: 12px; color: var(--cg-text-dim); }
-
-/* Footer layout variant with icons + links */
-.footer--stack { text-align:center; }
-.footer__icons { display:flex; justify-content:center; gap:14px; margin-bottom:10px; }
-.footer__icons a { display:inline-flex; align-items:center; justify-content:center; width:40px; height:40px; border-radius:12px; background: rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10); text-decoration:none; font-weight:900; color:#fff; }
-html[data-theme="light"] .footer__icons a { background: rgba(0,0,0,.04); border-color: rgba(20,23,28,.12); color: var(--cg-text-strong); }
-
-.footer__links {
-  display: flex;
-  justify-content: center;
-  gap: 14px;
-  flex-wrap: wrap;
-  font-size: 13px;
-  /* Add extra space below the site map links to separate from the copyright */
-  margin-bottom: 12px;
-}
-.footer__links a { color: var(--cg-text); text-decoration:none; }
-.footer__links a:hover { text-decoration:underline; }
-
-/* New bottom nav layout */
-.bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; display:flex; gap:8px; justify-content:space-around; background: var(--cg-surface); border-top:1px solid var(--cg-border); padding:12px 12px calc(var(--cg-safe-bottom)); z-index:40; }
-.bottom-nav a { flex:1; text-align:center; padding:10px; border-radius:12px; color: var(--cg-text); text-decoration:none; font-size:12px; }
-.bottom-nav a.is-active { background: rgba(0,0,0,.06); font-weight:800; }
-
-/* Place sticky CTA above nav; add more air */
-.sticky-cta { bottom: calc(var(--cg-safe-bottom) + var(--cg-nav-h)); }
-body.has-sticky-cta main { padding-bottom: 24px !important; }
-
-/* Ensure bottom-nav visually anchors to bottom */
-.bottom-nav { backdrop-filter: saturate(120%) blur(2px); }
-
-/* -------------------------------------------------------------------- */
-/* Responsive max-widths for page layouts                                   */
-/* To provide a consistent reading experience on large screens, increase    */
-/* the default container width and constrain hero content on all pages.     */
-/* On smaller viewports the existing mobile-first styles remain untouched.  */
 @media (min-width: 992px) {
-  /* Increase the maximum width for primary layout containers.  This applies
-     to cards, settings screens and other sections wrapped in .container. */
-  .container {
-    max-width: 1200px;
-  }
-  /* Constrain hero content within the same width and center it, leaving
-     the background image and footer to span edge-to-edge.  Add side padding
-     so content doesn’t butt up against the viewport edges. */
   .hero__content {
     max-width: 1200px;
     margin-left: auto;
@@ -376,110 +337,143 @@ body.has-sticky-cta main { padding-bottom: 24px !important; }
   }
 }
 
-/* Revised bottom nav with centered Home icon */
-.bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; display:flex; align-items:center; justify-content:space-between; gap:10px; background: var(--cg-surface); border-top:1px solid var(--cg-border); padding:12px 14px calc(var(--cg-safe-bottom)); z-index:40; }
-.bottom-nav a { flex:1; text-align:center; padding:10px 8px; border-radius:12px; color: var(--cg-text); text-decoration:none; font-size:12px; }
-.bottom-nav a.is-active { background: rgba(0,0,0,.06); font-weight:800; }
-
-/* Color the home icon in the bottom nav using the primary brand gold */
-.bottom-nav a.home {
-  color: var(--cg-primary);
-}
-.bottom-nav__home { flex:0 0 auto; width:54px; height:54px; border-radius:999px; display:flex; align-items:center; justify-content:center; background: var(--cg-primary); color: var(--cg-primary-ink); box-shadow: var(--cg-elev); font-weight:900; }
-.bottom-nav__home:active { transform: translateY(1px) scale(.98); }
-
-/* Footer icons: big circular social buttons (IG, FB, X, Snap, TikTok) */
-.footer__icons { display:flex; justify-content:center; gap:12px; margin-bottom:14px; flex-wrap:wrap; }
-.footer__icons a { width:44px; height:44px; border-radius:14px; display:inline-flex; align-items:center; justify-content:center; background: rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10); color:#fff; font-weight:900; text-decoration:none; font-size:18px; }
-/* Ensure that any inline SVG or <img> inside the footer icons scales consistently */
-.footer__icons a svg,
-.footer__icons a img {
-  width: 20px;
-  height: 20px;
-}
-html[data-theme="light"] .footer__icons a { background: rgba(0,0,0,.04); border-color: rgba(20,23,28,.12); color: var(--cg-text-strong); }
-
-/*
- * Desktop footer width
- * On larger screens the footer should stretch the full page width instead of being
- * constrained to a fixed max-width. This preserves the mobile layout while
- * allowing desktop designs to span edge‑to‑edge.
- */
-@media (min-width: 768px) {
-  .footer {
-    max-width: none;
-    margin-left: 0;
-    margin-right: 0;
-  }
+.hero__title {
+  font-size: clamp(48px, 8vw, 56px);
+  line-height: .95;
+  font-weight: 1000;
+  letter-spacing: -0.02em;
+  text-shadow: 0 0 30px rgba(245, 184, 26, .3), 0 8px 24px rgba(0, 0, 0, .5);
 }
 
-/*
- * Ensure the footer spans the full width of the viewport on all screen
- * sizes, not just on larger breakpoints. Removing the max‑width and
- * horizontal auto margins prevents the footer from appearing anchored
- * only to the left side on mobile.
- */
-.footer {
-  max-width: none;
+.hero .card,
+.hero__text,
+.intro-card {
+  padding-top: 15px;
+  padding-bottom: 15px;
+}
+
+/* -----------------------------------------------------------------------
+   11. Tile Grid
+   ----------------------------------------------------------------------- */
+.tile-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-left: 4%;
+  margin-right: 4%;
+  margin-bottom: 20px;
+}
+
+.tile {
+  flex: none;
   width: 100%;
-  margin-left: 0;
-  margin-right: 0;
+  max-width: 100%;
+  background: rgba(30, 35, 48, .6);
+  border: 1px solid rgba(245, 184, 26, .06);
+  border-radius: var(--cg-r-lg);
+  padding: 14px 8px;
+  text-align: center;
+  color: var(--cg-text-strong);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .2);
+  transition: transform .2s ease, box-shadow .25s ease, border-color .25s ease;
+  cursor: pointer;
 }
 
-/*
- * Bottom navigation styling adjustments
- * Differentiate the mobile/desktop bottom nav from the footer by using a
- * slightly lighter background. Add subtle hover and active states to
- * communicate interaction on desktop and mobile.
- */
-/*
- * Bottom navigation base color
- * Use a solid elevated surface color (no transparency) so the menu stands
- * out clearly against the page. This applies to both dark and light themes.
- */
-.bottom-nav {
-  background: var(--cg-surface-2);
-  /* Ensure the nav stays fixed at the bottom of the viewport at all times */
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  /* Distribute the nav items evenly so the menu stays centered regardless of the number of links */
-  justify-content: space-evenly;
-}
-html[data-theme="light"] .bottom-nav {
-  background: var(--cg-surface-2);
+.tile:hover {
+  transform: scale(1.05);
+  border-color: rgba(245, 184, 26, .3);
+  box-shadow: 0 0 16px rgba(245, 184, 26, .15), 0 4px 12px rgba(0, 0, 0, .3);
 }
 
-/* Hover and active feedback for nav buttons */
-/* Adjust hover and active states to remain visible against more opaque base */
-/* Adjust hover and active states to stand out against more opaque base */
-/* Subtle hover/active states with no full transparency */
-.bottom-nav a:hover {
-  background: rgba(255, 255, 255, 0.06);
-}
-.bottom-nav a:active {
-  background: rgba(255, 255, 255, 0.10);
-}
-/* Adjust hover/active colors for light theme */
-html[data-theme="light"] .bottom-nav a:hover {
-  background: rgba(0, 0, 0, 0.06);
-}
-html[data-theme="light"] .bottom-nav a:active {
-  background: rgba(0, 0, 0, 0.10);
+.tile:active {
+  transform: scale(.98);
 }
 
-/*
- * ----------------------------------------------------------------------
- * Final bottom navigation override
- *
- * The site defines several competing styles for .bottom-nav in earlier
- * sections. To ensure consistent behaviour across pages and screen sizes
- * we consolidate all declarations here. The navigation bar remains fixed
- * at the bottom of the viewport, distributes its items evenly and uses a
- * solid elevated surface colour with subtle hover/active feedback. These
- * styles apply last so they override any earlier conflicting rules.
- */
+.tile.selected {
+  border: 1px solid var(--cg-primary);
+  background: rgba(39, 45, 59, .8);
+  box-shadow: 0 0 12px rgba(245, 184, 26, .2), 0 2px 8px rgba(0, 0, 0, .25);
+}
+
+.tile__icon {
+  width: 28px;
+  height: 28px;
+  margin: 2px auto 6px;
+  opacity: .95;
+}
+
+.tile__label {
+  font-size: 12px;
+  font-weight: 750;
+  color: var(--cg-text-strong);
+}
+
+.tile svg.tile__icon-svg {
+  width: 30px;
+  height: 30px;
+  stroke: var(--cg-primary);
+  color: var(--cg-primary);
+  stroke-width: 1.9;
+  transition: stroke .2s ease, color .2s ease;
+}
+
+.tile:hover svg.tile__icon-svg {
+  stroke: var(--cg-gold-200);
+  color: var(--cg-gold-200);
+}
+
+/* -----------------------------------------------------------------------
+   12. Tile Popup
+   ----------------------------------------------------------------------- */
+.tile-popup {
+  background: rgba(39, 45, 59, .9);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(245, 184, 26, .2);
+  border-radius: var(--cg-r-lg);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, .4), 0 0 8px rgba(245, 184, 26, .08);
+}
+
+/* -----------------------------------------------------------------------
+   13. Ticket
+   ----------------------------------------------------------------------- */
+.ticket {
+  background: var(--cg-surface);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px dashed rgba(245, 184, 26, .15);
+  border-radius: var(--cg-r-lg);
+  padding: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, .2);
+}
+
+.ticket__header {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.ticket__meta {
+  font-size: 12px;
+  color: var(--cg-text-dim);
+}
+
+.ticket__qr {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--cg-border);
+  display: flex;
+  justify-content: center;
+}
+
+#featured > .card {
+  margin-top: 12px;
+  margin-bottom: 12px;
+}
+
+/* -----------------------------------------------------------------------
+   14. Bottom Navigation – Frosted Glass
+   ----------------------------------------------------------------------- */
 .bottom-nav {
   position: fixed;
   bottom: 0;
@@ -488,12 +482,13 @@ html[data-theme="light"] .bottom-nav a:active {
   display: flex;
   align-items: center;
   justify-content: space-evenly;
-  background: var(--cg-surface-2);
-  border-top: 1px solid var(--cg-border);
+  background: rgba(12, 14, 20, .75);
+  backdrop-filter: saturate(140%) blur(16px);
+  -webkit-backdrop-filter: saturate(140%) blur(16px);
+  border-top: 1px solid rgba(245, 184, 26, .1);
+  box-shadow: 0 -2px 20px rgba(0, 0, 0, .3), 0 -1px 0 rgba(245, 184, 26, .05);
   padding: 12px 12px calc(var(--cg-safe-bottom));
   z-index: 60;
-  /* Remove any backdrop filters or transparency inherited from previous rules */
-  backdrop-filter: none;
 }
 
 .bottom-nav a {
@@ -501,42 +496,94 @@ html[data-theme="light"] .bottom-nav a:active {
   text-align: center;
   padding: 10px 8px;
   border-radius: 12px;
-  color: var(--cg-text);
+  color: var(--cg-text-dim);
   text-decoration: none;
   font-size: 12px;
+  font-weight: 600;
+  transition: background .15s ease, color .15s ease;
 }
 
 .bottom-nav a:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(245, 184, 26, .06);
+  color: var(--cg-text-strong);
 }
+
 .bottom-nav a:active {
-  background: rgba(255, 255, 255, 0.10);
+  background: rgba(245, 184, 26, .1);
 }
 
+.bottom-nav a.is-active {
+  background: rgba(245, 184, 26, .08);
+  font-weight: 800;
+  color: var(--cg-text-strong);
+}
+
+.bottom-nav a.home {
+  color: var(--cg-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 9999px;
+  background: rgba(245, 184, 26, .06);
+  border: 1px solid rgba(245, 184, 26, .15);
+  box-shadow: 0 0 12px rgba(245, 184, 26, .1), inset 0 0 0 1px rgba(255, 255, 255, .03);
+  margin: 0 6px;
+  transition: box-shadow .25s ease, background .2s ease;
+}
+
+.bottom-nav a.home:hover {
+  box-shadow: 0 0 20px rgba(245, 184, 26, .2);
+  background: rgba(245, 184, 26, .1);
+}
+
+.bottom-nav a.home:active {
+  transform: translateY(1px);
+}
+
+.bottom-nav a.home svg {
+  display: block;
+}
+
+.bottom-nav__home {
+  flex: 0 0 auto;
+  width: 54px;
+  height: 54px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--cg-primary);
+  color: var(--cg-primary-ink);
+  box-shadow: 0 0 16px rgba(245, 184, 26, .3), var(--cg-elev);
+  font-weight: 900;
+}
+
+.bottom-nav__home:active {
+  transform: translateY(1px) scale(.98);
+}
+
+/* Light theme bottom nav */
 html[data-theme="light"] .bottom-nav {
-  background: var(--cg-surface-2);
-}
-html[data-theme="light"] .bottom-nav a:hover {
-  background: rgba(0, 0, 0, 0.06);
-}
-html[data-theme="light"] .bottom-nav a:active {
-  background: rgba(0, 0, 0, 0.10);
+  background: rgba(255, 255, 255, .85);
+  backdrop-filter: saturate(120%) blur(12px);
+  -webkit-backdrop-filter: saturate(120%) blur(12px);
+  border-top-color: rgba(20, 23, 28, .1);
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, .06);
 }
 
-/*
- * Profile/Log‑in nav item styling
- *
- * When the bottom navigation displays the logged in user or the Log in link,
- * highlight that nav item with a subtle primary‑tinted background.  Use the
- * brand gold as the tint so it stands out clearly against the dark nav
- * surface.  Also unify spacing and alignment for the profile row and
- * ensure the user name is rendered in the primary colour.  On hover and
- * active states the tint intensifies slightly to communicate interactivity.
- */
-/* Style the profile/login nav items to mirror the appearance of the other
-   navigation links.  Use the same colour palette and spacing, and align
-   the text and avatar horizontally.  Avoid adding a distinct background so
-   the menu retains symmetry; only the home button remains a pill. */
+html[data-theme="light"] .bottom-nav a:hover {
+  background: rgba(0, 0, 0, .06);
+}
+
+html[data-theme="light"] .bottom-nav a:active {
+  background: rgba(0, 0, 0, .10);
+}
+
+/* -----------------------------------------------------------------------
+   15. Profile / Login Nav Items
+   ----------------------------------------------------------------------- */
 .bottom-nav .profile-nav,
 .bottom-nav .login-nav {
   flex: 1;
@@ -550,148 +597,240 @@ html[data-theme="light"] .bottom-nav a:active {
   color: var(--cg-text);
   font-weight: 600;
   text-decoration: none;
-  transition: background 0.12s ease;
+  transition: background .15s ease;
 }
 
-/* On hover and active, reuse the default nav hover effect rather than a custom
-   gold tint.  Leave the colour unchanged so the icon and text remain
-   consistent with the Event Info link. */
 .bottom-nav .profile-nav:hover,
 .bottom-nav .login-nav:hover {
-  background: rgba(255, 255, 255, 0.06);
-}
-.bottom-nav .profile-nav:active,
-.bottom-nav .login-nav:active {
-  background: rgba(255, 255, 255, 0.10);
+  background: rgba(245, 184, 26, .06);
 }
 
-/* Ensure avatar images inside the profile nav item are consistently sized */
+.bottom-nav .profile-nav:active,
+.bottom-nav .login-nav:active {
+  background: rgba(245, 184, 26, .1);
+}
+
 .bottom-nav .profile-nav img {
   width: 22px;
   height: 22px;
   border-radius: 50%;
   border: 2px solid var(--cg-primary);
   object-fit: cover;
+  box-shadow: 0 0 6px rgba(245, 184, 26, .2);
 }
 
-/* Keep the user's first name in the primary brand colour */
-/* Use the default nav text colour for the user name */
 .bottom-nav .profile-nav span {
   color: var(--cg-text);
 }
 
-/* New share label above social icons */
-/* Display the share graphic instead of text */
+/* -----------------------------------------------------------------------
+   16. Footer
+   ----------------------------------------------------------------------- */
+.footer {
+  max-width: none;
+  width: 100%;
+  margin: 0;
+  padding: 24px 16px 70px;
+  border-radius: 0;
+  background: rgba(8, 10, 14, .95);
+  border: none;
+  border-top: 1px solid rgba(245, 184, 26, .06);
+  box-shadow: none;
+  color: var(--cg-text);
+}
+
+.footer__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 18px;
+}
+
+.footer a {
+  color: var(--cg-text);
+  text-decoration: none;
+  transition: color .2s ease;
+}
+
+.footer a:hover {
+  color: var(--cg-primary);
+  text-decoration: none;
+}
+
+.footer__legal {
+  margin-top: 14px;
+  margin-bottom: 14px;
+  font-size: 12px;
+  color: var(--cg-text-dim);
+}
+
+.footer--stack {
+  text-align: center;
+}
+
+.footer__icons {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.footer__icons a {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, .04);
+  border: 1px solid rgba(255, 255, 255, .08);
+  color: #fff;
+  font-weight: 900;
+  text-decoration: none;
+  font-size: 18px;
+  transition: box-shadow .25s ease, border-color .25s ease, background .2s ease;
+}
+
+.footer__icons a:hover {
+  border-color: rgba(245, 184, 26, .3);
+  box-shadow: 0 0 14px rgba(245, 184, 26, .2);
+  background: rgba(245, 184, 26, .08);
+}
+
+.footer__icons a svg,
+.footer__icons a img {
+  width: 20px;
+  height: 20px;
+}
+
+html[data-theme="light"] .footer__icons a {
+  background: rgba(0, 0, 0, .04);
+  border-color: rgba(20, 23, 28, .12);
+  color: var(--cg-text-strong);
+}
+
+.footer__links {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.footer__links a {
+  color: var(--cg-text);
+  text-decoration: none;
+  transition: color .2s ease;
+}
+
+.footer__links a:hover {
+  color: var(--cg-primary);
+}
+
 .footer__share {
-  /* Provide additional breathing room below the share icon */
   margin-bottom: 20px;
   display: flex;
   justify-content: center;
 }
 
-/* Scale the Share Online graphic to align with the social icons */
 .footer__share img {
-  /* Enlarge the share graphic so it's more prominent */
   height: 28px;
   width: auto;
 }
 
-/* No color override needed when using an image */
-
-
-/* Sticky CTA positioning logic:
-   - Default: pinned to bottom edge
-   - When footer visible: lift above footer height with margin
-*/
-:root { --footer-h: 0px; --cta-margin: 12px; }
-.sticky-cta { bottom: 0; }
-.sticky-cta.lifted { bottom: calc(var(--footer-h) + var(--cta-margin)); }
-
-
-/* Smooth lift */
-:root { --cta-h: 64px; }
-.sticky-cta {
-  position: fixed; left: 16px; right: 16px; bottom: 0;
-  transition: transform 160ms ease;
-  will-change: transform;
+html[data-theme="light"] .footer {
+  background: var(--cg-paper-100);
+  border-top-color: rgba(20, 23, 28, .08);
 }
-body.has-sticky-cta main { padding-bottom: 24px !important; }
 
-
-/* Fixed CTA at viewport bottom. Content scrolls; spacer = top of CTA is end of page. */
-:root { --cta-h: 68px; }
-.sticky-cta {
-  position: fixed; left: 16px; right: 16px; bottom: 0;
-  z-index: 60;
+/* Footer clearance */
+body.has-sticky-cta .footer {
+  margin-bottom: calc(var(--cta-h) + 16px);
 }
-body.has-sticky-cta main { padding-bottom: 24px !important; }
 
-
-/* HARD FIX: CTA never moves. No transitions, no transforms. */
-:root { --cta-h: 68px !important; }
-.sticky-cta {
-  position: fixed !important;
-  left: 16px !important;
-  right: 16px !important;
-  bottom: 0 !important;
-  z-index: 60 !important;
-  transform: none !important;
-  transition: none !important;
+body.with-dock .footer {
+  position: static !important;
+  margin: 0 !important;
 }
-body.has-sticky-cta main { padding-bottom: 24px !important; }
 
+body.with-dock .footer::after {
+  content: "" !important;
+  display: block !important;
+  height: 12px !important;
+}
 
-/* Spacer so footer can scroll fully above a fixed CTA */
-.cta-spacer { height: calc(var(--cta-h) + 14px); }
+body.with-dock .footer {
+  margin-bottom: calc(var(--dock-h) + 12px) !important;
+}
 
-/* Footer clearance above fixed CTA */
-body.has-sticky-cta .footer { margin-bottom: calc(var(--cta-h) + 16px); }
+/* -----------------------------------------------------------------------
+   17. Sticky CTA & CTA Dock
+   ----------------------------------------------------------------------- */
+.sticky-cta {
+  display: none !important;
+}
 
+.sticky-cta .button {
+  width: 100%;
+}
 
-/* Fixed CTA Dock: own layer, prevents overlap */
-:root { --dock-h: 64px; } /* reduce dock height to match bottom nav without leaving excess space */
 .cta-dock {
   position: fixed;
-  left: 0; right: 0; bottom: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   height: var(--dock-h);
   z-index: 60;
-  display: flex; align-items: center; justify-content: center;
-  background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,.18) 20%, rgba(0,0,0,.30) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, rgba(8, 10, 14, 0) 0%, rgba(8, 10, 14, .6) 30%, rgba(8, 10, 14, .85) 100%);
   padding: 0 16px;
 }
-.cta-dock .button { width: 100%; max-width: 680px; }
-body.with-dock main { padding-bottom: calc(var(--dock-h) + 8px); }
 
-/* override old sticky-cta on Home by hiding it if present */
-.sticky-cta { display: none !important; }
+.cta-dock .button {
+  width: 100%;
+  max-width: 680px;
+}
 
-/* Ensure footer scrolls fully above the fixed CTA dock */
-body.with-dock .footer { margin-bottom: calc(var(--dock-h) + 12px) !important; }
+.cta-dock.behind {
+  z-index: 0 !important;
+  pointer-events: none !important;
+}
 
+.cta-spacer {
+  height: calc(var(--cta-h) + 14px);
+}
 
-/* Footer should appear above dock when visible */
-.cta-dock.behind { z-index: 0 !important; pointer-events: none !important; }
+/* -----------------------------------------------------------------------
+   18. Body Layout Helpers
+   ----------------------------------------------------------------------- */
+body.with-dock {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
 
+body.with-dock main {
+  flex: 1 0 auto;
+  padding-bottom: calc(var(--dock-h) + 8px);
+}
 
+body.has-sticky-cta main {
+  padding-bottom: 24px !important;
+}
 
-
-/* === Full‑bleed promo image (edge‑to‑edge) === */
-/*
- * On mobile screens the event promo should stretch flush with the edges of
- * the viewport. We offset the parent container’s horizontal padding by
- * applying equal negative margins on the left and right. On larger
- * screens (≥768px) we use a viewport‑width layout with negative 50vw
- * margins so the image spans the full width. This prevents horizontal
- * overflow and keeps the image centered.
- */
+/* -----------------------------------------------------------------------
+   19. Promo Wrap (Full-Bleed Images)
+   ----------------------------------------------------------------------- */
 .promo-wrap {
   display: block;
-  /* Offset the default container padding (16px each side) so the image
-     touches the edges on smaller screens */
   margin: 12px -16px;
   overflow: hidden;
   border-radius: 0;
 }
+
 .promo-wrap img {
   display: block;
   width: 100%;
@@ -699,6 +838,7 @@ body.with-dock .footer { margin-bottom: calc(var(--dock-h) + 12px) !important; }
   border: none !important;
   border-radius: 0 !important;
 }
+
 @media (min-width: 768px) {
   .promo-wrap {
     width: 100vw;
@@ -711,111 +851,147 @@ body.with-dock .footer { margin-bottom: calc(var(--dock-h) + 12px) !important; }
   }
 }
 
-/* Override the promo wrapper on the event info page.  The event info page
-   container has 4% horizontal margins (on mobile), which would otherwise
-   make the full‑bleed image appear indented.  Apply equal negative
-   margins to cancel the container spacing and allow the image to span
-   the viewport width. */
 body.event-info .promo-wrap {
   margin-left: calc(-1 * 4%);
   margin-right: calc(-1 * 4%);
   width: 100vw;
 }
 
-/* === Footer clearance via invisible spacer (final) === */
-body.with-dock .footer {
-  position: static !important;
-  margin: 0 !important;
-}
-body.with-dock .footer::after {
-  /* Reduce the spacer below the footer so the copyright lands just above the bottom nav.  
-     The extra space was too large before (dock height + 24px), leaving an unnecessary gap.  
-     Use a smaller offset to visually align the footer closer to the dock while still
-     preventing overlap. */
-  content: "" !important;
-  display: block !important;
-  /* Provide a small gap beneath the footer so the copyright rests just above
-     the bottom nav. 12px gives enough breathing room without leaving a huge
-     empty space. */
-  height: 12px !important;
+/* -----------------------------------------------------------------------
+   20. Responsive Overrides
+   ----------------------------------------------------------------------- */
+@media (min-width: 768px) {
+  .footer {
+    max-width: none;
+    margin-left: 0;
+    margin-right: 0;
+  }
 }
 
-/* ------------------------------------------------------------------------- */
-/* Layout helpers for pages using the bottom navigation dock.                 */
-/* When a page has little content, the default static layout allows the
-   footer to float in the middle of the screen, leaving an awkward gap
-   above the bottom nav.  Using flexbox on the body ensures that the main
-   content area expands to fill the viewport, pushing the footer down so
-   it always sits right above the nav. */
-body.with-dock {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
+/* -----------------------------------------------------------------------
+   21. Utility Classes – NEW
+   ----------------------------------------------------------------------- */
+
+/* Gold gradient text */
+.text-gradient {
+  background: linear-gradient(135deg, #f5b81a 0%, #ffd560 50%, #f5b81a 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-body.with-dock main {
-  flex: 1 0 auto;
+/* Animated gold border glow */
+.glow-border {
+  border: 1px solid rgba(245, 184, 26, .2);
+  box-shadow: 0 0 8px rgba(245, 184, 26, .1);
+  animation: pulseGlow 3s ease-in-out infinite;
 }
 
-
-.hero .card, .hero__text, .intro-card { padding-top: 15px; padding-bottom: 15px; }
-
-/* extra breathing room for the home intro card */
-.card--intro{padding-top:31px;padding-bottom:31px;}
-
-/* bottom-nav home circle icon and a11y helper */
-.bottom-nav a.home{
-  display:inline-flex;align-items:center;justify-content:center;
-  width:48px;height:48px;border-radius:9999px;
-  background: rgba(255,255,255,.04);
-  border:1px solid var(--cg-border);
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,.04), 0 2px 10px rgba(0,0,0,.25);
-  margin: 0 6px;
-}
-.bottom-nav a.home:active{ transform: translateY(1px); }
-.bottom-nav a.home svg{ display:block; }
-.sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
-
-/* even vertical rhythm between sections */
-.container > section,
-.container > .card {
-  margin-top: 20px;
-  margin-bottom: 20px;
-}
-
-/* ensure nested ticket cards keep tighter spacing while outer Featured section keeps rhythm */
-#featured > .card { margin-top: 12px; margin-bottom: 12px; }
-
-/* give tile grid breathing room below */
-.tile-grid { margin-bottom: 20px; }
-
-/* Styling for the information popup under the tile grid. A lighter
-   background and subtle border draw attention without overwhelming the
-   design. This overrides the default .card styling for popups. */
-.tile-popup {
-  /* Use a lighter background for popups to draw attention. This shade
-     contrasts against the dark card surfaces, ensuring the content
-     stands out without overwhelming the layout. */
-  background: var(--cg-ink-600);
-  border: 1px solid rgba(245, 184, 26, .25);
+/* Generic glassmorphism panel */
+.glass {
+  background: rgba(18, 21, 28, .6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(245, 184, 26, .08);
   border-radius: var(--cg-r-lg);
-  box-shadow: 0 2px 10px rgba(0,0,0,.3);
 }
 
-
-/* Unified tile icon styling (brand gold, consistent weight) */
-.tile { color: var(--cg-text-strong); }
-.tile svg.tile__icon-svg {
-  width: 30px; height: 30px;
-  stroke: var(--cg-primary);
-  color: var(--cg-primary);
-  stroke-width: 1.9;
+/* Section title with gold underline accent */
+.section-title {
+  font-family: var(--cg-font-display);
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: var(--cg-text-strong);
+  padding-bottom: 12px;
+  margin-bottom: 20px;
+  position: relative;
 }
-.tile:hover svg.tile__icon-svg { stroke: var(--cg-primary-press); color: var(--cg-primary-press); }
 
+.section-title::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 48px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--cg-primary), var(--cg-gold-200));
+  border-radius: 2px;
+  box-shadow: 0 0 8px rgba(245, 184, 26, .3);
+}
 
-/* home icon brand gold */
-/* When using an inline SVG, the following rule tinted the path to the primary color.
-   Since the new home icon is a yellow PNG, comment this out to prevent overriding
-   the image. */
-/* .bottom-nav a.home svg path { fill: var(--cg-primary) !important; } */
+/* -----------------------------------------------------------------------
+   22. Scroll Animation Observer
+   ----------------------------------------------------------------------- */
+[data-animate] {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity .6s ease, transform .6s ease;
+}
+
+[data-animate].visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* -----------------------------------------------------------------------
+   23. Animation Classes
+   ----------------------------------------------------------------------- */
+.animate-in {
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+.animate-in.visible {
+  animation: fadeInUp .6s ease forwards;
+}
+
+.glow-pulse {
+  animation: pulseGlow 2.5s ease-in-out infinite;
+}
+
+/* -----------------------------------------------------------------------
+   24. Keyframe Animations
+   ----------------------------------------------------------------------- */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(245, 184, 26, .15);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(245, 184, 26, .35), 0 0 40px rgba(245, 184, 26, .1);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}

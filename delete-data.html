@@ -1,59 +1,115 @@
-<!doctype html><html lang="en" data-theme="dark"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>CannaGrudge • User Data Deletion</title>
-  <!-- Shared theme stylesheet -->
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CannaGrudge • User Data Deletion</title>
   <link rel="stylesheet" href="theme.css">
   <style>
-    :root{--bg:#0f1012;--card:#181b20;--text:#eaecef;--muted:#a8adb6;--accent:#f5b81a}
-    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);
-    font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif}
-    .wrap{max-width:860px;margin:40px auto 80px;padding:0 20px}
-    .card{background:var(--card);border:1px solid #2a2f36;border-radius:16px;padding:28px;
-          box-shadow:0 10px 28px rgba(0,0,0,.3)}
-    h1,h2,h3{line-height:1.25;margin:0 0 8px} h1{font-size:28px}
-    h2{margin-top:22px;font-size:20px} h3{margin-top:18px;font-size:18px}
-    p,li{color:var(--text)} .muted{color:var(--muted)}
-    a{color:var(--accent);text-decoration:none} a:hover{text-decoration:underline}
-    .top{margin-bottom:16px}
-    .small{font-size:13px}
-    .pill{display:inline-block;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);
-          padding:6px 10px;border-radius:999px;margin-right:8px}
-    code{background:#0b0c10;border:1px solid #2a2f36;border-radius:6px;padding:2px 6px}
+    .delete-card {
+      padding: 28px 24px;
+      border-top: 2px solid var(--cg-gold-300);
+    }
+    .delete-card h1 {
+      margin: 0 0 4px;
+    }
+    .delete-card h2 {
+      margin-top: 22px;
+      font-size: 1.25rem;
+    }
+    .delete-card h3 {
+      margin-top: 18px;
+    }
+    .delete-card p,
+    .delete-card li {
+      color: var(--cg-text);
+    }
+    .delete-card a {
+      color: var(--cg-primary);
+      text-decoration: none;
+    }
+    .delete-card a:hover {
+      text-decoration: underline;
+    }
+    .delete-card .top {
+      margin-bottom: 16px;
+    }
+    .delete-card .small {
+      font-size: 13px;
+    }
+    .delete-card .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--cg-surface-2);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid var(--cg-border);
+      padding: 10px 16px;
+      border-radius: var(--cg-r-pill);
+      font-weight: 600;
+      color: var(--cg-primary);
+      transition: border-color .25s ease, box-shadow .25s ease;
+    }
+    .delete-card .pill:hover {
+      text-decoration: none;
+      border-color: rgba(245, 184, 26, .3);
+      box-shadow: 0 0 14px rgba(245, 184, 26, .15);
+    }
+    .delete-card code {
+      background: var(--cg-ink-900);
+      border: 1px solid var(--cg-border);
+      border-radius: 6px;
+      padding: 2px 6px;
+      color: var(--cg-text-strong);
+      font-size: 13px;
+    }
+    .delete-card ul,
+    .delete-card ol {
+      padding-left: 20px;
+    }
+    .delete-card li {
+      margin-bottom: 6px;
+    }
   </style>
-</head><body class="with-dock">
-<div class="wrap"><div class="card">
-  <div class="top">
-    <h1>User Data Deletion</h1>
-    <div class="small muted">Last updated October 23, 2025</div>
-  </div>
+</head>
+<body class="with-dock">
+  <main class="container">
+    <div class="card delete-card" data-animate>
+      <div class="top">
+        <h1>User Data Deletion</h1>
+        <div class="small muted">Last updated October 23, 2025</div>
+      </div>
 
-  <p>Use this page to request deletion of your CannaGrudge account and associated data.</p>
+      <p>Use this page to request deletion of your CannaGrudge account and associated data.</p>
 
-  <h2>What gets deleted</h2>
-  <ul>
-    <li>Your authentication profile (name, email, UID) stored via Firebase Authentication.</li>
-    <li>Any profile data we store that is tied to your UID (if applicable).</li>
-  </ul>
+      <h2>What gets deleted</h2>
+      <ul>
+        <li>Your authentication profile (name, email, UID) stored via Firebase Authentication.</li>
+        <li>Any profile data we store that is tied to your UID (if applicable).</li>
+      </ul>
 
-  <h2>How to request deletion</h2>
-  <ol>
-    <li>Open your dashboard while signed in and copy your <strong>User ID (UID)</strong> if shown; if not, just use the email on your account.</li>
-    <li>Send us an email from the same address you use to log in to the Service, with the subject <code>Delete My Data</code>.</li>
-    <li>Include your name, the email on the account, and your UID (if available).</li>
-  </ol>
+      <h2>How to request deletion</h2>
+      <ol>
+        <li>Open your dashboard while signed in and copy your <strong>User ID (UID)</strong> if shown; if not, just use the email on your account.</li>
+        <li>Send us an email from the same address you use to log in to the Service, with the subject <code>Delete My Data</code>.</li>
+        <li>Include your name, the email on the account, and your UID (if available).</li>
+      </ol>
 
-  <p>Click to start an email:</p>
-  <p><a class="pill" href="mailto:thegreenkeepers.az@yahoo.com?subject=Delete%20My%20Data%20-%20CannaGrudge&body=Please%20delete%20my%20account%20and%20associated%20data.%0A%0AName:%0AEmail%20on%20account:%0AUID%20(if%20known):">Email deletion request</a></p>
+      <p>Click to start an email:</p>
+      <p><a class="pill" href="mailto:thegreenkeepers.az@yahoo.com?subject=Delete%20My%20Data%20-%20CannaGrudge&body=Please%20delete%20my%20account%20and%20associated%20data.%0A%0AName:%0AEmail%20on%20account:%0AUID%20(if%20known):">Email deletion request</a></p>
 
-  <h2>Verification & timeline</h2>
-  <p>We may ask you to verify your identity. Once verified, we aim to complete deletion within 30 days unless a longer period is required by law or to prevent fraud/abuse.</p>
+      <h2>Verification &amp; timeline</h2>
+      <p>We may ask you to verify your identity. Once verified, we aim to complete deletion within 30 days unless a longer period is required by law or to prevent fraud/abuse.</p>
 
-  <h2>Questions</h2>
-  <p>Email <a href="mailto:thegreenkeepers.az@yahoo.com">thegreenkeepers.az@yahoo.com</a> with the subject <code>Privacy</code>.</p>
+      <h2>Questions</h2>
+      <p>Email <a href="mailto:thegreenkeepers.az@yahoo.com">thegreenkeepers.az@yahoo.com</a> with the subject <code>Privacy</code>.</p>
 
-  <h2>Related</h2>
-  <p>See our <a href="privacy.html">Privacy Policy</a> and <a href="terms.html">Terms of Service</a>.</p>
-</div></div>
+      <h2>Related</h2>
+      <p>See our <a href="privacy.html">Privacy Policy</a> and <a href="terms.html">Terms of Service</a>.</p>
+    </div>
+  </main>
+
   <footer class="footer footer--stack">
     <div class="footer__share"><img src="assets/Icons/share-online.png" alt="Share Online" /></div>
     <div class="footer__icons">
@@ -74,7 +130,6 @@
     <div class="footer__legal">© CannaGrudge. All rights reserved.</div>
   </footer>
 
-  <!-- Shared app script for mobile nav/menus -->
   <script src="app.js"></script>
 
   <nav class="bottom-nav">
@@ -85,4 +140,5 @@
     </a>
     <a href="dashboard.html">Dashboard</a>
   </nav>
-</body></html>
+</body>
+</html>

@@ -6,32 +6,38 @@
   <title>Messages • CannaGrudge</title>
   <link rel="stylesheet" href="theme.css">
   <style>
-    /* Small button style for message tabs and actions */
-    .btn-small {
-      padding: 6px 10px;
-      font-size: 14px;
-      font-weight: 600;
-      border-radius: 8px;
-    }
+    .msg-tabs{display:flex;gap:4px;margin-bottom:16px;border-bottom:1px solid var(--cg-border);padding-bottom:0}
+    .msg-tab{padding:10px 16px;font-size:14px;font-weight:600;border:none;background:transparent;color:var(--cg-text-dim);cursor:pointer;border-bottom:2px solid transparent;border-radius:0;transition:color .2s ease,border-color .2s ease}
+    .msg-tab:hover{color:var(--cg-text-strong)}
+    .msg-tab.active{color:var(--cg-primary);border-bottom-color:var(--cg-primary)}
+    .msg-card{background:rgba(30,35,48,.6);border:1px solid rgba(245,184,26,.08);border-radius:var(--cg-r-md);padding:14px;margin-bottom:12px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);transition:border-color .25s ease}
+    .msg-card:hover{border-color:rgba(245,184,26,.15)}
+    .msg-action{padding:6px 12px;font-size:13px;font-weight:600;border-radius:var(--cg-r-sm);border:1px solid rgba(245,184,26,.1);background:var(--cg-ink-800);color:var(--cg-text);cursor:pointer;transition:border-color .25s ease,box-shadow .25s ease}
+    .msg-action:hover{border-color:rgba(245,184,26,.3);box-shadow:0 0 10px rgba(245,184,26,.12)}
+    .form-textarea{width:100%;padding:10px 12px;background:var(--cg-ink-800);color:var(--cg-text);border:1px solid var(--cg-border);border-radius:var(--cg-r-sm);font-size:14px;font-family:inherit;resize:vertical;transition:border-color .25s ease,box-shadow .25s ease}
+    .form-textarea:focus{border-color:var(--cg-primary);box-shadow:0 0 8px rgba(245,184,26,.2);outline:none}
+    .send-btn{padding:10px 20px;font-size:14px;font-weight:700;border-radius:var(--cg-r-md);border:1px solid rgba(245,184,26,.15);background:var(--cg-ink-800);color:var(--cg-text-strong);cursor:pointer;margin-top:8px;transition:border-color .25s ease,box-shadow .25s ease,background .2s ease}
+    .send-btn:hover{border-color:rgba(245,184,26,.3);box-shadow:0 0 14px rgba(245,184,26,.15);background:var(--cg-ink-700)}
+    [data-animate]{opacity:0;transform:translateY(24px);transition:opacity .6s ease,transform .6s ease}
+    [data-animate].visible{opacity:1;transform:translateY(0)}
   </style>
 </head>
 <body class="with-dock">
   <main class="container">
-    <div class="card" style="max-width:720px;margin:24px auto;padding:16px;">
+    <div class="card" data-animate style="max-width:720px;margin:24px auto;padding:16px;">
       <h2 style="margin-top:0;margin-bottom:12px;">Messages</h2>
-      <!-- Tabs for Inbox, Sent, Trash -->
-      <nav id="messageTabs" style="display:flex;gap:8px;margin-bottom:16px;">
-        <button class="btn btn-small" data-tab="inbox">Inbox</button>
-        <button class="btn btn-small" data-tab="sent">Sent</button>
-        <button class="btn btn-small" data-tab="trash">Trash</button>
+      <nav id="messageTabs" class="msg-tabs">
+        <button class="msg-tab" data-tab="inbox">Inbox</button>
+        <button class="msg-tab" data-tab="sent">Sent</button>
+        <button class="msg-tab" data-tab="trash">Trash</button>
       </nav>
       <div id="messagesList" style="margin-bottom:16px;">
         <p class="muted">No messages yet.</p>
       </div>
       <h3 style="margin-bottom:8px;">Contact Event Administrators</h3>
       <form id="messageForm">
-        <textarea id="messageInput" rows="4" required style="width:100%;border-radius:12px;padding:8px;background:#181b20;color:#eaecef;border:1px solid var(--cg-border);" placeholder="Write your message..."></textarea>
-        <button type="submit" class="btn btn-small" style="margin-top:8px;">Send Message</button>
+        <textarea id="messageInput" rows="4" required class="form-textarea" placeholder="Write your message..."></textarea>
+        <button type="submit" class="send-btn">Send Message</button>
       </form>
     </div>
   </main>
@@ -62,19 +68,17 @@
       // Show newest first
       msgs.slice().reverse().forEach((msg, index) => {
         const div = document.createElement('div');
-        div.className = 'card';
-        div.style.marginBottom = '12px';
-        div.style.padding = '12px';
-        div.innerHTML = '<div style="font-weight:600;margin-bottom:4px;">' + (msg.subject || 'Message') + '</div>' +
+        div.className = 'msg-card';
+        div.innerHTML = '<div style="font-weight:600;margin-bottom:4px;color:var(--cg-text-strong)">' + (msg.subject || 'Message') + '</div>' +
                         '<div class="muted" style="font-size:12px;margin-bottom:4px;">' + msg.timestamp + '</div>' +
-                        '<div style="margin-bottom:8px;">' + msg.body + '</div>';
+                        '<div style="margin-bottom:8px;color:var(--cg-text)">' + msg.body + '</div>';
         // Action buttons container
         const actions = document.createElement('div');
         actions.style.textAlign = 'right';
         // In trash tab, allow restore
         if (tab === 'trash') {
           const restoreBtn = document.createElement('button');
-          restoreBtn.className = 'btn btn-small';
+          restoreBtn.className = 'msg-action';
           restoreBtn.textContent = 'Restore';
           restoreBtn.onclick = () => {
             const trash = getMessages('trash');
@@ -90,7 +94,7 @@
         } else {
           // In inbox or sent, allow delete to trash
           const deleteBtn = document.createElement('button');
-          deleteBtn.className = 'btn btn-small';
+          deleteBtn.className = 'msg-action';
           deleteBtn.textContent = 'Delete';
           deleteBtn.onclick = () => {
             const list = getMessages(tab);
