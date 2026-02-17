@@ -126,6 +126,7 @@ CannaGrudge is a website for a cannabis boxing/entertainment event on April 25, 
 - **Template variables**: {{name}}, {{email}}, {{order_id}}, {{total}}, {{items}}, {{invoice_url}}, etc.
 
 ## Recent Changes
+- 2026-02-17: Event images - Incorporated fight card poster as hero background, event poster in new "Presented by" section on home page, and guidelines image with full rules/weight classes section on event page. All responsive.
 - 2026-02-17: Invoice attachments - Added file upload support for sponsorship contracts on invoices. Admin can attach PDF/DOC/IMG files (max 10MB), download/remove attachments. Public invoice view shows download link.
 - 2026-02-17: Email system - Added Resend integration with 4 premium dark/gold HTML email templates, admin template editor with preview/test/reset, automated sending on purchase and account creation
 - 2026-02-17: Admin dashboard - Built comprehensive admin system with 25+ API routes, 8-tab admin dashboard, Firebase Admin SDK auth, server-side payment validation, promo codes, sponsor management, invoice system, purchase links, admin invite system
