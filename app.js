@@ -60,18 +60,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const cart = getCart();
     const cartCount = cart.reduce((s, i) => s + i.qty, 0);
 
-    let accountLink;
-    if (loggedIn) {
-      const name = localStorage.getItem('fullName') || 'Account';
-      const first = name.split(' ')[0];
-      accountLink = `<a href="dashboard.html" class="nav-links-item ${page === 'dashboard' ? 'active' : ''}">${first}</a>`;
-    } else {
-      accountLink = `<a href="login.html" class="nav-links-item">Sign In</a>`;
-    }
-
     const nav = document.createElement('nav');
     nav.className = 'navbar';
     nav.id = 'mainNav';
+
+    let ctaBtn;
+    if (loggedIn) {
+      const name = localStorage.getItem('fullName') || 'Account';
+      const first = name.split(' ')[0];
+      ctaBtn = `<a href="dashboard.html" class="btn btn-primary btn-sm nav-tickets-cta">${first}</a>`;
+    } else {
+      ctaBtn = `<a href="login.html" class="btn btn-primary btn-sm nav-tickets-cta">Sign In</a>`;
+    }
+
     nav.innerHTML = `
       <div class="nav-inner">
         <a href="index.html" class="nav-brand">
@@ -81,14 +82,13 @@ document.addEventListener('DOMContentLoaded', () => {
           <a href="index.html" class="${page === 'index' || page === '' ? 'active' : ''}">Home</a>
           <a href="event.html" class="${page === 'event' ? 'active' : ''}">Event</a>
           <a href="tickets.html" class="${page === 'tickets' ? 'active' : ''}">Tickets</a>
-          ${accountLink}
         </div>
         <div class="nav-actions">
           <button class="nav-cart-btn" id="cartToggle" aria-label="Cart">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
             <span class="nav-cart-badge" id="cartBadge" data-count="${cartCount}">${cartCount}</span>
           </button>
-          <a href="tickets.html" class="btn btn-primary btn-sm nav-tickets-cta">Get Tickets</a>
+          ${ctaBtn}
           <button class="hamburger" id="hamburgerBtn" aria-label="Menu">
             <span></span><span></span><span></span>
           </button>
@@ -105,7 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <a href="event.html">Event</a>
       <a href="tickets.html">Tickets</a>
       ${loggedIn ? '<a href="dashboard.html">My Account</a>' : '<a href="login.html">Sign In</a>'}
-      <a href="tickets.html" style="color: var(--cg-gold); margin-top: 16px;">Get Tickets &rarr;</a>
+      <a href="tickets.html" style="color: var(--cg-gold); margin-top: 16px;">Tickets &rarr;</a>
     `;
     document.body.appendChild(mobileMenu);
 
