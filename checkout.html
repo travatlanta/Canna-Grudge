@@ -2,84 +2,265 @@
 <html lang="en" data-theme="dark">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Checkout • CannaGrudge</title>
+  <link rel="icon" type="image/png" href="assets/favicon-gloves.png">
   <link rel="stylesheet" href="theme.css">
+  <script type="text/javascript" src="https://web.squarecdn.com/v1/square.js"></script>
   <style>
-    .checkout-card {
-      border-top: 2px solid var(--cg-gold-300);
+    .checkout-grid {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 32px;
+      margin-top: 40px;
+    }
+    @media (max-width: 768px) {
+      .checkout-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .payment-form, .order-summary {
+      background: var(--cg-surface);
+      border: 1px solid var(--cg-border);
+      border-radius: var(--cg-radius-lg);
       padding: 28px 24px;
+    }
+    .payment-form h3, .order-summary h3 {
+      font-family: var(--cg-font-display);
+      font-size: 20px;
+      font-weight: 800;
+      margin-bottom: 20px;
+    }
+    .form-group {
+      margin-bottom: 16px;
+    }
+    #card-container {
+      min-height: 90px;
+      margin-bottom: 20px;
+    }
+    .payment-error {
+      color: var(--cg-red);
+      font-size: 14px;
+      margin-top: 12px;
+      display: none;
+    }
+    .payment-processing {
+      display: none;
       text-align: center;
+      padding: 16px;
+      color: var(--cg-text-secondary);
     }
-    .checkout-card h1 {
-      background: linear-gradient(135deg, var(--cg-gold-200), var(--cg-gold-300), var(--cg-gold-400));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      margin: 0 0 16px;
+    .order-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
     }
-    .checkout-card p {
-      color: var(--cg-text-dim);
-      font-size: 15px;
-      line-height: 1.6;
-      max-width: 480px;
-      margin: 0 auto;
+    .item-name {
+      color: var(--cg-text-secondary);
+      font-size: 14px;
     }
-    .checkout-icon {
-      font-size: 48px;
-      margin-bottom: 12px;
-      display: block;
+    .item-price {
+      font-weight: 700;
+      color: var(--cg-text);
+    }
+    .order-total {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--cg-font-display);
+    }
+    .total-label {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--cg-text-secondary);
+    }
+    .total-amount {
+      font-size: 24px;
+      font-weight: 900;
+      color: var(--cg-gold);
     }
   </style>
 </head>
-<body class="with-dock">
-  <main class="container">
-    <div class="card checkout-card" data-animate>
-      <span class="checkout-icon">🎟️</span>
-      <h1>Checkout</h1>
-      <p>Checkout coming soon — ticket purchasing will be available here. Stay tuned for updates on ticket availability and pricing.</p>
-    </div>
-  </main>
+<body class="page-padded">
 
-  <script type="module" src="./firebase-config.js"></script>
-  <script type="module">
-    const { auth, onAuthStateChanged } = window.__cgAuth;
-    onAuthStateChanged(auth, (user) => {
-      if (!user) {
-        const ret = encodeURIComponent(location.pathname + location.search + location.hash);
-        location.href = 'login.html?return=' + ret;
-      }
-    });
-  </script>
+  <div class="page-header">
+    <div class="container">
+      <h1>Checkout</h1>
+      <p class="section-subtitle">Complete your ticket purchase</p>
+    </div>
+  </div>
+
+  <section class="section">
+    <div class="container">
+      <div class="checkout-grid">
+        <div class="payment-form">
+          <h3>Payment Details</h3>
+          <div class="form-group">
+            <label class="label" for="emailInput">Email Address</label>
+            <input type="email" class="input" id="emailInput" placeholder="you@example.com">
+          </div>
+          <div class="form-group">
+            <label class="label" for="nameInput">Full Name</label>
+            <input type="text" class="input" id="nameInput" placeholder="Your full name">
+          </div>
+          <div id="card-container"></div>
+          <button class="btn btn-primary btn-block btn-lg" id="payBtn" disabled>Pay Now</button>
+          <div class="payment-error" id="paymentError"></div>
+          <div class="payment-processing" id="paymentProcessing">Processing your payment...</div>
+        </div>
+        <div class="order-summary">
+          <h3>Order Summary</h3>
+          <div id="orderItems"></div>
+          <div class="divider"></div>
+          <div class="order-total">
+            <span class="total-label">Total</span>
+            <span class="total-amount" id="orderTotal">$0.00</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer" data-animate="fade">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <div class="footer-brand">Canna<span>Grudge</span></div>
+          <p class="footer-desc">The ultimate cannabis boxing event. Live fights, music, vendors, and more in Litchfield Park, AZ.</p>
+          <div class="footer-social">
+            <a href="https://www.instagram.com/" target="_blank" aria-label="Instagram"><img src="assets/Icons/instagram.png" alt="Instagram"></a>
+            <a href="https://www.facebook.com/" target="_blank" aria-label="Facebook"><img src="assets/Icons/facebook.png" alt="Facebook"></a>
+            <a href="https://twitter.com/" target="_blank" aria-label="X"><img src="assets/Icons/twitter.png" alt="X"></a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h4>Event</h4>
+          <a href="index.html">Home</a>
+          <a href="event.html">Event Info</a>
+          <a href="tickets.html">Tickets</a>
+        </div>
+        <div class="footer-col">
+          <h4>Support</h4>
+          <a href="event.html#faq">FAQ</a>
+          <a href="event.html#contact">Contact</a>
+          <a href="tos.html">Terms &amp; Conditions</a>
+        </div>
+        <div class="footer-col">
+          <h4>Legal</h4>
+          <a href="privacy.html">Privacy Policy</a>
+          <a href="delete-data.html">Delete Data</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; 2026 CannaGrudge. All rights reserved.</span>
+        <div>
+          <a href="privacy.html">Privacy</a> &nbsp;&middot;&nbsp; <a href="tos.html">Terms</a>
+        </div>
+      </div>
+    </div>
+  </footer>
 
   <script src="app.js"></script>
+  <script type="module" src="./firebase-config.js"></script>
+  <script>
+document.addEventListener('DOMContentLoaded', async () => {
+  const cart = typeof getCart === 'function' ? getCart() : JSON.parse(localStorage.getItem('cg_cart') || '[]');
 
-  <footer class="footer footer--stack">
-    <div class="footer__share"><img src="assets/Icons/share-online.png" alt="Share Online" /></div>
-    <div class="footer__icons">
-      <a href="https://www.instagram.com/?url=https%3A%2F%2Fcannagrudge.com" target="_blank" data-share="instagram" title="Share on Instagram"><img src="assets/Icons/instagram.png" alt="Instagram" /></a>
-      <a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fcannagrudge.com" target="_blank" data-share="facebook" title="Share on Facebook"><img src="assets/Icons/facebook.png" alt="Facebook" /></a>
-      <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fcannagrudge.com" target="_blank" data-share="twitter" title="Share on X"><img src="assets/Icons/twitter.png" alt="X" /></a>
-      <a href="https://www.snapchat.com/share?link=https%3A%2F%2Fcannagrudge.com" target="_blank" data-share="snapchat" title="Share on Snapchat"><img src="assets/Icons/snapchat.png" alt="Snapchat" /></a>
-      <!-- Updated TikTok link to open the platform directly (no direct share URL available) -->
-      <a href="https://www.tiktok.com/" target="_blank" data-share="tiktok" title="Share on TikTok"><img src="assets/Icons/tik tok.png" alt="TikTok" /></a>
-    </div>
-    <div class="footer__links">
-      <a href="event.html#info">Event Info</a>
-      <a href="event.html#vendors">Vendors</a>
-      <a href="event.html#tickets">Tickets</a>
-      <a href="tos.html">Terms &amp; Conditions</a>
-      <a href="privacy.html">Privacy Policy</a>
-    </div>
-    <div class="footer__legal">© CannaGrudge. All rights reserved.</div>
-  </footer>
-  <nav class="bottom-nav">
-    <a href="event.html">Event Info</a>
-    <a href="index.html" class="home" aria-label="Home">
-      <img src="assets/Icons/home.png" alt="Home" width="22" height="22" />
-      <span class="sr-only">Home</span>
-    </a>
-    <a href="dashboard.html">Dashboard</a>
-  </nav>
+  if (cart.length === 0) {
+    location.href = 'tickets.html';
+    return;
+  }
+
+  const itemsEl = document.getElementById('orderItems');
+  const totalEl = document.getElementById('orderTotal');
+  let total = 0;
+
+  itemsEl.innerHTML = cart.map(item => {
+    const itemTotal = item.price * item.qty;
+    total += itemTotal;
+    return `<div class="order-item"><span class="item-name">${item.name} x${item.qty}</span><span class="item-price">$${(itemTotal/100).toFixed(2)}</span></div>`;
+  }).join('');
+
+  totalEl.textContent = '$' + (total/100).toFixed(2);
+
+  try {
+    const configRes = await fetch('/api/square-config');
+    const config = await configRes.json();
+
+    if (!config.applicationId) {
+      document.getElementById('paymentError').textContent = 'Payment system not configured.';
+      document.getElementById('paymentError').style.display = 'block';
+      return;
+    }
+
+    const payments = window.Square.payments(config.applicationId, config.locationId);
+    const card = await payments.card();
+    await card.attach('#card-container');
+
+    document.getElementById('payBtn').disabled = false;
+
+    document.getElementById('payBtn').addEventListener('click', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('emailInput').value.trim();
+      const name = document.getElementById('nameInput').value.trim();
+
+      if (!email || !name) {
+        document.getElementById('paymentError').textContent = 'Please fill in all fields.';
+        document.getElementById('paymentError').style.display = 'block';
+        return;
+      }
+
+      document.getElementById('payBtn').disabled = true;
+      document.getElementById('payBtn').textContent = 'Processing...';
+      document.getElementById('paymentError').style.display = 'none';
+
+      try {
+        const result = await card.tokenize();
+        if (result.status !== 'OK') {
+          throw new Error(result.errors?.[0]?.message || 'Card verification failed');
+        }
+
+        const payRes = await fetch('/api/create-payment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sourceId: result.token,
+            amount: total,
+            currency: 'USD',
+            email: email,
+            note: 'CannaGrudge Tickets: ' + cart.map(i => i.name + ' x' + i.qty).join(', ')
+          })
+        });
+
+        const payData = await payRes.json();
+
+        if (payData.success) {
+          localStorage.setItem('cg_last_order', JSON.stringify({
+            items: cart,
+            total: total,
+            email: email,
+            name: name,
+            paymentId: payData.payment.id,
+            date: new Date().toISOString()
+          }));
+          localStorage.removeItem('cg_cart');
+          location.href = 'confirmation.html';
+        } else {
+          throw new Error(payData.errors?.[0]?.detail || 'Payment failed');
+        }
+      } catch (err) {
+        document.getElementById('paymentError').textContent = err.message || 'Payment failed. Please try again.';
+        document.getElementById('paymentError').style.display = 'block';
+        document.getElementById('payBtn').disabled = false;
+        document.getElementById('payBtn').textContent = 'Pay Now';
+      }
+    });
+  } catch (err) {
+    document.getElementById('paymentError').textContent = 'Could not load payment form. Please try again.';
+    document.getElementById('paymentError').style.display = 'block';
+  }
+});
+  </script>
 </body>
 </html>

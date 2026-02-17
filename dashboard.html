@@ -4,163 +4,156 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Dashboard • CannaGrudge</title>
+  <link rel="icon" type="image/png" href="assets/favicon-gloves.png">
   <link rel="stylesheet" href="theme.css">
   <style>
-    .icon-btn{background:transparent;border:1px solid var(--cg-border);color:var(--cg-text);border-radius:8px;width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:border-color .25s ease,box-shadow .25s ease}
-    .icon-btn:hover{border-color:rgba(245,184,26,.25);box-shadow:0 0 10px rgba(245,184,26,.12)}
-    .icon-btn img{width:16px;height:16px}
-    .card-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
-    .dash-btn{padding:10px 16px;border-radius:var(--cg-r-md);border:1px solid rgba(245,184,26,.1);background:var(--cg-ink-800);color:var(--cg-text-strong);font-weight:700;font-size:14px;cursor:pointer;text-decoration:none;display:inline-block;transition:border-color .25s ease,box-shadow .25s ease,background .2s ease}
-    .dash-btn:hover{border-color:rgba(245,184,26,.3);box-shadow:0 0 14px rgba(245,184,26,.15);background:var(--cg-ink-700)}
-    .dash-btn:active{transform:translateY(1px) scale(.995)}
-    .avatar-glow{width:64px;height:64px;border-radius:50%;border:2px solid var(--cg-primary);object-fit:cover;box-shadow:0 0 16px rgba(245,184,26,.25)}
-    .change-photo-btn{position:absolute;bottom:-8px;right:-8px;background:var(--cg-ink-800);border:1px solid var(--cg-border)}
-    [data-animate]{opacity:0;transform:translateY(24px);transition:opacity .6s ease,transform .6s ease}
-    [data-animate].visible{opacity:1;transform:translateY(0)}
+    .dash-grid { display:grid; grid-template-columns:1fr 2fr; gap:24px; }
+    @media (max-width:768px) { .dash-grid { grid-template-columns:1fr; } }
   </style>
 </head>
-<body class="with-dock">
-  <main class="container">
-    <div class="card profile-card" data-animate style="max-width:720px;margin:24px auto 8px;padding:16px;">
-      <div style="display:flex;align-items:flex-start;gap:16px;">
-        <div style="position:relative;width:64px;height:64px;">
-          <img id="profileImage" src="assets/Icons/avatar-placeholder.png" alt="Profile picture" class="avatar-glow">
-          <input type="file" id="profileUpload" accept="image/*" style="display:none">
-          <button id="changePhoto" class="icon-btn change-photo-btn" title="Change Photo">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-              <path d="M11.013.648a.5.5 0 0 1 .707 0l3.182 3.182a.5.5 0 0 1 0 .707l-9.193 9.193a.5.5 0 0 1-.168.11l-3.856 1.653a.5.5 0 0 1-.65-.65l1.653-3.856a.5.5 0 0 1 .11-.168l9.193-9.193zM12.257 1.94l1.803 1.803L13 4.803 11.197 3l1.06-1.06zM10.743 2.454L12.546 4.257 4.126 12.677l-1.803-1.803L10.743 2.454zM1.5 13.5l.857-.857.4 1.666-1.666-.4.409-.409z" />
-            </svg>
-          </button>
-        </div>
-        <div style="flex:1;">
-          <h1 id="name" style="margin:0 0 4px;">Loading…</h1>
-          <div class="muted">Email: <span id="email">—</span></div>
-          <div class="muted">Provider: <span id="provider">—</span></div>
-          <div class="muted">Address: <span id="address">—</span></div>
-        </div>
-        <button id="editProfile" class="icon-btn" title="Edit Profile">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-            <path d="M11.013.648a.5.5 0 0 1 .707 0l3.182 3.182a.5.5 0 0 1 0 .707l-9.193 9.193a.5.5 0 0 1-.168.11l-3.856 1.653a.5.5 0 0 1-.65-.65l1.653-3.856a.5.5 0 0 1 .11-.168l9.193-9.193zM12.257 1.94l1.803 1.803L13 4.803 11.197 3l1.06-1.06zM10.743 2.454L12.546 4.257 4.126 12.677l-1.803-1.803L10.743 2.454zM1.5 13.5l.857-.857.4 1.666-1.666-.4.409-.409z" />
-          </svg>
-        </button>
-      </div>
-      <div class="card-actions">
-        <a href="settings.html" class="dash-btn">Manage Account</a>
-        <a href="messages.html" class="dash-btn">Message Center</a>
-        <button id="logout" class="dash-btn" type="button">Sign Out</button>
-      </div>
+<body class="page-padded">
+
+  <div class="container">
+    <div class="page-header">
+      <h1>My <span class="text-gradient">Account</span></h1>
+      <p class="text-secondary">Manage your profile and tickets</p>
     </div>
 
-    <div class="card tickets-card" data-animate style="max-width:720px;margin:24px auto;padding:16px;">
-      <h2 style="margin-top:0;margin-bottom:12px;">My Tickets</h2>
-      <div id="ticketsPlaceholder" class="muted" style="margin-bottom:12px;">No tickets purchased yet. Tickets will appear here when available.</div>
-      <button id="downloadTickets" class="dash-btn" type="button" disabled>Download</button>
-    </div>
+    <div class="dash-grid">
 
-    <div class="card" data-animate style="max-width:720px;margin:24px auto;padding:16px;">
-      <h2 style="margin-top:0;margin-bottom:12px;">Frequently Asked Questions</h2>
-      <div class="muted">Coming soon: We'll populate this section with helpful answers to common questions about events, tickets, and your account.</div>
+      <div class="card" style="padding:24px;text-align:center;">
+        <img id="profileImage" class="profile-avatar" src="assets/Icons/avatar-placeholder.png" alt="Profile" style="margin:0 auto 12px;">
+        <input type="file" id="profileUpload" accept="image/*" style="display:none;">
+        <button class="btn btn-ghost btn-sm" id="changePhoto">Change Photo</button>
+        <h2 id="name" style="margin-top:12px;">Loading...</h2>
+        <p class="text-secondary" id="email">-</p>
+        <p class="text-muted" id="provider">-</p>
+        <div class="divider"></div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <button class="btn btn-outline btn-block btn-sm" id="editProfile">Edit Profile</button>
+          <a href="settings.html" class="btn btn-ghost btn-block btn-sm">Settings</a>
+          <button class="btn btn-ghost btn-block btn-sm" id="logout" style="color:var(--cg-red);">Sign Out</button>
+        </div>
+      </div>
+
+      <div>
+        <div class="card" style="padding:24px;">
+          <h3>My Tickets</h3>
+          <div id="ticketsList">No tickets purchased yet.</div>
+          <a href="tickets.html" class="btn btn-primary btn-sm" style="margin-top:16px;">Browse Tickets</a>
+        </div>
+
+        <div class="card" style="margin-top:24px;padding:24px;">
+          <h3>Order History</h3>
+          <div id="orderHistory">No orders yet.</div>
+        </div>
+      </div>
+
     </div>
-  </main>
+  </div>
+
+  <footer class="footer" data-animate="fade">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <div class="footer-brand">Canna<span>Grudge</span></div>
+          <p class="footer-desc">The ultimate cannabis boxing event. Live fights, music, vendors, and more in Litchfield Park, AZ.</p>
+          <div class="footer-social">
+            <a href="https://www.instagram.com/" target="_blank" aria-label="Instagram"><img src="assets/Icons/instagram.png" alt="Instagram"></a>
+            <a href="https://www.facebook.com/" target="_blank" aria-label="Facebook"><img src="assets/Icons/facebook.png" alt="Facebook"></a>
+            <a href="https://twitter.com/" target="_blank" aria-label="X"><img src="assets/Icons/twitter.png" alt="X"></a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h4>Event</h4>
+          <a href="index.html">Home</a>
+          <a href="event.html">Event Info</a>
+          <a href="tickets.html">Tickets</a>
+        </div>
+        <div class="footer-col">
+          <h4>Support</h4>
+          <a href="event.html#faq">FAQ</a>
+          <a href="event.html#contact">Contact</a>
+          <a href="tos.html">Terms &amp; Conditions</a>
+        </div>
+        <div class="footer-col">
+          <h4>Legal</h4>
+          <a href="privacy.html">Privacy Policy</a>
+          <a href="delete-data.html">Delete Data</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; 2026 CannaGrudge. All rights reserved.</span>
+        <div>
+          <a href="privacy.html">Privacy</a> &nbsp;&middot;&nbsp; <a href="tos.html">Terms</a>
+        </div>
+      </div>
+    </div>
+  </footer>
 
   <script type="module" src="./firebase-config.js"></script>
   <script type="module">
-    const { auth, onAuthStateChanged, signOut } = window.__cgAuth;
-    // Elements for profile photo and upload
-    const profileImageEl = document.getElementById('profileImage');
-    const changePhotoBtn = document.getElementById('changePhoto');
-    const profileUpload = document.getElementById('profileUpload');
+const { auth, onAuthStateChanged, signOut } = window.__cgAuth;
+const profileImageEl = document.getElementById('profileImage');
+const changePhotoBtn = document.getElementById('changePhoto');
+const profileUpload = document.getElementById('profileUpload');
 
-    onAuthStateChanged(auth, (user) => {
-      if (!user) {
-        const ret = encodeURIComponent(location.pathname + location.search + location.hash);
-        location.href = 'login.html?return=' + ret;
-        return;
-      }
-      const name = user.displayName || 'CannaGrudge User';
-      const email = user.email || '—';
-      const providerId = (user.providerData[0] && user.providerData[0].providerId) || '—';
-      document.getElementById('name').textContent = name;
-      document.getElementById('email').textContent = email;
-      document.getElementById('provider').textContent = providerId;
-      // Set the profile image from the social provider or previously uploaded avatar
-      const storedAvatar = localStorage.getItem('avatar');
-      const photo = user.photoURL || storedAvatar;
-      if (photo) {
-        profileImageEl.src = photo;
-      }
-      // Load stored address
-      const addr = localStorage.getItem('userAddress');
-      if (addr) {
-        document.getElementById('address').textContent = addr;
-      }
-    });
+onAuthStateChanged(auth, (user) => {
+  if (!user) {
+    location.href = 'login.html?return=' + encodeURIComponent(location.pathname);
+    return;
+  }
+  document.getElementById('name').textContent = user.displayName || 'CannaGrudge User';
+  document.getElementById('email').textContent = user.email || '-';
+  document.getElementById('provider').textContent = (user.providerData[0]?.providerId) || '-';
+  const storedAvatar = localStorage.getItem('avatar');
+  const photo = user.photoURL || storedAvatar;
+  if (photo) profileImageEl.src = photo;
 
-    document.getElementById('logout').onclick = async () => {
-      await signOut(auth);
-      location.href = 'login.html';
-    };
+  const lastOrder = localStorage.getItem('cg_last_order');
+  if (lastOrder) {
+    try {
+      const order = JSON.parse(lastOrder);
+      const ticketsList = document.getElementById('ticketsList');
+      ticketsList.innerHTML = order.items.map(item =>
+        `<div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--cg-border);"><span>${item.name} x${item.qty}</span><span class="text-gold">$${(item.price*item.qty/100).toFixed(2)}</span></div>`
+      ).join('');
 
+      const historyEl = document.getElementById('orderHistory');
+      historyEl.innerHTML = `<div style="padding:12px 0;"><div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span>Order #${order.paymentId?.slice(-8) || 'N/A'}</span><span class="text-gold">$${(order.total/100).toFixed(2)}</span></div><div class="text-muted" style="font-size:13px;">${new Date(order.date).toLocaleDateString()}</div></div>`;
+    } catch(e) {}
+  }
+});
 
-    // Trigger hidden file input when clicking the change photo icon
-    changePhotoBtn.addEventListener('click', () => {
-      profileUpload.click();
-    });
+document.getElementById('logout').addEventListener('click', async () => {
+  await signOut(auth);
+  localStorage.removeItem('isLoggedIn');
+  localStorage.removeItem('fullName');
+  localStorage.removeItem('avatarUrl');
+  localStorage.removeItem('avatar');
+  location.href = 'login.html';
+});
 
-    // Read the selected image and display it as the user's avatar; store in localStorage
-    profileUpload.addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (evt) => {
-        const dataUrl = evt.target.result;
-        profileImageEl.src = dataUrl;
-        localStorage.setItem('avatar', dataUrl);
-      };
-      reader.readAsDataURL(file);
-    });
+changePhotoBtn.addEventListener('click', () => profileUpload.click());
+profileUpload.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (evt) => {
+    profileImageEl.src = evt.target.result;
+    localStorage.setItem('avatar', evt.target.result);
+  };
+  reader.readAsDataURL(file);
+});
 
-    // Allow user to edit address and other profile info
-    const editProfileBtn = document.getElementById('editProfile');
-    editProfileBtn.addEventListener('click', () => {
-      const currentAddr = localStorage.getItem('userAddress') || '';
-      const newAddr = prompt('Enter your address:', currentAddr);
-      if (newAddr !== null) {
-        document.getElementById('address').textContent = newAddr;
-        localStorage.setItem('userAddress', newAddr);
-      }
-    });
+document.getElementById('editProfile').addEventListener('click', () => {
+  const name = prompt('Enter your name:', document.getElementById('name').textContent);
+  if (name !== null && name.trim()) {
+    document.getElementById('name').textContent = name.trim();
+    localStorage.setItem('fullName', name.trim());
+  }
+});
   </script>
-
   <script src="app.js"></script>
-  <footer class="footer footer--stack">
-    <div class="footer__share"><img src="assets/Icons/share-online.png" alt="Share Online" /></div>
-    <div class="footer__icons">
-      <a href="https://www.instagram.com/?url=https%3A%2F%2Fcannagrudge.com" target="_blank" data-share="instagram" title="Share on Instagram"><img src="assets/Icons/instagram.png" alt="Instagram" /></a>
-      <a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fcannagrudge.com" target="_blank" data-share="facebook" title="Share on Facebook"><img src="assets/Icons/facebook.png" alt="Facebook" /></a>
-      <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fcannagrudge.com" target="_blank" data-share="twitter" title="Share on X"><img src="assets/Icons/twitter.png" alt="X" /></a>
-      <a href="https://www.snapchat.com/share?link=https%3A%2F%2Fcannagrudge.com" target="_blank" data-share="snapchat" title="Share on Snapchat"><img src="assets/Icons/snapchat.png" alt="Snapchat" /></a>
-      <a href="https://www.tiktok.com/" target="_blank" data-share="tiktok" title="Share on TikTok"><img src="assets/Icons/tik tok.png" alt="TikTok" /></a>
-    </div>
-    <!-- Simplified site map: only the primary informational pages remain -->
-    <div class="footer__links">
-      <a href="event.html#info">Event Info</a>
-      <a href="event.html#vendors">Vendors</a>
-      <a href="event.html#tickets">Tickets</a>
-      <a href="tos.html">Terms &amp; Conditions</a>
-      <a href="privacy.html">Privacy Policy</a>
-    </div>
-    <div class="footer__legal">© CannaGrudge. All rights reserved.</div>
-  </footer>
-  <nav class="bottom-nav">
-    <a href="event.html">Event Info</a>
-    <a href="settings.html">Settings</a>
-    <a href="index.html" class="home" aria-label="Home">
-      <img src="assets/Icons/home.png" alt="Home" width="22" height="22" />
-      <span class="sr-only">Home</span>
-    </a>
-    <a href="messages.html">Inbox</a>
-    <a href="dashboard.html">Dashboard</a>
-  </nav>
 </body>
 </html>

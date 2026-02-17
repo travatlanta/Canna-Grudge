@@ -3,110 +3,34 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Login • CannaGrudge</title>
+  <title>Sign In • CannaGrudge</title>
+  <link rel="icon" type="image/png" href="assets/favicon-gloves.png">
   <link rel="stylesheet" href="theme.css">
-  <style>
-    .login-wrap{max-width:420px;margin:60px auto 24px;padding:16px;text-align:center}
-    .login-title{font-size:2.2rem;font-weight:1000;margin-bottom:24px}
-    .text-gradient{background:linear-gradient(135deg,var(--cg-gold-300),var(--cg-gold-200));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-    .login-card{background:var(--cg-surface);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(245,184,26,.12);border-radius:var(--cg-r-lg);padding:32px 24px;box-shadow:var(--cg-elev),0 0 30px rgba(245,184,26,.06);transition:border-color .3s ease,box-shadow .3s ease}
-    .login-card:hover{border-color:rgba(245,184,26,.2);box-shadow:var(--cg-elev),0 0 40px rgba(245,184,26,.1)}
-    .login-card h1{margin:0 0 6px;color:var(--cg-text-strong)}
-    .login-card .muted{color:var(--cg-text-dim);font-size:14px;margin-bottom:20px}
-    .auth-btn{display:block;width:100%;margin:10px 0;padding:14px 16px;border-radius:var(--cg-r-pill);border:1px solid rgba(255,255,255,.08);font-weight:800;font-size:15px;text-align:center;cursor:pointer;color:#fff;transition:transform .1s ease,box-shadow .25s ease,border-color .25s ease;letter-spacing:.01em}
-    .auth-btn:active{transform:translateY(1px) scale(.995)}
-    .auth-btn:hover{box-shadow:0 0 20px rgba(255,255,255,.08);border-color:rgba(255,255,255,.18)}
-    .auth-btn.g{background:linear-gradient(135deg,#0F9D58,#0a7a42)}
-    .auth-btn.g:hover{box-shadow:0 0 20px rgba(15,157,88,.3)}
-    .auth-btn.f{background:linear-gradient(135deg,#1877F2,#0d5bbf)}
-    .auth-btn.f:hover{box-shadow:0 0 20px rgba(24,119,242,.3)}
-    .auth-btn.a{background:linear-gradient(135deg,#333,#111);border-color:rgba(255,255,255,.12)}
-    .auth-btn.a:hover{box-shadow:0 0 20px rgba(255,255,255,.08);border-color:rgba(255,255,255,.2)}
-    .login-footer-note{color:var(--cg-text-dim);opacity:.8;font-size:13px;margin-top:16px}
-    [data-animate]{opacity:0;transform:translateY(24px);transition:opacity .6s ease,transform .6s ease}
-    [data-animate].visible{opacity:1;transform:translateY(0)}
-  </style>
 </head>
-<body class="with-dock">
-  <main class="container">
-    <div class="login-wrap">
-      <div class="login-title text-gradient">CannaGrudge</div>
-      <div class="login-card" data-animate>
-        <h1>Sign in</h1>
-        <div class="muted">Use a provider below to access your dashboard.</div>
-        <button id="btnGoogle" class="auth-btn g">Continue with Google</button>
-        <button id="btnFacebook" class="auth-btn f">Continue with Facebook</button>
-        <button id="btnApple" class="auth-btn a">Continue with Apple</button>
-        <div class="login-footer-note">If a provider isn't enabled yet, you'll get an error. Start with Google.</div>
-      </div>
-    </div>
-  </main>
+<body class="page-padded">
 
-  <script type="module" src="./firebase-config.js"></script>
-  <script type="module">
-    const { auth, signInWithPopup, googleProvider, facebookProvider, appleProvider, onAuthStateChanged } = window.__cgAuth;
-    // If a return URL was passed, redirect back there after login
-    const ret = new URLSearchParams(location.search).get('return');
-    const go = () => location.href = ret ? decodeURIComponent(ret) : 'dashboard.html';
-    // Attach handlers for each provider
-    document.getElementById('btnGoogle').onclick  = () => {
-      signInWithPopup(auth, googleProvider)
-        .then(result => {
-          // Mark the user as logged in for the global auth guard
-          localStorage.setItem('isLoggedIn', '1');
-          // Persist the user's display name and avatar so the bottom nav
-          // can show their name and photo.  Use the provider result if available,
-          // otherwise fall back to the current user on the auth instance.
-          const user = result.user;
-          const name = (user && user.displayName) || (auth.currentUser && auth.currentUser.displayName) || '';
-          const avatarUrl = (user && user.photoURL) || (auth.currentUser && auth.currentUser.photoURL) || '';
-          if (name) localStorage.setItem('fullName', name);
-          if (avatarUrl) localStorage.setItem('avatarUrl', avatarUrl);
-          go();
-        })
-        .catch(e => alert(e.message || e));
-    };
-    document.getElementById('btnFacebook').onclick = () => {
-      signInWithPopup(auth, facebookProvider)
-        .then(result => {
-          localStorage.setItem('isLoggedIn', '1');
-          const user = result.user;
-          const name = (user && user.displayName) || (auth.currentUser && auth.currentUser.displayName) || '';
-          const avatarUrl = (user && user.photoURL) || (auth.currentUser && auth.currentUser.photoURL) || '';
-          if (name) localStorage.setItem('fullName', name);
-          if (avatarUrl) localStorage.setItem('avatarUrl', avatarUrl);
-          go();
-        })
-        .catch(e => alert(e.message || e));
-    };
-    document.getElementById('btnApple').onclick   = () => {
-      signInWithPopup(auth, appleProvider)
-        .then(result => {
-          localStorage.setItem('isLoggedIn', '1');
-          const user = result.user;
-          const name = (user && user.displayName) || (auth.currentUser && auth.currentUser.displayName) || '';
-          const avatarUrl = (user && user.photoURL) || (auth.currentUser && auth.currentUser.photoURL) || '';
-          if (name) localStorage.setItem('fullName', name);
-          if (avatarUrl) localStorage.setItem('avatarUrl', avatarUrl);
-          go();
-        })
-        .catch(e => alert(e.message || e));
-    };
-    // Automatically redirect if already signed in
-    onAuthStateChanged(auth, user => {
-      if (user) {
-        localStorage.setItem('isLoggedIn', '1');
-        // Persist name and avatar for nav display.  Use displayName/photoURL
-        // if available; if not, don't overwrite existing values so manual
-        // logins (email) can set name later.
-        const name = user.displayName;
-        const avatarUrl = user.photoURL;
-        if (name) localStorage.setItem('fullName', name);
-        if (avatarUrl) localStorage.setItem('avatarUrl', avatarUrl);
-        go();
-      }
-    });
-  </script>
+  <div class="container-sm" style="min-height: calc(100vh - var(--cg-nav-height)); display: flex; align-items: center; justify-content: center; padding: 40px 0;">
+    <div class="auth-card" style="text-align: center;">
+      <h1 style="font-size: 28px; font-weight: 900; font-family: var(--cg-font-display); margin-bottom: 8px;">Canna<span class="text-gradient">Grudge</span></h1>
+      <p style="color: var(--cg-text-secondary); font-size: 14px; margin-bottom: 32px;">Sign in to access your dashboard and tickets</p>
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <button class="auth-btn google" id="btnGoogle">
+          <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#fff" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#fff" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#fff" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#fff" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          Continue with Google
+        </button>
+        <button class="auth-btn facebook" id="btnFacebook">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+          Continue with Facebook
+        </button>
+        <button class="auth-btn apple" id="btnApple">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="#000"><path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
+          Continue with Apple
+        </button>
+      </div>
+      <p style="font-size: 13px; color: var(--cg-text-muted); margin-top: 24px;">By signing in you agree to our Terms of Service</p>
+    </div>
+  </div>
+
   <footer class="footer footer--stack">
     <div class="footer__share"><img src="assets/Icons/share-online.png" alt="Share Online" /></div>
     <div class="footer__icons">
@@ -116,7 +40,6 @@
       <a href="https://www.snapchat.com/share?link=https%3A%2F%2Fcannagrudge.com" target="_blank" data-share="snapchat" title="Share on Snapchat"><img src="assets/Icons/snapchat.png" alt="Snapchat" /></a>
       <a href="https://www.tiktok.com/" target="_blank" data-share="tiktok" title="Share on TikTok"><img src="assets/Icons/tik tok.png" alt="TikTok" /></a>
     </div>
-    <!-- Simplified site map: only the key pages remain -->
     <div class="footer__links">
       <a href="event.html#info">Event Info</a>
       <a href="event.html#vendors">Vendors</a>
@@ -126,7 +49,44 @@
     </div>
     <div class="footer__legal">© CannaGrudge. All rights reserved.</div>
   </footer>
+
+  <script type="module" src="./firebase-config.js"></script>
+  <script type="module">
+    const { auth, signInWithPopup, googleProvider, facebookProvider, appleProvider, onAuthStateChanged } = window.__cgAuth;
+    const ret = new URLSearchParams(location.search).get('return');
+    const go = () => location.href = ret ? decodeURIComponent(ret) : 'dashboard.html';
+
+    function handleSuccess(result) {
+      localStorage.setItem('isLoggedIn', '1');
+      const user = result.user;
+      const name = (user && user.displayName) || (auth.currentUser && auth.currentUser.displayName) || '';
+      const avatarUrl = (user && user.photoURL) || (auth.currentUser && auth.currentUser.photoURL) || '';
+      if (name) localStorage.setItem('fullName', name);
+      if (avatarUrl) localStorage.setItem('avatarUrl', avatarUrl);
+      go();
+    }
+
+    document.getElementById('btnGoogle').onclick = () => {
+      signInWithPopup(auth, googleProvider).then(handleSuccess).catch(e => alert(e.message || e));
+    };
+    document.getElementById('btnFacebook').onclick = () => {
+      signInWithPopup(auth, facebookProvider).then(handleSuccess).catch(e => alert(e.message || e));
+    };
+    document.getElementById('btnApple').onclick = () => {
+      signInWithPopup(auth, appleProvider).then(handleSuccess).catch(e => alert(e.message || e));
+    };
+
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        localStorage.setItem('isLoggedIn', '1');
+        const name = user.displayName;
+        const avatarUrl = user.photoURL;
+        if (name) localStorage.setItem('fullName', name);
+        if (avatarUrl) localStorage.setItem('avatarUrl', avatarUrl);
+        go();
+      }
+    });
+  </script>
   <script src="app.js"></script>
-  <!-- The bottom navigation is dynamically injected by app.js -->
 </body>
 </html>

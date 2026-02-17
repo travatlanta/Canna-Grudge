@@ -1,43 +1,54 @@
 # CannaGrudge
 
 ## Overview
-CannaGrudge is a static website for a cannabis boxing/entertainment event on April 25, 2026 in Litchfield Park, AZ. It features event information, ticket purchasing, user authentication via Firebase, and an admin dashboard.
+CannaGrudge is a website for a cannabis boxing/entertainment event on April 25, 2026 in Litchfield Park, AZ. It features event information, ticket purchasing with Square payments, user authentication via Firebase, and a user dashboard.
 
 ## Project Architecture
-- **Type**: Static website (HTML, CSS, vanilla JavaScript)
+- **Type**: Flask web app serving static HTML/CSS/JS with backend API
+- **Backend**: Python Flask (server.py) with Square Payments API endpoint
 - **Authentication**: Firebase Auth (Google, Facebook, Apple sign-in)
-- **Hosting**: Originally GitHub Pages, now served via Python static file server on Replit
-- **Port**: 5000 (frontend)
-- **Theme**: Premium dark theme with gold accents, glassmorphism, and scroll animations
+- **Payments**: Square Web Payments SDK (frontend) + Square Payments API (backend)
+- **Port**: 5000 (Flask serves both static files and API)
+- **Theme**: Premium dark theme with charcoal/gold palette, modern typography, glassmorphism
 
 ## Key Files
-- `index.html` - Home page with countdown timer, hero section, feature cards
-- `event.html` - Event details with interactive tile grid and popup system
-- `login.html` - Firebase authentication page with premium auth buttons
-- `dashboard.html` - User dashboard (protected) with profile, tickets, FAQ
-- `checkout.html` / `confirmation.html` - Ticket purchase flow (checkout placeholder, confirmation with success UI)
-- `settings.html` - User preferences, notifications, privacy settings
-- `messages.html` - Message center with inbox/sent/trash tabs
-- `profile.html` - User profile page
-- `admin.html` / `analytics.html` / `scanner.html` - Admin tools
-- `deck.html` - Presentation deck viewer
-- `firebase-config.js` - Firebase project configuration
-- `app.js` - Global navigation, auth guard, and scroll animation observer
-- `theme.css` - Global premium dark theme with gold accents, glassmorphism, animations
-- `server.py` - Python static file server for development
+- `server.py` - Flask server: static file serving + `/api/create-payment` + `/api/square-config`
+- `theme.css` - Complete design system: colors, typography, components, layouts, animations
+- `app.js` - Dynamic navbar, mobile hamburger menu, cart system (localStorage), scroll animations
+- `firebase-config.js` - Firebase project configuration and auth providers
+- `index.html` - Home page: hero section, countdown timer, features, ticket preview, footer
+- `event.html` - Event details: tile grid with popups, schedule, FAQ accordion, CTA
+- `tickets.html` - Ticket selection: 3 tiers (GA $45, VIP $120, Ringside $250) with quantity controls
+- `checkout.html` - Payment: Square card form, order summary, payment processing
+- `confirmation.html` - Order confirmation with details from localStorage
+- `login.html` - Firebase auth: Google, Facebook, Apple sign-in buttons
+- `dashboard.html` - User dashboard: profile card, tickets, order history
+- `settings.html` - User preferences (legacy)
+- `admin.html` / `analytics.html` / `scanner.html` - Admin tools (legacy)
 
 ## Design System (theme.css)
-- **Colors**: Deep dark palette (--cg-ink-925 through --cg-ink-600), gold primary (#f5b81a), scarlet accent (#ef4444)
-- **Cards**: Glassmorphism with backdrop-filter blur, gold-tinted borders
-- **Buttons**: Gold primary with glow hover, frosted ghost buttons
-- **Animations**: fadeInUp, fadeIn, pulseGlow, shimmer, float keyframes
-- **Scroll animations**: [data-animate] elements observed by IntersectionObserver in app.js
-- **Utility classes**: .text-gradient, .glass, .glow-border, .section-title
+- **Colors**: Charcoal base (#0a0a0a), gold primary (#d4a843), green accent (#22c55e), red (#ef4444)
+- **Typography**: Outfit (display/headings, weight 800-900) + Inter (body text)
+- **Components**: Cards, buttons (primary/outline/ghost), inputs, badges, accordions
+- **Layout**: Fixed top navbar (72px), container (1200px max), responsive grid
+- **Navigation**: Dynamic navbar built by app.js, hamburger menu on mobile, cart drawer
+- **Cart**: localStorage-based with drawer slide-out, badge counter
+- **Animations**: [data-animate] elements with IntersectionObserver, CSS transitions
+- **Utility classes**: .text-gradient, .text-gold, .glass, .section-label, .section-title
+
+## Square Payment Flow
+1. User selects tickets on tickets.html → adds to localStorage cart
+2. Cart drawer shows items with quantity controls
+3. Checkout page loads Square Web Payments SDK, renders card form
+4. On submit: tokenize card → POST /api/create-payment → confirmation page
+5. Secrets: SQUARE_APPLICATION_ID, SQUARE_ACCESS_TOKEN, SQUARE_LOCATION_ID
 
 ## Recent Changes
-- 2026-02-17: Full visual revamp - rewrote theme.css with premium fight-night aesthetic (deep darks, gold glow, glassmorphism, animations). Upgraded all HTML pages with new theme. Added live countdown timer to home page. Centralized scroll animation observer in app.js.
-- 2026-02-17: Initial Replit setup. Added `server.py` for static file serving on port 5000 with no-cache headers. Configured deployment as static site.
+- 2026-02-17: Complete redesign - New theme.css with Outfit+Inter fonts, charcoal/gold palette. New app.js with dynamic top navbar, mobile hamburger, cart drawer. Rebuilt all pages: index, event, tickets, checkout, confirmation, login, dashboard. Added Flask backend with Square payment API. Cart system uses localStorage.
+- 2026-02-17: Initial Replit setup.
 
 ## User Preferences
-- User wants a "cool" premium fight-night visual aesthetic
-- Dark theme with gold accents preferred
+- Premium fight-night visual aesthetic
+- Dark theme with gold accents
+- Clean, modern, high-end design
+- Streamlined ticket purchasing flow

@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>CannaGrudge — Tickets</title>
+  <link rel="icon" type="image/png" href="assets/favicon-gloves.png">
+  <link rel="apple-touch-icon" href="assets/favicon-gloves.png">
+  <link rel="stylesheet" href="theme.css">
+</head>
+<body class="page-padded">
+
+  <div class="page-header">
+    <div class="container">
+      <h1>Get Your <span class="text-gradient">Tickets</span></h1>
+      <p class="section-subtitle">April 25, 2026 at Dunn's Arena, Litchfield Park, AZ</p>
+    </div>
+  </div>
+
+  <section class="section">
+    <div class="container">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;">
+
+        <div class="ticket-card" id="card-ga">
+          <div class="tier-name">General Admission</div>
+          <div class="tier-price">$45<small>/person</small></div>
+          <ul class="tier-features">
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Standing room access</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Vendor marketplace</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Games &amp; activities area</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Food &amp; drink available</li>
+          </ul>
+          <div class="qty-control">
+            <button class="qty-btn" onclick="changeQty('ga',-1)">−</button>
+            <span class="qty-value" id="qty-ga">1</span>
+            <button class="qty-btn" onclick="changeQty('ga',1)">+</button>
+          </div>
+          <button class="btn btn-primary btn-block" onclick="addToCart('ga','General Admission',4500,getQty('ga'))">Add to Cart</button>
+        </div>
+
+        <div class="ticket-card featured" id="card-vip">
+          <div class="badge" style="position:absolute;top:16px;right:16px;">Most Popular</div>
+          <div class="tier-name">VIP Experience</div>
+          <div class="tier-price">$120<small>/person</small></div>
+          <ul class="tier-features">
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Everything in General</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Reserved VIP seating</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>VIP lounge access</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Meet &amp; greet with fighters</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>2 complimentary drinks</li>
+          </ul>
+          <div class="qty-control">
+            <button class="qty-btn" onclick="changeQty('vip',-1)">−</button>
+            <span class="qty-value" id="qty-vip">1</span>
+            <button class="qty-btn" onclick="changeQty('vip',1)">+</button>
+          </div>
+          <button class="btn btn-primary btn-block" onclick="addToCart('vip','VIP Experience',12000,getQty('vip'))">Add to Cart</button>
+        </div>
+
+        <div class="ticket-card" id="card-ringside">
+          <div class="tier-name">Ringside</div>
+          <div class="tier-price">$250<small>/person</small></div>
+          <ul class="tier-features">
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Everything in VIP</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Front row seating</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Backstage pass</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Premium open bar</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Photo ops with fighters</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Exclusive merch bag</li>
+          </ul>
+          <div class="qty-control">
+            <button class="qty-btn" onclick="changeQty('ringside',-1)">−</button>
+            <span class="qty-value" id="qty-ringside">1</span>
+            <button class="qty-btn" onclick="changeQty('ringside',1)">+</button>
+          </div>
+          <button class="btn btn-primary btn-block" onclick="addToCart('ringside','Ringside',25000,getQty('ringside'))">Add to Cart</button>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0;">
+    <div class="container">
+      <div class="card">
+        <h3 style="font-size:18px;margin-bottom:16px;">Important Information</h3>
+        <ul style="display:flex;flex-direction:column;gap:12px;">
+          <li style="display:flex;align-items:center;gap:10px;font-size:14px;color:var(--cg-text-secondary);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--cg-gold)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            All attendees must be 21+ with valid government-issued ID
+          </li>
+          <li style="display:flex;align-items:center;gap:10px;font-size:14px;color:var(--cg-text-secondary);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--cg-gold)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            Tickets are non-refundable but transferable
+          </li>
+          <li style="display:flex;align-items:center;gap:10px;font-size:14px;color:var(--cg-text-secondary);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--cg-gold)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            Gates open at 12:00 PM
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer" data-animate="fade">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <div class="footer-brand">Canna<span>Grudge</span></div>
+          <p class="footer-desc">The ultimate cannabis boxing event. Live fights, music, vendors, and more in Litchfield Park, AZ.</p>
+          <div class="footer-social">
+            <a href="https://www.instagram.com/" target="_blank" aria-label="Instagram"><img src="assets/Icons/instagram.png" alt="Instagram"></a>
+            <a href="https://www.facebook.com/" target="_blank" aria-label="Facebook"><img src="assets/Icons/facebook.png" alt="Facebook"></a>
+            <a href="https://twitter.com/" target="_blank" aria-label="X"><img src="assets/Icons/twitter.png" alt="X"></a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h4>Event</h4>
+          <a href="index.html">Home</a>
+          <a href="event.html">Event Info</a>
+          <a href="tickets.html">Tickets</a>
+        </div>
+        <div class="footer-col">
+          <h4>Support</h4>
+          <a href="event.html#faq">FAQ</a>
+          <a href="event.html#contact">Contact</a>
+          <a href="tos.html">Terms &amp; Conditions</a>
+        </div>
+        <div class="footer-col">
+          <h4>Legal</h4>
+          <a href="privacy.html">Privacy Policy</a>
+          <a href="delete-data.html">Delete Data</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; 2026 CannaGrudge. All rights reserved.</span>
+        <div>
+          <a href="privacy.html">Privacy</a> &nbsp;&middot;&nbsp; <a href="tos.html">Terms</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+  <script type="module" src="./firebase-config.js"></script>
+  <script>
+    var qtyState = { ga: 1, vip: 1, ringside: 1 };
+
+    function getQty(id) {
+      return qtyState[id];
+    }
+
+    function changeQty(id, delta) {
+      var current = qtyState[id];
+      var next = current + delta;
+      if (next < 1) next = 1;
+      if (next > 10) next = 10;
+      qtyState[id] = next;
+      document.getElementById('qty-' + id).textContent = next;
+    }
+  </script>
+</body>
+</html>

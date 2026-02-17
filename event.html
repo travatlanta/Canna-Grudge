@@ -1,548 +1,242 @@
 <!doctype html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>CannaGrudge — Event Info</title>
   <link rel="stylesheet" href="theme.css">
+  <link rel="icon" type="image/png" href="assets/favicon-gloves.png">
   <style>
-    .tile {
-      background: rgba(30, 35, 48, .6);
-      border: 1px solid rgba(245, 184, 26, .06);
-      box-sizing: border-box;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100px;
-      transition: transform .25s ease, box-shadow .3s ease, border-color .3s ease;
+    .event-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 32px;
+      align-items: start;
     }
-    .tile:hover {
-      transform: scale(1.07);
-      border-color: rgba(245, 184, 26, .35);
-      box-shadow: 0 0 20px rgba(245, 184, 26, .2), 0 4px 16px rgba(0, 0, 0, .35);
-    }
-    .tile:active {
-      transform: scale(.97);
-    }
-    .tile.selected {
-      border-color: var(--cg-primary);
-      background: rgba(39, 45, 59, .85);
-      box-shadow: 0 0 16px rgba(245, 184, 26, .25), 0 2px 8px rgba(0, 0, 0, .3);
-      height: 100px;
-    }
-
-    body.event-info .container {
-      padding-left: 4%;
-      padding-right: 4%;
-    }
-
-    body.event-info .tile-grid {
-      margin-left: 0;
-      margin-right: 0;
-    }
-
-    .tile__icon-img {
-      width: 36px;
-      height: 36px;
-      margin-bottom: 6px;
-      object-fit: contain;
-      filter: drop-shadow(0 0 4px rgba(245, 184, 26, .15));
-      transition: filter .3s ease;
-    }
-    .tile:hover .tile__icon-img {
-      filter: drop-shadow(0 0 8px rgba(245, 184, 26, .35));
-    }
-
-    body.event-info main.container {
-      display: block;
-    }
-
-    .tile-grid-container {
-      position: relative;
-    }
-
-    .tile-popup {
-      background: rgba(18, 21, 28, .75);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(245, 184, 26, .2);
-      border-radius: var(--cg-r-lg);
-      box-shadow: 0 4px 24px rgba(0, 0, 0, .4), 0 0 12px rgba(245, 184, 26, .08);
-      padding: 20px;
-      margin-top: 12px;
-      animation: popupFadeIn .3s ease forwards;
-    }
-    @keyframes popupFadeIn {
-      from { opacity: 0; transform: translateY(8px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    .tile-popup h3 {
-      color: var(--cg-text-strong);
-      border-bottom: 2px solid rgba(245, 184, 26, .15);
-      padding-bottom: 8px;
-    }
-
-    .tile-grid-container .tile-popup {
-      position: static;
-      width: 100%;
-    }
-
-    @media (min-width: 992px) {
-      body.event-info main.container {
-        display: flex;
-        flex-direction: row;
-        gap: 24px;
-        align-items: flex-start;
+    @media (min-width: 768px) {
+      .event-grid {
+        grid-template-columns: 1fr 1fr;
       }
-      body.event-info main.container .event-image {
-        flex: 1 1 48%;
-        margin: 0;
-        width: auto;
-        position: static;
-        display: flex;
-        justify-content: center;
-        align-items: stretch;
-        overflow: hidden;
-      }
-      body.event-info main.container .event-image img {
-        display: block;
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-        object-position: center;
-      }
-      body.event-info main.container .event-content {
-        flex: 1 1 52%;
-      }
-    }
-
-    @media (max-width: 991px) {
-      body.event-info main.container {
-        display: flex;
-        flex-direction: column;
-      }
-      body.event-info main.container .event-content {
-        order: 1;
-      }
-      body.event-info main.container .event-image {
-        order: 2;
-        width: 100%;
-        margin: 0;
-      }
-      body.event-info main.container .event-image img {
-        width: 100%;
-        height: auto;
-        object-fit: cover;
-        object-position: center;
-        display: block;
-      }
-      body.event-info main.container .event-image {
-        width: calc(100% + 8%);
-        margin-left: -4%;
-        margin-right: -4%;
-      }
-      .tile-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-        gap: 12px;
-        justify-items: center;
-      }
-    }
-
-    .tile-popup .calendar {
-      border: 1px solid rgba(245, 184, 26, .12);
-      border-radius: var(--cg-r-md);
-      background: var(--cg-ink-900);
-      overflow: hidden;
-    }
-    .tile-popup .calendar caption {
-      font-weight: 700;
-      margin-bottom: 4px;
-      color: var(--cg-text-strong);
-    }
-    .tile-popup .calendar th,
-    .tile-popup .calendar td {
-      padding: 8px 6px;
-      border-top: 1px solid rgba(245, 184, 26, .06);
-      border-right: 1px solid rgba(245, 184, 26, .06);
-      color: var(--cg-text);
-      font-size: 12px;
-    }
-    .tile-popup .calendar th:last-child,
-    .tile-popup .calendar td:last-child {
-      border-right: none;
-    }
-    .tile-popup .calendar thead th {
-      background: var(--cg-ink-850);
-      font-weight: 700;
-      color: var(--cg-gold-300);
-      text-transform: uppercase;
-      font-size: 11px;
-      letter-spacing: .05em;
-    }
-    .tile-popup .calendar tbody tr:first-child td {
-      border-top: none;
-    }
-    .tile-popup .calendar tbody tr:hover {
-      background: rgba(245, 184, 26, .03);
-    }
-
-    .tile-popup details {
-      background: rgba(18, 21, 28, .5);
-      border: 1px solid rgba(245, 184, 26, .1);
-      border-radius: var(--cg-r-md);
-      padding: 10px 12px;
-      margin-bottom: 8px;
-      transition: border-color .25s ease, box-shadow .25s ease;
-    }
-    .tile-popup details:hover {
-      border-color: rgba(245, 184, 26, .25);
-      box-shadow: 0 0 8px rgba(245, 184, 26, .06);
-    }
-    .tile-popup details summary {
-      font-weight: 700;
-      cursor: pointer;
-      font-size: 14px;
-      outline: none;
-      color: var(--cg-text-strong);
-      list-style: none;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .tile-popup details summary::before {
-      content: "▸";
-      color: var(--cg-gold-300);
-      font-size: 12px;
-      transition: transform .2s ease;
-    }
-    .tile-popup details[open] summary::before {
-      transform: rotate(90deg);
-    }
-    .tile-popup details summary::-webkit-details-marker {
-      display: none;
-    }
-    .tile-popup details p {
-      margin: 6px 0 0;
-      font-size: 13px;
-      line-height: 1.5;
-    }
-    .tile-popup details[open] summary {
-      border-bottom: 1px solid rgba(245, 184, 26, .1);
-      margin-bottom: 6px;
-      padding-bottom: 6px;
-    }
-    .tile-popup details[open] p {
-      background: rgba(30, 35, 48, .5);
-      border-radius: 0 0 var(--cg-r-md) var(--cg-r-md);
-      padding: 8px 10px;
-    }
-
-    .hero__veil--strong {
-      position: absolute;
-      inset: 0;
-      background:
-        radial-gradient(80% 50% at 50% 15%, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, .5) 45%, rgba(0, 0, 0, .9) 100%),
-        linear-gradient(180deg, transparent 30%, rgba(8, 10, 14, .95) 100%);
-    }
-
-    .popup-input {
-      width: 100%;
-      padding: 8px 12px;
-      border-radius: var(--cg-r-sm);
-      border: 1px solid rgba(245, 184, 26, .12);
-      background: var(--cg-ink-900);
-      color: var(--cg-text);
-      font-size: 14px;
-      transition: border-color .2s ease, box-shadow .2s ease;
-    }
-    .popup-input:focus {
-      outline: none;
-      border-color: rgba(245, 184, 26, .35);
-      box-shadow: 0 0 8px rgba(245, 184, 26, .1);
     }
   </style>
-  <link rel="icon" type="image/png" href="assets/favicon-gloves.png">
 </head>
-<body class="with-dock event-info">
-  <header class="hero hero--ring" data-animate>
-    <img class="hero__img" src="assets/hero-ring.png" alt="Arena lights and ring">
-    <div class="hero__veil--strong"></div>
-    <div class="hero__content">
-      <div class="display hero__title">Event <span class="text-gradient">Info</span></div>
-      <p class="muted" style="margin:10px 0 14px;">Litchfield Park, AZ • Apr 25th 2026</p>
-      <div style="display:flex; gap:10px;">
-        <a href="#featured" class="button button--primary">Tickets</a>
-        <a href="#vendors" class="button button--ghost">Vendors</a>
+<body class="page-padded">
+
+  <div class="page-header">
+    <div class="container">
+      <h1>Event <span class="text-gradient">Info</span></h1>
+      <p class="section-subtitle">Everything you need to know about CannaGrudge</p>
+    </div>
+  </div>
+
+  <section class="section">
+    <div class="container">
+      <div class="event-grid">
+        <div>
+          <img src="assets/Halftime Show.png" alt="Little People Wrestling Halftime Show" style="border-radius: var(--cg-radius-lg); width: 100%;">
+        </div>
+        <div>
+          <div class="tile-grid" id="tileGrid">
+            <a class="tile" data-tile="about"><img class="tile__icon-img" src="assets/Icons/about.png" alt="About"><div class="tile__label">About</div></a>
+            <a class="tile" data-tile="schedule"><img class="tile__icon-img" src="assets/Icons/schedule.png" alt="Schedule"><div class="tile__label">Schedule</div></a>
+            <a class="tile" data-tile="vendors"><img class="tile__icon-img" src="assets/Icons/vendors.png" alt="Vendors"><div class="tile__label">Vendors</div></a>
+            <a class="tile" data-tile="map"><img class="tile__icon-img" src="assets/Icons/maps.png" alt="Map"><div class="tile__label">Map</div></a>
+            <a class="tile" data-tile="faq"><img class="tile__icon-img" src="assets/Icons/faq.png" alt="FAQ"><div class="tile__label">FAQ</div></a>
+            <a class="tile" data-tile="food"><img class="tile__icon-img" src="assets/Icons/food.png" alt="Food &amp; Drink"><div class="tile__label">Food &amp; Drink</div></a>
+            <a class="tile" data-tile="parking"><img class="tile__icon-img" src="assets/Icons/parking-sign.png" alt="Parking"><div class="tile__label">Parking</div></a>
+            <a class="tile" data-tile="lodging"><img class="tile__icon-img" src="assets/Icons/lodging.png" alt="Lodging"><div class="tile__label">Lodging</div></a>
+            <a class="tile" data-tile="contact"><img class="tile__icon-img" src="assets/Icons/contact.png" alt="Contact"><div class="tile__label">Contact</div></a>
+          </div>
+          <div id="infoPopupContainer"></div>
+        </div>
       </div>
     </div>
-  </header>
+  </section>
 
-  <main class="container">
-    <div class="event-image" data-animate>
-      <img src="assets/Halftime Show.png" alt="Little People Wrestling Halftime Show">
-    </div>
-    <div class="event-content">
-      <section class="card event-tiles glass" id="info" data-animate>
-        <div class="tile-grid-container">
-          <div class="tile-grid">
-            <a class="tile" href="#about"><img class="tile__icon-img" src="assets/Icons/about.png" alt="About" /><div class="tile__label">About</div></a>
-            <a class="tile" href="#schedule"><img class="tile__icon-img" src="assets/Icons/schedule.png" alt="Schedule" /><div class="tile__label">Schedule</div></a>
-            <a class="tile" href="#vendors"><img class="tile__icon-img" src="assets/Icons/vendors.png" alt="Vendors" /><div class="tile__label">Vendors</div></a>
-            <a class="tile" href="#map"><img class="tile__icon-img" src="assets/Icons/maps.png" alt="Map" /><div class="tile__label">Map</div></a>
-            <a class="tile" href="#faq"><img class="tile__icon-img" src="assets/Icons/faq.png" alt="FAQ" /><div class="tile__label">FAQ</div></a>
-            <a class="tile" href="#food"><img class="tile__icon-img" src="assets/Icons/food.png" alt="Food &amp; Drink" /><div class="tile__label">Food &amp; Drink</div></a>
-            <a class="tile" href="#parking"><img class="tile__icon-img" src="assets/Icons/parking-sign.png" alt="Parking" /><div class="tile__label">Parking</div></a>
-            <a class="tile" href="#lodging"><img class="tile__icon-img" src="assets/Icons/lodging.png" alt="Lodging" /><div class="tile__label">Lodging</div></a>
-            <a class="tile" href="#contact"><img class="tile__icon-img" src="assets/Icons/contact.png" alt="Contact" /><div class="tile__label">Contact</div></a>
+  <section class="section" style="border-top: 1px solid var(--cg-border);">
+    <div class="container">
+      <div class="section-label">schedule</div>
+      <h2 class="section-title">Event Schedule</h2>
+      <div style="margin-top: 32px;">
+        <div class="schedule-item">
+          <div class="schedule-time">12:00 PM</div>
+          <div class="schedule-content">
+            <h4>Gates Open</h4>
+            <p>Vendor showcases &amp; games begin</p>
           </div>
         </div>
-      </section>
+        <div class="schedule-item">
+          <div class="schedule-time">2:00 PM</div>
+          <div class="schedule-content">
+            <h4>Preliminary Bouts</h4>
+            <p>Opening fight card</p>
+          </div>
+        </div>
+        <div class="schedule-item">
+          <div class="schedule-time">5:00 PM</div>
+          <div class="schedule-content">
+            <h4>Halftime Show</h4>
+            <p>Little People Wrestling</p>
+          </div>
+        </div>
+        <div class="schedule-item">
+          <div class="schedule-time">7:00 PM</div>
+          <div class="schedule-content">
+            <h4>Headline Matches</h4>
+            <p>Main event fights</p>
+          </div>
+        </div>
+        <div class="schedule-item">
+          <div class="schedule-time">10:00 PM</div>
+          <div class="schedule-content">
+            <h4>After Party</h4>
+            <p>Music and celebration</p>
+          </div>
+        </div>
+      </div>
     </div>
-  </main>
+  </section>
 
-  <footer class="footer footer--stack" data-animate>
-    <div class="footer__share"><img src="assets/Icons/share-online.png" alt="Share Online" /></div>
-    <div class="footer__icons">
-      <a href="https://www.instagram.com/?url=https%3A%2F%2Fcannagrudge.com" target="_blank" data-share="instagram" title="Share on Instagram"><img src="assets/Icons/instagram.png" alt="Instagram" /></a>
-      <a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fcannagrudge.com" target="_blank" data-share="facebook" title="Share on Facebook"><img src="assets/Icons/facebook.png" alt="Facebook" /></a>
-      <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fcannagrudge.com" target="_blank" data-share="twitter" title="Share on X"><img src="assets/Icons/twitter.png" alt="X" /></a>
-      <a href="https://www.snapchat.com/share?link=https%3A%2F%2Fcannagrudge.com" target="_blank" data-share="snapchat" title="Share on Snapchat"><img src="assets/Icons/snapchat.png" alt="Snapchat" /></a>
-      <a href="https://www.tiktok.com/" target="_blank" data-share="tiktok" title="Share on TikTok"><img src="assets/Icons/tik tok.png" alt="TikTok" /></a>
+  <section class="section" style="border-top: 1px solid var(--cg-border);">
+    <div class="container">
+      <div class="section-label">faq</div>
+      <h2 class="section-title">Frequently Asked Questions</h2>
+      <div style="margin-top: 32px; max-width: 720px;">
+        <div class="accordion-item">
+          <button class="accordion-trigger">Is the event 21+? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></button>
+          <div class="accordion-body"><div class="accordion-body-inner">Yes, CannaGrudge is strictly 21 and over. A valid government-issued ID is required for entry.</div></div>
+        </div>
+        <div class="accordion-item">
+          <button class="accordion-trigger">Can I bring my own cannabis? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></button>
+          <div class="accordion-body"><div class="accordion-body-inner">No, outside cannabis is not permitted. Licensed vendors will have products available for purchase on site.</div></div>
+        </div>
+        <div class="accordion-item">
+          <button class="accordion-trigger">What should I bring? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></button>
+          <div class="accordion-body"><div class="accordion-body-inner">Bring a valid ID, cash or card for vendors and food, and comfortable clothes. Personal bags may be subject to security screening.</div></div>
+        </div>
+        <div class="accordion-item">
+          <button class="accordion-trigger">Is parking available? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></button>
+          <div class="accordion-body"><div class="accordion-body-inner">Yes, on-site parking is available for $20 per car. We encourage ride-sharing when possible.</div></div>
+        </div>
+        <div class="accordion-item">
+          <button class="accordion-trigger">What about refunds? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></button>
+          <div class="accordion-body"><div class="accordion-body-inner">All sales are final. Tickets are transferable to another person if you are unable to attend.</div></div>
+        </div>
+      </div>
     </div>
-    <div class="footer__links">
-      <a href="event.html#info">Event Info</a>
-      <a href="event.html#vendors">Vendors</a>
-      <a href="event.html#tickets">Tickets</a>
-      <a href="tos.html">Terms &amp; Conditions</a>
-      <a href="privacy.html">Privacy Policy</a>
+  </section>
+
+  <section class="section" style="border-top: 1px solid var(--cg-border); text-align: center;">
+    <div class="container">
+      <h2 class="section-title">Ready to Experience CannaGrudge?</h2>
+      <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-top: 24px;">
+        <a href="tickets.html" class="btn btn-primary btn-lg">Get Tickets</a>
+        <a href="mailto:production@Diablocanna.co" class="btn btn-outline btn-lg">Contact Us</a>
+      </div>
     </div>
-    <div class="footer__legal">© CannaGrudge. All rights reserved.</div>
+  </section>
+
+  <footer class="footer" data-animate="fade">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <div class="footer-brand">Canna<span>Grudge</span></div>
+          <p class="footer-desc">The ultimate cannabis boxing event. Live fights, music, vendors, and more in Litchfield Park, AZ.</p>
+          <div class="footer-social">
+            <a href="https://www.instagram.com/" target="_blank" aria-label="Instagram"><img src="assets/Icons/instagram.png" alt="Instagram"></a>
+            <a href="https://www.facebook.com/" target="_blank" aria-label="Facebook"><img src="assets/Icons/facebook.png" alt="Facebook"></a>
+            <a href="https://twitter.com/" target="_blank" aria-label="X"><img src="assets/Icons/twitter.png" alt="X"></a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h4>Event</h4>
+          <a href="index.html">Home</a>
+          <a href="event.html">Event Info</a>
+          <a href="tickets.html">Tickets</a>
+        </div>
+        <div class="footer-col">
+          <h4>Support</h4>
+          <a href="event.html#faq">FAQ</a>
+          <a href="event.html#contact">Contact</a>
+          <a href="tos.html">Terms &amp; Conditions</a>
+        </div>
+        <div class="footer-col">
+          <h4>Legal</h4>
+          <a href="privacy.html">Privacy Policy</a>
+          <a href="delete-data.html">Delete Data</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; 2026 CannaGrudge. All rights reserved.</span>
+        <div>
+          <a href="privacy.html">Privacy</a> &nbsp;&middot;&nbsp; <a href="tos.html">Terms</a>
+        </div>
+      </div>
+    </div>
   </footer>
-  <script src="app.js"></script>
 
+  <script src="app.js"></script>
+  <script type="module" src="./firebase-config.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      const contentMap = {
-        about: `
-          <h3 style="margin-top:0;margin-bottom:8px;">About CannaGrudge</h3>
-          <p class="muted" style="margin:0;">
-            CannaGrudge unites top cannabis brands and enthusiasts for a one‑night
-            celebration that blends festival vibes with competitive bouts. Enjoy
-            live boxing, mud wrestling, music and DJ performances, games and
-            awards, plus a bustling vendor expo featuring cannabis products,
-            accessories, apparel and more. It's part fight night, part
-            festival—and all about celebrating cannabis culture in Litchfield Park on
-            April&nbsp;25,&nbsp;2026.
-          </p>
-        `,
-        schedule: `
-          <h3 style="margin-top:0;margin-bottom:8px;">Event Schedule</h3>
-          <p class="muted" style="margin:0 0 8px;">
-            CannaGrudge takes place on <strong>Saturday, April&nbsp;25,&nbsp;2026</strong>
-            at Dunn's&nbsp;Arena. Gates open at <strong>12:00&nbsp;PM</strong> and the
-            festivities continue late into the night. Here's a look at the day:
-          </p>
-          <ul style="padding-left:18px;margin:0 0 12px;">
-            <li><strong>12:00&nbsp;PM:</strong> Gates open, vendor showcases &amp; games begin</li>
-            <li><strong>2:00&nbsp;PM:</strong> Preliminary bouts</li>
-            <li><strong>7:00&nbsp;PM:</strong> Headline matches</li>
-            <li><strong>10:00&nbsp;PM:</strong> After‑party starts and runs late</li>
-          </ul>
-          <div class="calendar-wrapper" style="margin-top:12px;">
-            <table class="calendar" style="width:100%;border-collapse:collapse;text-align:center;">
-              <caption style="font-weight:700;margin-bottom:4px;">April&nbsp;2026</caption>
-              <thead><tr>
-                <th>Sun</th><th>Mon</th><th>Tue</th>
-                <th>Wed</th><th>Thu</th><th>Fri</th>
-                <th>Sat</th>
-              </tr></thead>
-              <tbody>
-                <tr><td></td><td></td><td></td><td>1</td><td>2</td><td>3</td><td>4</td></tr>
-                <tr><td>5</td><td>6</td><td>7</td><td>8</td><td>9</td><td>10</td><td>11</td></tr>
-                <tr><td>12</td><td>13</td><td>14</td><td>15</td><td>16</td><td>17</td><td>18</td></tr>
-                <tr><td>19</td><td>20</td><td>21</td><td>22</td><td>23</td><td>24</td><td><strong style="color:var(--cg-gold-300);text-shadow:0 0 8px rgba(245,184,26,.4);">25</strong></td></tr>
-                <tr><td>26</td><td>27</td><td>28</td><td>29</td><td>30</td><td></td><td></td></tr>
-              </tbody>
-            </table>
-          </div>
-        `,
-        vendors: `
-          <h3 style="margin-top:0;margin-bottom:8px;">Vendors &amp; Exhibitors</h3>
-          <p class="muted" style="margin:0 0 8px;">
-            Browse a diverse marketplace showcasing cannabis culture. Our vendor
-            village features:
-          </p>
-          <ul style="padding-left:18px;margin:0;">
-            <li><strong>Dispensaries &amp; Cannabis Brands</strong> – licensed
-              dispensaries, cultivators and product makers</li>
-            <li><strong>Accessories</strong> – vaporizers, glassware, rolling supplies
-              and smoking gadgets</li>
-            <li><strong>Apparel &amp; Lifestyle</strong> – clothing, hats, bags,
-              art and lifestyle goods</li>
-            <li><strong>Edibles &amp; Beverages</strong> – infused edibles, drinks and
-              hemp‑derived products</li>
-            <li><strong>Art &amp; Crafts</strong> – handmade jewelry, decor and
-              crafts from local artisans</li>
-          </ul>
-        `,
-        map: `
-          <h3 style="margin-top:0;margin-bottom:8px;">Venue &amp; Directions</h3>
-          <p class="muted" style="margin:0 0 8px;">
-            <strong>Date:</strong> April&nbsp;25,&nbsp;2026<br>
-            <strong>Location:</strong> Dunn's Arena, 7653&nbsp;N&nbsp;Sarival&nbsp;Ave,
-            Litchfield Park, AZ&nbsp;85340
-          </p>
-          <p class="muted" style="margin:0 0 12px;">
-            Tap the button below to open turn‑by‑turn directions in your
-            preferred map app.
-          </p>
-          <a href="https://www.google.com/maps/search/?api=1&amp;query=Dunns+Arena+Litchfield+Park+AZ" target="_blank" class="button button--primary" style="display:inline-block;padding:6px 14px;font-size:14px;margin-bottom:12px;">Get&nbsp;Directions</a>
-          <div style="margin-top:0;border-radius:var(--cg-r-md);overflow:hidden;">
-            <iframe src="https://maps.google.com/maps?q=7653%20N%20Sarival%20Ave,%20Litchfield%20Park,%20AZ%2085340&amp;output=embed" width="100%" height="200" style="border:0;" allowfullscreen loading="lazy"></iframe>
-          </div>
-        `,
-        faq: `
-          <h3 style="margin-top:0;margin-bottom:8px;">Frequently Asked Questions</h3>
-          <details><summary>Is the event 21+?</summary>
-            <p class="muted">Yes, CannaGrudge is strictly
-            21&nbsp;and over. Please bring a valid government‑issued ID.</p>
-          </details>
-          <details><summary>Can I bring my own cannabis?</summary>
-            <p class="muted">Outside cannabis is not
-            permitted. Licensed vendors will have products available for
-            purchase and consumption where local regulations allow.</p>
-          </details>
-          <details><summary>Are children allowed?</summary>
-            <p class="muted">No, minors are not allowed
-            due to age restrictions and onsite cannabis consumption.</p>
-          </details>
-          <details><summary>What should I bring?</summary>
-            <p class="muted">Bring a valid ID, cash or
-            card for vendors, and comfortable clothes. Personal bags may be
-            subject to security screening.</p>
-          </details>
-        `,
-        food: `
-          <h3 style="margin-top:0;margin-bottom:8px;">Food &amp; Drink</h3>
-          <p class="muted" style="margin:0 0 8px;">Refuel between bouts with
-            delicious options:</p>
-          <ul style="padding-left:18px;margin:0;">
-            <li><strong>Food Trucks:</strong> BBQ, tacos, burgers, vegan &amp;
-              vegetarian fare and more</li>
-            <li><strong>Beer &amp; Cocktails:</strong> Craft beer, signature
-              cocktails and wine (21+ only)</li>
-            <li><strong>Drink Specials:</strong> Non‑alcoholic mocktails, energy
-              drinks and bottled water</li>
-            <li><strong>Dining Areas:</strong> Shaded seating to enjoy your meal
-              with friends</li>
-          </ul>
-        `,
-        parking: `
-          <h3 style="margin-top:0;margin-bottom:8px;">Parking</h3>
-          <p class="muted" style="margin:0;">
-            On‑site parking is available for <strong>$20 per car</strong>. We
-            encourage ride‑sharing or public transit when possible. Prepaid
-            parking passes and drop‑off zones will be announced closer to the
-            event.
-          </p>
-        `,
-        lodging: `
-          <h3 style="margin-top:0;margin-bottom:8px;">Lodging</h3>
-          <p class="muted" style="margin:0 0 8px;">Staying overnight? Here are some nearby hotels:</p>
-          <ul style="padding-left:18px;margin:0;list-style:none;">
-            <li style="margin-bottom:8px;">
-              <strong>The&nbsp;Wigwam&nbsp;Resort</strong><br>
-              <span style="font-size:13px;color:var(--cg-text-dim);">300&nbsp;E. Wigwam&nbsp;Boulevard, Litchfield Park, AZ&nbsp;85340</span><br>
-              <a href="https://www.wigwamarizona.com" target="_blank" class="button button--ghost" style="padding:6px 12px;font-size:13px;margin-right:6px;display:inline-block;">Website</a>
-              <a href="tel:+18669766894" class="button button--primary" style="padding:6px 12px;font-size:13px;display:inline-block;">Call</a>
-            </li>
-            <li style="margin-bottom:8px;">
-              <strong>Best&nbsp;Western&nbsp;Phoenix&nbsp;Goodyear&nbsp;Inn</strong><br>
-              <span style="font-size:13px;color:var(--cg-text-dim);">55&nbsp;N&nbsp;Litchfield&nbsp;Rd, Goodyear, AZ&nbsp;85338</span><br>
-              <a href="https://www.bestwestern.com" target="_blank" class="button button--ghost" style="padding:6px 12px;font-size:13px;margin-right:6px;display:inline-block;">Website</a>
-              <a href="tel:+16239323210" class="button button--primary" style="padding:6px 12px;font-size:13px;display:inline-block;">Call</a>
-            </li>
-          </ul>
-        `,
-        contact: `
-          <h3 style="margin-top:0;margin-bottom:8px;">Contact Us</h3>
-          <p class="muted" style="margin:0 0 8px;">Email us at
-            <a href="mailto:production@Diablocanna.co" style="color:var(--cg-gold-300);">production@Diablocanna.co</a>
-            or send us a message using the form below.</p>
-          <form id="contactForm" style="display:flex;flex-direction:column;gap:10px;">
-            <div>
-              <label for="contactName" style="display:block;font-size:12px;margin-bottom:4px;color:var(--cg-text-dim);">Name</label>
-              <input id="contactName" type="text" required class="popup-input">
-            </div>
-            <div>
-              <label for="contactEmail" style="display:block;font-size:12px;margin-bottom:4px;color:var(--cg-text-dim);">Email</label>
-              <input id="contactEmail" type="email" required class="popup-input">
-            </div>
-            <div>
-              <label for="contactMessage" style="display:block;font-size:12px;margin-bottom:4px;color:var(--cg-text-dim);">Message</label>
-              <textarea id="contactMessage" rows="3" required class="popup-input" style="resize:vertical;"></textarea>
-            </div>
-            <button type="submit" class="button button--primary">Send Message</button>
-          </form>
-          <p class="muted" id="formMessage" style="display:none;margin-top:8px;color:var(--cg-success);">Thanks! We&#39;ll be in touch soon.</p>
-        `
+    (function() {
+      var contentMap = {
+        about: '<h3>About CannaGrudge</h3><p>CannaGrudge unites top cannabis brands and enthusiasts for a one\u2011night celebration that blends festival vibes with competitive bouts. Enjoy live boxing, mud wrestling, music and DJ performances, games and awards, plus a bustling vendor expo featuring cannabis products, accessories, apparel and more. It\u2019s part fight night, part festival\u2014and all about celebrating cannabis culture in Litchfield Park on April&nbsp;25,&nbsp;2026.</p>',
+        schedule: '<h3>Event Schedule</h3><p>CannaGrudge takes place on <strong>Saturday, April&nbsp;25,&nbsp;2026</strong> at Dunn\u2019s&nbsp;Arena. Gates open at <strong>12:00&nbsp;PM</strong> and the festivities continue late into the night.</p><ul><li><strong>12:00&nbsp;PM:</strong> Gates open, vendor showcases &amp; games begin</li><li><strong>2:00&nbsp;PM:</strong> Preliminary bouts</li><li><strong>5:00&nbsp;PM:</strong> Halftime Show \u2013 Little People Wrestling</li><li><strong>7:00&nbsp;PM:</strong> Headline matches</li><li><strong>10:00&nbsp;PM:</strong> After\u2011party starts and runs late</li></ul>',
+        vendors: '<h3>Vendors &amp; Exhibitors</h3><p>Browse a diverse marketplace showcasing cannabis culture. Our vendor village features:</p><ul><li><strong>Dispensaries &amp; Cannabis Brands</strong> \u2013 licensed dispensaries, cultivators and product makers</li><li><strong>Accessories</strong> \u2013 vaporizers, glassware, rolling supplies and smoking gadgets</li><li><strong>Apparel &amp; Lifestyle</strong> \u2013 clothing, hats, bags, art and lifestyle goods</li><li><strong>Edibles &amp; Beverages</strong> \u2013 infused edibles, drinks and hemp\u2011derived products</li><li><strong>Art &amp; Crafts</strong> \u2013 handmade jewelry, decor and crafts from local artisans</li></ul>',
+        map: '<h3>Venue &amp; Directions</h3><p><strong>Date:</strong> April&nbsp;25,&nbsp;2026<br><strong>Location:</strong> Dunn\u2019s Arena, 7653&nbsp;N&nbsp;Sarival&nbsp;Ave, Litchfield Park, AZ&nbsp;85340</p><p>Tap the button below to open turn\u2011by\u2011turn directions in your preferred map app.</p><a href="https://www.google.com/maps/search/?api=1&amp;query=Dunns+Arena+Litchfield+Park+AZ" target="_blank" class="btn btn-primary btn-sm" style="margin-bottom:16px;">Get Directions</a><div style="border-radius:var(--cg-radius);overflow:hidden;"><iframe src="https://maps.google.com/maps?q=7653%20N%20Sarival%20Ave,%20Litchfield%20Park,%20AZ%2085340&amp;output=embed" width="100%" height="200" style="border:0;" allowfullscreen loading="lazy"></iframe></div>',
+        faq: '<h3>Frequently Asked Questions</h3><p><strong>Is the event 21+?</strong><br>Yes, CannaGrudge is strictly 21 and over. Please bring a valid government\u2011issued ID.</p><p><strong>Can I bring my own cannabis?</strong><br>Outside cannabis is not permitted. Licensed vendors will have products available for purchase and consumption where local regulations allow.</p><p><strong>Are children allowed?</strong><br>No, minors are not allowed due to age restrictions and onsite cannabis consumption.</p><p><strong>What should I bring?</strong><br>Bring a valid ID, cash or card for vendors, and comfortable clothes. Personal bags may be subject to security screening.</p>',
+        food: '<h3>Food &amp; Drink</h3><p>Refuel between bouts with delicious options:</p><ul><li><strong>Food Trucks:</strong> BBQ, tacos, burgers, vegan &amp; vegetarian fare and more</li><li><strong>Beer &amp; Cocktails:</strong> Craft beer, signature cocktails and wine (21+ only)</li><li><strong>Drink Specials:</strong> Non\u2011alcoholic mocktails, energy drinks and bottled water</li><li><strong>Dining Areas:</strong> Shaded seating to enjoy your meal with friends</li></ul>',
+        parking: '<h3>Parking</h3><p>On\u2011site parking is available for <strong>$20 per car</strong>. We encourage ride\u2011sharing or public transit when possible. Prepaid parking passes and drop\u2011off zones will be announced closer to the event.</p>',
+        lodging: '<h3>Lodging</h3><p>Staying overnight? Here are some nearby hotels:</p><ul><li><strong>The Wigwam Resort</strong><br>300 E. Wigwam Boulevard, Litchfield Park, AZ 85340<br><a href="https://www.wigwamarizona.com" target="_blank" class="btn btn-outline btn-sm" style="margin-top:4px;margin-right:6px;">Website</a><a href="tel:+18669766894" class="btn btn-primary btn-sm" style="margin-top:4px;">Call</a></li><li style="margin-top:12px;"><strong>Best Western Phoenix Goodyear Inn</strong><br>55 N Litchfield Rd, Goodyear, AZ 85338<br><a href="https://www.bestwestern.com" target="_blank" class="btn btn-outline btn-sm" style="margin-top:4px;margin-right:6px;">Website</a><a href="tel:+16239323210" class="btn btn-primary btn-sm" style="margin-top:4px;">Call</a></li></ul>',
+        contact: '<h3>Contact Us</h3><p>Email us at <a href="mailto:production@Diablocanna.co" style="color:var(--cg-gold);">production@Diablocanna.co</a> or send us a message using the form below.</p><form id="contactForm" style="display:flex;flex-direction:column;gap:10px;"><div><label class="label" for="contactName">Name</label><input id="contactName" type="text" required class="input"></div><div><label class="label" for="contactEmail">Email</label><input id="contactEmail" type="email" required class="input"></div><div><label class="label" for="contactMessage">Message</label><textarea id="contactMessage" rows="3" required class="input"></textarea></div><button type="submit" class="btn btn-primary">Send Message</button></form><p id="formMessage" style="display:none;margin-top:8px;color:var(--cg-green);">Thanks! We\'ll be in touch soon.</p>'
       };
 
-      const tiles = document.querySelectorAll('.tile-grid .tile');
-      const grid = document.querySelector('.tile-grid');
-      if (!tiles || !grid) return;
+      document.addEventListener('DOMContentLoaded', function() {
+        var tiles = document.querySelectorAll('#tileGrid .tile');
+        var popupContainer = document.getElementById('infoPopupContainer');
 
-      tiles.forEach(tile => {
-        tile.addEventListener('click', function (e) {
-          e.preventDefault();
-          tiles.forEach(t => t.classList.remove('selected'));
-          this.classList.add('selected');
-          const existing = document.querySelector('.tile-popup');
-          if (existing) existing.remove();
-          const href = this.getAttribute('href') || '';
-          const key = href.replace(/^#/, '');
-          const html = contentMap[key] || `<p class="muted">Information not available.</p>`;
-          const div = document.createElement('div');
-          div.className = 'tile-popup';
-          div.innerHTML = html;
-          const wrapper = grid.parentNode;
-          wrapper.parentNode.appendChild(div);
-          if (key === 'contact') {
-            const form = div.querySelector('#contactForm');
-            const msg = div.querySelector('#formMessage');
-            if (form) {
-              form.addEventListener('submit', function (evt) {
-                evt.preventDefault();
-                form.reset();
-                if (msg) msg.style.display = 'block';
-              });
-            }
-          }
-          if (window.innerWidth < 992) {
-            setTimeout(() => {
-              const anchor = document.querySelector('header.hero .muted');
-              if (anchor && typeof anchor.scrollIntoView === 'function') {
-                anchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        tiles.forEach(function(tile) {
+          tile.addEventListener('click', function(e) {
+            e.preventDefault();
+            tiles.forEach(function(t) { t.classList.remove('selected'); });
+            tile.classList.add('selected');
+            var key = tile.getAttribute('data-tile');
+            var html = contentMap[key] || '<p>Information not available.</p>';
+            popupContainer.innerHTML = '<div class="info-popup">' + html + '</div>';
+
+            if (key === 'contact') {
+              var form = popupContainer.querySelector('#contactForm');
+              var msg = popupContainer.querySelector('#formMessage');
+              if (form) {
+                form.addEventListener('submit', function(evt) {
+                  evt.preventDefault();
+                  form.reset();
+                  if (msg) msg.style.display = 'block';
+                });
               }
-            }, 50);
-          }
+            }
+
+            popupContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          });
+        });
+
+        document.querySelectorAll('.accordion-trigger').forEach(function(trigger) {
+          trigger.addEventListener('click', function() {
+            var item = trigger.parentElement;
+            var body = item.querySelector('.accordion-body');
+            var isOpen = item.classList.contains('open');
+            document.querySelectorAll('.accordion-item').forEach(function(ai) {
+              ai.classList.remove('open');
+              ai.querySelector('.accordion-body').style.maxHeight = null;
+            });
+            if (!isOpen) {
+              item.classList.add('open');
+              body.style.maxHeight = body.scrollHeight + 'px';
+            }
+          });
         });
       });
-    });
+    })();
   </script>
-
-  <nav class="bottom-nav">
-    <a href="event.html">Event Info</a>
-    <a href="settings.html">Settings</a>
-    <a href="index.html" class="home" aria-label="Home">
-      <img src="assets/Icons/home.png" alt="Home" width="22" height="22" />
-      <span class="sr-only">Home</span>
-    </a>
-    <a href="messages.html">Inbox</a>
-    <a href="dashboard.html">Dashboard</a>
-  </nav>
-
 </body>
 </html>

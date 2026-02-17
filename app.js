@@ -1,288 +1,263 @@
-// CannaGrudge: global bottom-nav normalizer
 document.addEventListener('DOMContentLoaded', () => {
-  // --- simple auth guard for protected pages ---
+  const page = (location.pathname.split('/').pop() || 'index.html').replace('.html', '');
+
   (function(){
     try {
-      /*
-       * Determine whether the current page should require authentication.  In
-       * addition to checking for exact filenames like `dashboard.html`, also
-       * match routes without extensions (e.g. `/dashboard` or `/dashboard/`).
-       * This helps when the app is served via a web server that rewrites URLs
-       * or when the `.html` extension is omitted.
-       */
       const path = location.pathname.toLowerCase();
-      // Pages or keywords that require the user to be logged in.  If the
-      // pathname contains any of these strings, the user will be redirected
-      // to the login page unless localStorage indicates they are logged in.
       const authKeywords = ['dashboard', 'checkout', 'confirmation', 'profile'];
       const requiresAuth = authKeywords.some(k => path.includes(k));
       const loggedIn = localStorage.getItem('isLoggedIn') === '1';
       if (!loggedIn && requiresAuth) {
-        // Build a URL to the login page relative to the current directory.  If the
-        // app is served from a subdirectory or routes omit the `.html`
-        // extension (e.g. `/dashboard`), using simply 'login.html' would
-        // incorrectly point into the current route (e.g. `/dashboard/login.html`).
-        // Instead, compute the base directory from the current pathname.
         const ret = encodeURIComponent(location.pathname + location.search + location.hash);
-        const currentPath = location.pathname;
-        const lastSlash = currentPath.lastIndexOf('/');
-        const basePath = lastSlash >= 0 ? currentPath.slice(0, lastSlash) : '';
-        const loginPath = (basePath ? basePath : '') + '/login.html';
-        location.href = loginPath + '?return=' + ret;
+        location.href = 'login.html?return=' + ret;
       }
-    } catch(e) {
-      // swallow errors so the page continues to render
-    }
+    } catch(e) {}
   })();
 
-  /**
-   * Build and apply the bottom navigation markup dynamically based on
-   * authentication state.  When logged in, the rightmost nav item
-   * displays the user's first name alongside their avatar (or initials).
-   * When not logged in, the nav item links to the login page and
-   * displays "Log in".  The Event Info and Home links remain
-   * constant.
-   */
-  function applyNav() {
-    let nav = document.querySelector('nav.bottom-nav');
-    if (!nav) {
-      // Create the nav element at the end of the body if missing
-      nav = document.createElement('nav');
-      nav.className = 'bottom-nav';
-      document.body.appendChild(nav);
-    }
-    // Determine login state from localStorage.  A user is considered
-    // authenticated only if the `isLoggedIn` flag is present AND there
-    // is a stored full name or email.  This extra check prevents
-    // situations where the `isLoggedIn` flag remains from a past
-    // session without any associated user information, which would
-    // otherwise cause stale names to appear in the nav.  If either
-    // condition fails we remove any lingering data and treat the
-    // visitor as logged out.
-    const isFlagSet = localStorage.getItem('isLoggedIn') === '1';
-    const hasUserInfo = !!(localStorage.getItem('fullName') || localStorage.getItem('email'));
-    const loggedIn = isFlagSet && hasUserInfo;
+  function buildNav() {
+    const loggedIn = localStorage.getItem('isLoggedIn') === '1' && !!(localStorage.getItem('fullName') || localStorage.getItem('email'));
     if (!loggedIn) {
-      try {
-        ['isLoggedIn','fullName','email','avatar','avatarUrl'].forEach(k => localStorage.removeItem(k));
-      } catch (e) {
-        // swallow errors
-      }
+      try { ['isLoggedIn','fullName','email','avatar','avatarUrl'].forEach(k => localStorage.removeItem(k)); } catch(e) {}
     }
-    let profileHTML;
+    const cart = getCart();
+    const cartCount = cart.reduce((s, i) => s + i.qty, 0);
+
+    let accountLink;
     if (loggedIn) {
-      // Retrieve the user's full name and avatar (if any)
-      // Retrieve the user's full name.  If no full name is stored, fall back
-      // to the email username (the part before the @) if available.  This
-      // prevents the label from always being "User" when the site is
-      // first loaded after login and fullName has not been persisted yet.
-      let fullName = localStorage.getItem('fullName');
-      if (!fullName) {
-        const email = localStorage.getItem('email');
-        if (email && email.includes('@')) {
-          fullName = email.split('@')[0];
-        }
-      }
-      if (!fullName) fullName = 'User';
-      const avatar = localStorage.getItem('avatar') || localStorage.getItem('avatarUrl') || '';
-      // Use the first name for display
-      const firstName = fullName.split(' ')[0];
-      // Build the avatar element: use the stored image if available,
-      // otherwise fall back to the first initial in a colored circle
-      let avatarHTML;
-      if (avatar) {
-        avatarHTML = `<img src="${avatar}" alt="${firstName} avatar" style="width:22px;height:22px;border-radius:50%;object-fit:cover;border:2px solid var(--cg-primary);">`;
-      } else {
-        const initial = firstName.charAt(0).toUpperCase();
-        /*
-         * When no avatar image is stored, display the user's initial in
-         * a colored circle.  Use the primary brand color for the
-         * background and its ink color for the text so the login area
-         * stands out clearly against the dark nav.  The circle
-         * remains the same size as an avatar image.
-         */
-        avatarHTML = `<div style="width:22px;height:22px;border-radius:50%;background:var(--cg-primary);color:var(--cg-primary-ink);display:flex;align-items:center;justify-content:center;font-size:12px;">${initial}</div>`;
-      }
-      profileHTML = `
-        <a href="dashboard.html" class="profile-nav">
-          ${avatarHTML}
-          <span>${firstName}</span>
-        </a>
-      `;
+      const name = localStorage.getItem('fullName') || 'Account';
+      const first = name.split(' ')[0];
+      accountLink = `<a href="dashboard.html" class="nav-links-item ${page === 'dashboard' ? 'active' : ''}">${first}</a>`;
     } else {
-      // Build a login link with return parameter to redirect back after sign in
-      const current = location.pathname + location.search + location.hash;
-      const loginHref = 'login.html' + (location.pathname.toLowerCase().includes('login') ? '' : `?return=${encodeURIComponent(current)}`);
-      // Use a simple inline SVG for the login avatar.  This gives the
-      // login nav a recognizable person icon without requiring an external image.
-      const loginSvg = `<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="currentColor"><circle cx="12" cy="8" r="4"></circle><path d="M4 20a8 8 0 0116 0H4z"></path></svg>`;
-      profileHTML = `<a href="${loginHref}" class="login-nav">
-        ${loginSvg}
-        <span>Log in</span>
-      </a>`;
+      accountLink = `<a href="login.html" class="nav-links-item">Sign In</a>`;
     }
-    // Compose the nav HTML
-    const navHTML = `
-      <nav class="bottom-nav">
-        <a href="event.html">Event Info</a>
-        <a href="index.html" class="home" aria-label="Home">
-          <img src="assets/Icons/home.png" alt="Home" width="22" height="22" />
-          <span class="sr-only">Home</span>
+
+    const nav = document.createElement('nav');
+    nav.className = 'navbar';
+    nav.id = 'mainNav';
+    nav.innerHTML = `
+      <div class="nav-inner">
+        <a href="index.html" class="nav-brand">
+          <img src="assets/favicon-gloves.png" alt="CG">
+          Canna<span>Grudge</span>
         </a>
-        ${profileHTML}
-      </nav>
-    `.trim();
-    // Replace the existing nav with the new markup
-    nav.outerHTML = navHTML;
-  }
-
-  // Apply the navigation on load
-  applyNav();
-
-  // === Social login & modal enhancements ===
-  /**
-   * Simulate retrieval of a social profile.
-   * In a real implementation this would call an OAuth provider.
-   * Returns a minimal user object with name and email.
-   * The avatar URL is optional and left blank; the dashboard will fall back to initials.
-   */
-  function simulateUser(provider) {
-    const names = ['Jane Smith', 'John Doe', 'Alex Johnson', 'Chris Green', 'Pat Taylor'];
-    const name = names[Math.floor(Math.random() * names.length)];
-    const slug = name.toLowerCase().replace(/\s+/g, '.');
-    const domain = provider === 'google' ? 'gmail.com' :
-                   provider === 'facebook' ? 'facebook.com' : 'example.com';
-    const email = `${slug}@${domain}`;
-    return {
-      fullName: name,
-      email: email,
-      avatarUrl: '' // Leave blank to allow fallback initials
-    };
-  }
-
-  /**
-   * Persist a user to localStorage and redirect appropriately.
-   * Called when a social login button is clicked.
-   */
-  function finishLogin(user) {
-    try {
-      localStorage.setItem('isLoggedIn', '1');
-      localStorage.setItem('fullName', user.fullName);
-      localStorage.setItem('email', user.email);
-      if (user.avatarUrl) localStorage.setItem('avatarUrl', user.avatarUrl);
-      // Set a default ticket tier if not already set
-      if (!localStorage.getItem('ticketTier')) {
-        localStorage.setItem('ticketTier', 'General Admission');
-      }
-    } catch(e) {
-      // swallow storage errors
-    }
-    const currentPath = location.pathname;
-    const lastSlash = currentPath.lastIndexOf('/');
-    const basePath = lastSlash >= 0 ? currentPath.slice(0, lastSlash) : '';
-    const dashboardPath = (basePath ? basePath : '') + '/dashboard.html';
-    const file = (currentPath.split('/').pop() || '').toLowerCase();
-    if (file === 'login.html' || file === 'login') {
-      // Respect return parameter if present
-      const params = new URLSearchParams(location.search);
-      const ret = params.get('return');
-      const dest = ret ? decodeURIComponent(ret) : dashboardPath;
-      location.href = dest;
-    } else {
-      // Close modal if present
-      const modal = document.getElementById('loginModal');
-      if (modal && typeof modal.close === 'function') {
-        modal.close();
-      }
-      // Redirect to dashboard so the user sees their info
-      location.href = dashboardPath;
-    }
-  }
-
-  /**
-   * Replace the login modal on pages that include it with a unified template.
-   * Adds real Facebook and Google icons and data-provider hooks.
-   */
-  function updateLoginModal() {
-    const dialog = document.getElementById('loginModal');
-    if (!dialog) return;
-    // Define inline SVGs for Facebook and Google logos
-    const fbSvg = '<svg viewBox="0 0 512 512" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M512 256C512 114.6 397.4 0 256 0S0 114.6 0 256C0 376 82.7 476.8 194.2 504.5V334.2H141.4V256h52.8V222.3c0-87.1 39.4-127.5 125-127.5c16.2 0 44.2 3.2 55.7 6.4V172c-6-.6-16.5-1-29.6-1c-42 0-58.2 15.9-58.2 57.2V256h83.6l-14.4 78.2H287V510.1C413.8 494.8 512 386.9 512 256z" /></svg>';
-    const googleSvg = '<svg viewBox="0 0 488 512" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504C110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z" /></svg>';
-    const modalHTML = `
-      <div class="card" style="border:none;">
-        <h2 class="display" style="margin-bottom:8px;">Sign in</h2>
-        <p class="muted" style="margin:0 0 12px;">Fast login to save your tickets.</p>
-        <div style="display:grid; gap:10px; margin-bottom:12px;">
-          <button class="button button--primary" data-provider="facebook" style="background:#1877F2; color:#fff;">
-            ${fbSvg}<span style="margin-left:8px;">Continue with Facebook</span>
-          </button>
-          <button class="button button--primary" data-provider="google" style="background:#0F9D58; color:#fff;">
-            ${googleSvg}<span style="margin-left:8px;">Continue with Google</span>
-          </button>
-          <button class="button button--ghost" data-provider="email">Continue with Email</button>
+        <div class="nav-links">
+          <a href="index.html" class="${page === 'index' || page === '' ? 'active' : ''}">Home</a>
+          <a href="event.html" class="${page === 'event' ? 'active' : ''}">Event</a>
+          <a href="tickets.html" class="${page === 'tickets' ? 'active' : ''}">Tickets</a>
+          ${accountLink}
         </div>
-        <div style="display:flex; justify-content:flex-end; gap:8px;">
-          <button class="button button--ghost" data-close-modal>Close</button>
+        <div class="nav-actions">
+          <button class="nav-cart-btn" id="cartToggle" aria-label="Cart">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+            <span class="nav-cart-badge" id="cartBadge" data-count="${cartCount}">${cartCount}</span>
+          </button>
+          <a href="tickets.html" class="btn btn-primary btn-sm" style="display:none;">Get Tickets</a>
+          <button class="hamburger" id="hamburgerBtn" aria-label="Menu">
+            <span></span><span></span><span></span>
+          </button>
         </div>
       </div>
     `;
-    // Overwrite dialog content
-    dialog.innerHTML = modalHTML;
-    // Set up close handler
-    const closeBtn = dialog.querySelector('[data-close-modal]');
-    if (closeBtn) {
-      closeBtn.addEventListener('click', () => {
-        dialog.close();
-      });
-    }
-  }
+    document.body.prepend(nav);
 
-  /**
-   * Attach click listeners to social login buttons (Google, Facebook).
-   * This will simulate retrieving profile info and then call finishLogin.
-   */
-  function attachSocialListeners() {
-    document.querySelectorAll('[data-provider]').forEach(btn => {
-      const provider = btn.dataset.provider;
-      if (provider === 'google' || provider === 'facebook') {
-        btn.addEventListener('click', (e) => {
-          e.preventDefault();
-          const user = simulateUser(provider);
-          finishLogin(user);
+    const mobileMenu = document.createElement('div');
+    mobileMenu.className = 'mobile-menu';
+    mobileMenu.id = 'mobileMenu';
+    mobileMenu.innerHTML = `
+      <a href="index.html">Home</a>
+      <a href="event.html">Event</a>
+      <a href="tickets.html">Tickets</a>
+      ${loggedIn ? '<a href="dashboard.html">My Account</a>' : '<a href="login.html">Sign In</a>'}
+      <a href="tickets.html" style="color: var(--cg-gold); margin-top: 16px;">Get Tickets &rarr;</a>
+    `;
+    document.body.appendChild(mobileMenu);
+
+    const hamburger = document.getElementById('hamburgerBtn');
+    hamburger.addEventListener('click', () => {
+      hamburger.classList.toggle('open');
+      mobileMenu.classList.toggle('open');
+      document.body.style.overflow = mobileMenu.classList.contains('open') ? 'hidden' : '';
+    });
+
+    mobileMenu.querySelectorAll('a').forEach(a => {
+      a.addEventListener('click', () => {
+        hamburger.classList.remove('open');
+        mobileMenu.classList.remove('open');
+        document.body.style.overflow = '';
+      });
+    });
+
+    let ticking = false;
+    window.addEventListener('scroll', () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          nav.classList.toggle('scrolled', window.scrollY > 20);
+          ticking = false;
         });
-      } else if (provider === 'email') {
-        // If inside a modal, redirect to login page preserving return
-        btn.addEventListener('click', (e) => {
-          e.preventDefault();
-          // compute return path: if current page is not login, include path; else skip
-          const file = (location.pathname.split('/').pop() || '').toLowerCase();
-          const current = location.pathname + location.search + location.hash;
-          const dest = 'login.html' + (file !== 'login.html' ? ('?return=' + encodeURIComponent(current)) : '');
-          location.href = dest;
-        });
+        ticking = true;
       }
+    });
+
+    const showTicketsBtn = nav.querySelector('.nav-actions .btn-primary');
+    if (showTicketsBtn && window.innerWidth > 768) {
+      showTicketsBtn.style.display = '';
+    }
+    window.addEventListener('resize', () => {
+      if (showTicketsBtn) showTicketsBtn.style.display = window.innerWidth > 768 ? '' : 'none';
     });
   }
 
-  // Update login modal if present and attach listeners
-  updateLoginModal();
-  attachSocialListeners();
+  buildNav();
 
-  // === Global scroll animation observer ===
-  // Elements with [data-animate] start hidden (via theme.css) and become
-  // visible when they scroll into view. A single shared observer handles
-  // all pages so per-page inline scripts are unnecessary.
+  function buildCartDrawer() {
+    const overlay = document.createElement('div');
+    overlay.className = 'cart-overlay';
+    overlay.id = 'cartOverlay';
+    document.body.appendChild(overlay);
+
+    const drawer = document.createElement('div');
+    drawer.className = 'cart-drawer';
+    drawer.id = 'cartDrawer';
+    drawer.innerHTML = `
+      <div class="cart-header">
+        <h3>Your Cart</h3>
+        <button class="cart-close" id="cartClose">&times;</button>
+      </div>
+      <div class="cart-body" id="cartBody"></div>
+      <div class="cart-footer" id="cartFooter"></div>
+    `;
+    document.body.appendChild(drawer);
+
+    const toggle = document.getElementById('cartToggle');
+    const close = document.getElementById('cartClose');
+
+    function openCart() {
+      drawer.classList.add('open');
+      overlay.classList.add('open');
+      document.body.style.overflow = 'hidden';
+      renderCartDrawer();
+    }
+
+    function closeCart() {
+      drawer.classList.remove('open');
+      overlay.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    toggle.addEventListener('click', openCart);
+    close.addEventListener('click', closeCart);
+    overlay.addEventListener('click', closeCart);
+
+    window.openCartDrawer = openCart;
+    window.closeCartDrawer = closeCart;
+  }
+
+  buildCartDrawer();
+
+  function renderCartDrawer() {
+    const body = document.getElementById('cartBody');
+    const footer = document.getElementById('cartFooter');
+    const cart = getCart();
+
+    if (cart.length === 0) {
+      body.innerHTML = '<div class="cart-empty"><p>Your cart is empty</p><p style="margin-top:8px;font-size:14px;">Browse tickets to get started</p></div>';
+      footer.innerHTML = '';
+      return;
+    }
+
+    let total = 0;
+    body.innerHTML = cart.map(item => {
+      const itemTotal = item.price * item.qty;
+      total += itemTotal;
+      return `
+        <div class="cart-item">
+          <div class="cart-item-info">
+            <h4>${item.name}</h4>
+            <div class="price">$${(item.price / 100).toFixed(2)} each</div>
+          </div>
+          <div class="cart-item-qty">
+            <button onclick="updateCartItem('${item.id}', ${item.qty - 1})">-</button>
+            <span>${item.qty}</span>
+            <button onclick="updateCartItem('${item.id}', ${item.qty + 1})">+</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    footer.innerHTML = `
+      <div class="cart-total">
+        <span class="total-label">Total</span>
+        <span class="total-amount">$${(total / 100).toFixed(2)}</span>
+      </div>
+      <a href="checkout.html" class="btn btn-primary btn-block">Checkout</a>
+    `;
+  }
+
+  window.renderCartDrawer = renderCartDrawer;
+
+  window.getCart = function() {
+    try {
+      return JSON.parse(localStorage.getItem('cg_cart') || '[]');
+    } catch { return []; }
+  };
+
+  window.saveCart = function(cart) {
+    localStorage.setItem('cg_cart', JSON.stringify(cart));
+    updateCartBadge();
+    if (typeof window.onCartChange === 'function') window.onCartChange();
+  };
+
+  window.addToCart = function(id, name, price, qty) {
+    const cart = getCart();
+    const existing = cart.find(i => i.id === id);
+    if (existing) {
+      existing.qty += qty;
+    } else {
+      cart.push({ id, name, price, qty });
+    }
+    saveCart(cart);
+    if (typeof window.openCartDrawer === 'function') window.openCartDrawer();
+  };
+
+  window.updateCartItem = function(id, newQty) {
+    let cart = getCart();
+    if (newQty <= 0) {
+      cart = cart.filter(i => i.id !== id);
+    } else {
+      const item = cart.find(i => i.id === id);
+      if (item) item.qty = newQty;
+    }
+    saveCart(cart);
+    renderCartDrawer();
+  };
+
+  window.clearCart = function() {
+    localStorage.removeItem('cg_cart');
+    updateCartBadge();
+  };
+
+  function updateCartBadge() {
+    const badge = document.getElementById('cartBadge');
+    if (!badge) return;
+    const cart = getCart();
+    const count = cart.reduce((s, i) => s + i.qty, 0);
+    badge.textContent = count;
+    badge.dataset.count = count;
+    badge.style.display = count > 0 ? 'flex' : 'none';
+  }
+
+  updateCartBadge();
+
   if ('IntersectionObserver' in window) {
-    const animObs = new IntersectionObserver((entries, obs) => {
+    const obs = new IntersectionObserver((entries, o) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           entry.target.classList.add('visible');
-          obs.unobserve(entry.target);
+          o.unobserve(entry.target);
         }
       });
     }, { threshold: 0.1 });
-    document.querySelectorAll('[data-animate]').forEach(el => animObs.observe(el));
+    document.querySelectorAll('[data-animate]').forEach(el => obs.observe(el));
   } else {
     document.querySelectorAll('[data-animate]').forEach(el => el.classList.add('visible'));
   }
