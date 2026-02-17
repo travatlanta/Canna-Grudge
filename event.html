@@ -17,6 +17,14 @@
         grid-template-columns: 1fr 1fr;
       }
     }
+    @media (max-width: 767px) {
+      .guidelines-layout {
+        grid-template-columns: 1fr !important;
+      }
+      .guidelines-layout > div:last-child {
+        order: -1;
+      }
+    }
   </style>
 </head>
 <body class="page-padded">
@@ -91,6 +99,43 @@
             <h4>After Party</h4>
             <p>Music and celebration</p>
           </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="border-top: 1px solid var(--cg-border);">
+    <div class="container">
+      <div class="section-label">rules</div>
+      <h2 class="section-title">Fighter Guidelines & Weight Classes</h2>
+      <div class="guidelines-layout" style="display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start;margin-top:32px;">
+        <div>
+          <div class="card" style="padding:32px;">
+            <p style="color:var(--cg-text-secondary);line-height:1.8;margin-bottom:20px;">Welcome to Nirvana x Diablo first annual Canna Grudge. This is meant to be fun and entertaining for all of us. This is <strong style="color:var(--cg-text);">NOT</strong> an official boxing match or exhibition match. It is simply a couple brands getting together and sparring in a ring for entertainment purposes.</p>
+            <p style="color:var(--cg-text-secondary);line-height:1.8;margin-bottom:20px;">Bouts will be wearing head gear, sparring with 16oz gloves and mouth guards just to be safe.</p>
+            <ul style="list-style:none;padding:0;display:flex;flex-direction:column;gap:12px;">
+              <li style="display:flex;align-items:flex-start;gap:10px;color:var(--cg-text-secondary);"><svg style="flex-shrink:0;margin-top:3px;" width="16" height="16" fill="none" stroke="var(--cg-gold)" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>3 rounds, 1.5 min each</li>
+              <li style="display:flex;align-items:flex-start;gap:10px;color:var(--cg-text-secondary);"><svg style="flex-shrink:0;margin-top:3px;" width="16" height="16" fill="none" stroke="var(--cg-gold)" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Proof of physical within 30 days of event</li>
+              <li style="display:flex;align-items:flex-start;gap:10px;color:var(--cg-text-secondary);"><svg style="flex-shrink:0;margin-top:3px;" width="16" height="16" fill="none" stroke="var(--cg-gold)" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Active FA card linked to representing facility</li>
+              <li style="display:flex;align-items:flex-start;gap:10px;color:var(--cg-text-secondary);"><svg style="flex-shrink:0;margin-top:3px;" width="16" height="16" fill="none" stroke="var(--cg-gold)" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Emergency medical staff on site</li>
+              <li style="display:flex;align-items:flex-start;gap:10px;color:var(--cg-text-secondary);"><svg style="flex-shrink:0;margin-top:3px;" width="16" height="16" fill="none" stroke="var(--cg-gold)" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>No prior combat sports experience required</li>
+              <li style="display:flex;align-items:flex-start;gap:10px;color:var(--cg-text-secondary);"><svg style="flex-shrink:0;margin-top:3px;" width="16" height="16" fill="none" stroke="var(--cg-gold)" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Same weight class opponents only</li>
+            </ul>
+          </div>
+          <div class="card" style="padding:24px;margin-top:20px;">
+            <h4 style="color:var(--cg-gold);margin-bottom:16px;font-family:var(--cg-font-display);font-weight:800;">Weight Classes</h4>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+              <div style="padding:10px 14px;background:var(--cg-surface);border-radius:6px;border:1px solid var(--cg-border);"><span style="color:var(--cg-text);font-weight:600;font-size:13px;">Heavyweight</span><br><span style="color:var(--cg-text-muted);font-size:12px;">200+ lbs</span></div>
+              <div style="padding:10px 14px;background:var(--cg-surface);border-radius:6px;border:1px solid var(--cg-border);"><span style="color:var(--cg-text);font-weight:600;font-size:13px;">Cruiserweight</span><br><span style="color:var(--cg-text-muted);font-size:12px;">175-200 lbs</span></div>
+              <div style="padding:10px 14px;background:var(--cg-surface);border-radius:6px;border:1px solid var(--cg-border);"><span style="color:var(--cg-text);font-weight:600;font-size:13px;">Light Heavyweight</span><br><span style="color:var(--cg-text-muted);font-size:12px;">168-175 lbs</span></div>
+              <div style="padding:10px 14px;background:var(--cg-surface);border-radius:6px;border:1px solid var(--cg-border);"><span style="color:var(--cg-text);font-weight:600;font-size:13px;">Super Middleweight</span><br><span style="color:var(--cg-text-muted);font-size:12px;">160-168 lbs</span></div>
+              <div style="padding:10px 14px;background:var(--cg-surface);border-radius:6px;border:1px solid var(--cg-border);"><span style="color:var(--cg-text);font-weight:600;font-size:13px;">Middleweight</span><br><span style="color:var(--cg-text-muted);font-size:12px;">154-160 lbs</span></div>
+              <div style="padding:10px 14px;background:var(--cg-surface);border-radius:6px;border:1px solid var(--cg-border);"><span style="color:var(--cg-text);font-weight:600;font-size:13px;">Welterweight</span><br><span style="color:var(--cg-text-muted);font-size:12px;">140-147 lbs</span></div>
+            </div>
+          </div>
+        </div>
+        <div style="text-align:center;">
+          <img src="assets/guidelines.png" alt="CannaGrudge Guidelines" style="width:100%;max-width:420px;border-radius:var(--cg-radius-lg);box-shadow:0 20px 60px rgba(0,0,0,.5);">
         </div>
       </div>
     </div>
