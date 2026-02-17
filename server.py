@@ -269,6 +269,7 @@ def admin_verify():
             'user': {'id': user['id'], 'email': user['email'], 'name': user['name']}
         })
     except Exception as e:
+        print(f"[ADMIN VERIFY ERROR] {type(e).__name__}: {e}")
         return jsonify({'error': str(e)}), 401
 
 
