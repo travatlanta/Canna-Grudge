@@ -1,18 +1,56 @@
 document.addEventListener('DOMContentLoaded', () => {
   const page = (location.pathname.split('/').pop() || 'index.html').replace('.html', '');
 
-  (function(){
+  window.getCart = function() {
     try {
-      const path = location.pathname.toLowerCase();
-      const authKeywords = ['dashboard', 'checkout', 'confirmation', 'profile'];
-      const requiresAuth = authKeywords.some(k => path.includes(k));
-      const loggedIn = localStorage.getItem('isLoggedIn') === '1';
-      if (!loggedIn && requiresAuth) {
-        const ret = encodeURIComponent(location.pathname + location.search + location.hash);
-        location.href = 'login.html?return=' + ret;
-      }
-    } catch(e) {}
-  })();
+      return JSON.parse(localStorage.getItem('cg_cart') || '[]');
+    } catch { return []; }
+  };
+
+  window.saveCart = function(cart) {
+    localStorage.setItem('cg_cart', JSON.stringify(cart));
+    updateCartBadge();
+    if (typeof window.onCartChange === 'function') window.onCartChange();
+  };
+
+  window.addToCart = function(id, name, price, qty) {
+    const cart = getCart();
+    const existing = cart.find(i => i.id === id);
+    if (existing) {
+      existing.qty += qty;
+    } else {
+      cart.push({ id, name, price, qty });
+    }
+    saveCart(cart);
+    if (typeof window.openCartDrawer === 'function') window.openCartDrawer();
+  };
+
+  window.updateCartItem = function(id, newQty) {
+    let cart = getCart();
+    if (newQty <= 0) {
+      cart = cart.filter(i => i.id !== id);
+    } else {
+      const item = cart.find(i => i.id === id);
+      if (item) item.qty = newQty;
+    }
+    saveCart(cart);
+    renderCartDrawer();
+  };
+
+  window.clearCart = function() {
+    localStorage.removeItem('cg_cart');
+    updateCartBadge();
+  };
+
+  function updateCartBadge() {
+    const badge = document.getElementById('cartBadge');
+    if (!badge) return;
+    const cart = getCart();
+    const count = cart.reduce((s, i) => s + i.qty, 0);
+    badge.textContent = count;
+    badge.dataset.count = count;
+    badge.style.display = count > 0 ? 'flex' : 'none';
+  }
 
   function buildNav() {
     const loggedIn = localStorage.getItem('isLoggedIn') === '1' && !!(localStorage.getItem('fullName') || localStorage.getItem('email'));
@@ -37,7 +75,6 @@ document.addEventListener('DOMContentLoaded', () => {
     nav.innerHTML = `
       <div class="nav-inner">
         <a href="index.html" class="nav-brand">
-          <img src="assets/favicon-gloves.png" alt="CG">
           Canna<span>Grudge</span>
         </a>
         <div class="nav-links">
@@ -51,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
             <span class="nav-cart-badge" id="cartBadge" data-count="${cartCount}">${cartCount}</span>
           </button>
-          <a href="tickets.html" class="btn btn-primary btn-sm" style="display:none;">Get Tickets</a>
+          <a href="tickets.html" class="btn btn-primary btn-sm nav-tickets-cta">Get Tickets</a>
           <button class="hamburger" id="hamburgerBtn" aria-label="Menu">
             <span></span><span></span><span></span>
           </button>
@@ -96,14 +133,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         ticking = true;
       }
-    });
-
-    const showTicketsBtn = nav.querySelector('.nav-actions .btn-primary');
-    if (showTicketsBtn && window.innerWidth > 768) {
-      showTicketsBtn.style.display = '';
-    }
-    window.addEventListener('resize', () => {
-      if (showTicketsBtn) showTicketsBtn.style.display = window.innerWidth > 768 ? '' : 'none';
     });
   }
 
@@ -194,57 +223,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   window.renderCartDrawer = renderCartDrawer;
-
-  window.getCart = function() {
-    try {
-      return JSON.parse(localStorage.getItem('cg_cart') || '[]');
-    } catch { return []; }
-  };
-
-  window.saveCart = function(cart) {
-    localStorage.setItem('cg_cart', JSON.stringify(cart));
-    updateCartBadge();
-    if (typeof window.onCartChange === 'function') window.onCartChange();
-  };
-
-  window.addToCart = function(id, name, price, qty) {
-    const cart = getCart();
-    const existing = cart.find(i => i.id === id);
-    if (existing) {
-      existing.qty += qty;
-    } else {
-      cart.push({ id, name, price, qty });
-    }
-    saveCart(cart);
-    if (typeof window.openCartDrawer === 'function') window.openCartDrawer();
-  };
-
-  window.updateCartItem = function(id, newQty) {
-    let cart = getCart();
-    if (newQty <= 0) {
-      cart = cart.filter(i => i.id !== id);
-    } else {
-      const item = cart.find(i => i.id === id);
-      if (item) item.qty = newQty;
-    }
-    saveCart(cart);
-    renderCartDrawer();
-  };
-
-  window.clearCart = function() {
-    localStorage.removeItem('cg_cart');
-    updateCartBadge();
-  };
-
-  function updateCartBadge() {
-    const badge = document.getElementById('cartBadge');
-    if (!badge) return;
-    const cart = getCart();
-    const count = cart.reduce((s, i) => s + i.qty, 0);
-    badge.textContent = count;
-    badge.dataset.count = count;
-    badge.style.display = count > 0 ? 'flex' : 'none';
-  }
 
   updateCartBadge();
 
