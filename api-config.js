@@ -1,2 +1,2 @@
-// Replace with your deployed backend URL
-window.CG_API_BASE = 'https://api.cannagrudge.com';
+// API is served from the same origin (Render serves both frontend and backend)
+window.CG_API_BASE = '';

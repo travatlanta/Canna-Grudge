@@ -14,9 +14,8 @@ import resend
 import firebase_admin
 from firebase_admin import credentials, auth as fb_auth
 
-# Use static folder only in development (local), not when deployed
-IS_PRODUCTION = os.environ.get('RENDER') is not None
-app = Flask(__name__, static_folder='.' if not IS_PRODUCTION else None, static_url_path='')
+# Serve static files from Flask whether local or on Render
+app = Flask(__name__, static_folder='.', static_url_path='')
 CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
 
 UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
@@ -149,8 +148,6 @@ def protected_deck_assets(filename):
 
 @app.route('/')
 def index():
-    if IS_PRODUCTION:
-        return jsonify({'error': 'Static files not served from API. Use GitHub Pages for frontend.'}), 404
     return send_from_directory('.', 'index.html')
 
 @app.route('/api/square-config', methods=['GET'])
@@ -833,8 +830,6 @@ def admin_test_email_template(tid):
 
 @app.route('/<path:path>')
 def static_files(path):
-    if IS_PRODUCTION:
-        return jsonify({'error': 'Static files not served from API. Use GitHub Pages for frontend.'}), 404
     return send_from_directory('.', path)
 
 if __name__ == '__main__':

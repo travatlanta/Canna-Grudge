@@ -1,10 +1,27 @@
 services:
   - type: web
-    name: cannagrudge-api
+    name: cannagrudge
     runtime: python
     runtimeVersion: "3.11"
     buildCommand: "pip install -r requirements.txt"
-    startCommand: "gunicorn server:app"
+    startCommand: "gunicorn server:app --workers 2 --timeout 120"
+    domains:
+      - cannagrudge.com
+      - www.cannagrudge.com
     envVars:
       - key: PYTHON_VERSION
         value: "3.11"
+      - key: DATABASE_URL
+        sync: false
+      - key: SQUARE_ACCESS_TOKEN
+        sync: false
+      - key: SQUARE_LOCATION_ID
+        sync: false
+      - key: SQUARE_APPLICATION_ID
+        sync: false
+      - key: FIREBASE_SERVICE_ACCOUNT_KEY
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: RESEND_FROM_EMAIL
+        sync: false
