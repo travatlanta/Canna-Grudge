@@ -104,7 +104,7 @@ def seed_email_templates():
             )
 
 try:
-    seed_email_templates()
+    pass  # email templates seeded lazily on first request
 except Exception as e:
     print(f"[EMAIL SEED] {e}")
 
@@ -148,10 +148,29 @@ def seed_ticket_tiers():
         print(f"[TICKET SEED ERROR] {e}")
 
 try:
-    if DATABASE_URL:
-        seed_ticket_tiers()
+    pass  # ticket tiers seeded lazily on first request
 except Exception as e:
     print(f"[TICKET SEED] {e}")
+
+_seeded = False
+def _lazy_seed():
+    global _seeded
+    if _seeded:
+        return
+    _seeded = True
+    try:
+        seed_email_templates()
+    except Exception as e:
+        print(f"[EMAIL SEED] {e}")
+    try:
+        if DATABASE_URL:
+            seed_ticket_tiers()
+    except Exception as e:
+        print(f"[TICKET SEED] {e}")
+
+@app.before_request
+def before_req():
+    _lazy_seed()
 
 def send_email(to_email, template_slug, variables=None):
     variables = variables or {}
