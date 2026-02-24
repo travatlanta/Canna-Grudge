@@ -18,7 +18,7 @@
 
   <section class="section">
     <div class="container">
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;">
+      <div class="ticket-grid tight">
 
         <div class="ticket-card" id="card-ga">
           <div class="tier-name">General Admission</div>
@@ -38,7 +38,7 @@
         </div>
 
         <div class="ticket-card featured" id="card-vip">
-          <div class="badge" style="position:absolute;top:16px;right:16px;">Most Popular</div>
+          <div class="badge badge-corner">Most Popular</div>
           <div class="tier-name">VIP Experience</div>
           <div class="tier-price">$120<small>/person</small></div>
           <ul class="tier-features">
@@ -79,20 +79,20 @@
     </div>
   </section>
 
-  <section class="section" style="padding-top:0;">
+  <section class="section section-tight-top">
     <div class="container">
       <div class="card">
-        <h3 style="font-size:18px;margin-bottom:16px;">Important Information</h3>
-        <ul style="display:flex;flex-direction:column;gap:12px;">
-          <li style="display:flex;align-items:center;gap:10px;font-size:14px;color:var(--cg-text-secondary);">
+        <h3 class="info-title">Important Information</h3>
+        <ul class="info-list">
+          <li class="info-item">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--cg-gold)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
             All attendees must be 21+ with valid government-issued ID
           </li>
-          <li style="display:flex;align-items:center;gap:10px;font-size:14px;color:var(--cg-text-secondary);">
+          <li class="info-item">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--cg-gold)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
             Tickets are non-refundable but transferable
           </li>
-          <li style="display:flex;align-items:center;gap:10px;font-size:14px;color:var(--cg-text-secondary);">
+          <li class="info-item">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--cg-gold)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
             Gates open at 12:00 PM
           </li>

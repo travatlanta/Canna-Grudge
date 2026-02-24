@@ -5,27 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>CannaGrudge — Event Info</title>
   <link rel="stylesheet" href="theme.css">
-  <style>
-    .event-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 32px;
-      align-items: start;
-    }
-    @media (min-width: 768px) {
-      .event-grid {
-        grid-template-columns: 1fr 1fr;
-      }
-    }
-    @media (max-width: 767px) {
-      .guidelines-layout {
-        grid-template-columns: 1fr !important;
-      }
-      .guidelines-layout > div:last-child {
-        order: -1;
-      }
-    }
-  </style>
 </head>
 <body class="page-padded">
 
@@ -40,7 +19,7 @@
     <div class="container">
       <div class="event-grid">
         <div>
-          <img src="assets/Halftime Show.png" alt="Little People Wrestling Halftime Show" style="border-radius: var(--cg-radius-lg); width: 100%;">
+          <img src="assets/Halftime Show.png" alt="Little People Wrestling Halftime Show" class="poster-image">
         </div>
         <div>
           <div class="tile-grid" id="tileGrid">
@@ -60,11 +39,11 @@
     </div>
   </section>
 
-  <section class="section" style="border-top: 1px solid var(--cg-border);">
+  <section class="section section-divider">
     <div class="container">
       <div class="section-label">schedule</div>
       <h2 class="section-title">Event Schedule</h2>
-      <div style="margin-top: 32px;">
+      <div class="content-wrap">
         <div class="schedule-item">
           <div class="schedule-time">12:00 PM</div>
           <div class="schedule-content">
@@ -104,48 +83,48 @@
     </div>
   </section>
 
-  <section class="section" style="border-top: 1px solid var(--cg-border);">
+  <section class="section section-divider">
     <div class="container">
       <div class="section-label">rules</div>
       <h2 class="section-title">Fighter Guidelines & Weight Classes</h2>
-      <div class="guidelines-layout" style="display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start;margin-top:32px;">
+      <div class="guidelines-layout">
         <div>
-          <div class="card" style="padding:32px;">
-            <p style="color:var(--cg-text-secondary);line-height:1.8;margin-bottom:20px;">Welcome to Nirvana x Diablo first annual Canna Grudge. This is meant to be fun and entertaining for all of us. This is <strong style="color:var(--cg-text);">NOT</strong> an official boxing match or exhibition match. It is simply a couple brands getting together and sparring in a ring for entertainment purposes.</p>
-            <p style="color:var(--cg-text-secondary);line-height:1.8;margin-bottom:20px;">Bouts will be wearing head gear, sparring with 16oz gloves and mouth guards just to be safe.</p>
-            <ul style="list-style:none;padding:0;display:flex;flex-direction:column;gap:12px;">
-              <li style="display:flex;align-items:flex-start;gap:10px;color:var(--cg-text-secondary);"><svg style="flex-shrink:0;margin-top:3px;" width="16" height="16" fill="none" stroke="var(--cg-gold)" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>3 rounds, 1.5 min each</li>
-              <li style="display:flex;align-items:flex-start;gap:10px;color:var(--cg-text-secondary);"><svg style="flex-shrink:0;margin-top:3px;" width="16" height="16" fill="none" stroke="var(--cg-gold)" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Proof of physical within 30 days of event</li>
-              <li style="display:flex;align-items:flex-start;gap:10px;color:var(--cg-text-secondary);"><svg style="flex-shrink:0;margin-top:3px;" width="16" height="16" fill="none" stroke="var(--cg-gold)" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Active FA card linked to representing facility</li>
-              <li style="display:flex;align-items:flex-start;gap:10px;color:var(--cg-text-secondary);"><svg style="flex-shrink:0;margin-top:3px;" width="16" height="16" fill="none" stroke="var(--cg-gold)" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Emergency medical staff on site</li>
-              <li style="display:flex;align-items:flex-start;gap:10px;color:var(--cg-text-secondary);"><svg style="flex-shrink:0;margin-top:3px;" width="16" height="16" fill="none" stroke="var(--cg-gold)" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>No prior combat sports experience required</li>
-              <li style="display:flex;align-items:flex-start;gap:10px;color:var(--cg-text-secondary);"><svg style="flex-shrink:0;margin-top:3px;" width="16" height="16" fill="none" stroke="var(--cg-gold)" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Same weight class opponents only</li>
+          <div class="card card-pad-lg">
+            <p class="body-copy">Welcome to Nirvana x Diablo first annual Canna Grudge. This is meant to be fun and entertaining for all of us. This is <strong>NOT</strong> an official boxing match or exhibition match. It is simply a couple brands getting together and sparring in a ring for entertainment purposes.</p>
+            <p class="body-copy">Bouts will be wearing head gear, sparring with 16oz gloves and mouth guards just to be safe.</p>
+            <ul class="checklist">
+              <li><svg width="16" height="16" fill="none" stroke="var(--cg-gold)" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>3 rounds, 1.5 min each</li>
+              <li><svg width="16" height="16" fill="none" stroke="var(--cg-gold)" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Proof of physical within 30 days of event</li>
+              <li><svg width="16" height="16" fill="none" stroke="var(--cg-gold)" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Active FA card linked to representing facility</li>
+              <li><svg width="16" height="16" fill="none" stroke="var(--cg-gold)" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Emergency medical staff on site</li>
+              <li><svg width="16" height="16" fill="none" stroke="var(--cg-gold)" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>No prior combat sports experience required</li>
+              <li><svg width="16" height="16" fill="none" stroke="var(--cg-gold)" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Same weight class opponents only</li>
             </ul>
           </div>
-          <div class="card" style="padding:24px;margin-top:20px;">
-            <h4 style="color:var(--cg-gold);margin-bottom:16px;font-family:var(--cg-font-display);font-weight:800;">Weight Classes</h4>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-              <div style="padding:10px 14px;background:var(--cg-surface);border-radius:6px;border:1px solid var(--cg-border);"><span style="color:var(--cg-text);font-weight:600;font-size:13px;">Heavyweight</span><br><span style="color:var(--cg-text-muted);font-size:12px;">200+ lbs</span></div>
-              <div style="padding:10px 14px;background:var(--cg-surface);border-radius:6px;border:1px solid var(--cg-border);"><span style="color:var(--cg-text);font-weight:600;font-size:13px;">Cruiserweight</span><br><span style="color:var(--cg-text-muted);font-size:12px;">175-200 lbs</span></div>
-              <div style="padding:10px 14px;background:var(--cg-surface);border-radius:6px;border:1px solid var(--cg-border);"><span style="color:var(--cg-text);font-weight:600;font-size:13px;">Light Heavyweight</span><br><span style="color:var(--cg-text-muted);font-size:12px;">168-175 lbs</span></div>
-              <div style="padding:10px 14px;background:var(--cg-surface);border-radius:6px;border:1px solid var(--cg-border);"><span style="color:var(--cg-text);font-weight:600;font-size:13px;">Super Middleweight</span><br><span style="color:var(--cg-text-muted);font-size:12px;">160-168 lbs</span></div>
-              <div style="padding:10px 14px;background:var(--cg-surface);border-radius:6px;border:1px solid var(--cg-border);"><span style="color:var(--cg-text);font-weight:600;font-size:13px;">Middleweight</span><br><span style="color:var(--cg-text-muted);font-size:12px;">154-160 lbs</span></div>
-              <div style="padding:10px 14px;background:var(--cg-surface);border-radius:6px;border:1px solid var(--cg-border);"><span style="color:var(--cg-text);font-weight:600;font-size:13px;">Welterweight</span><br><span style="color:var(--cg-text-muted);font-size:12px;">140-147 lbs</span></div>
+          <div class="card card-pad-md stack-md">
+            <h4 class="weight-title">Weight Classes</h4>
+            <div class="weight-grid">
+              <div class="weight-item"><strong>Heavyweight</strong><br><span>200+ lbs</span></div>
+              <div class="weight-item"><strong>Cruiserweight</strong><br><span>175-200 lbs</span></div>
+              <div class="weight-item"><strong>Light Heavyweight</strong><br><span>168-175 lbs</span></div>
+              <div class="weight-item"><strong>Super Middleweight</strong><br><span>160-168 lbs</span></div>
+              <div class="weight-item"><strong>Middleweight</strong><br><span>154-160 lbs</span></div>
+              <div class="weight-item"><strong>Welterweight</strong><br><span>140-147 lbs</span></div>
             </div>
           </div>
         </div>
-        <div style="text-align:center;">
-          <img src="assets/guidelines.png" alt="CannaGrudge Guidelines" style="width:100%;max-width:420px;border-radius:var(--cg-radius-lg);box-shadow:0 20px 60px rgba(0,0,0,.5);">
+        <div class="centered-media">
+          <img src="assets/guidelines.png" alt="CannaGrudge Guidelines" class="poster-image">
         </div>
       </div>
     </div>
   </section>
 
-  <section class="section" style="border-top: 1px solid var(--cg-border);">
+  <section class="section section-divider">
     <div class="container">
       <div class="section-label">faq</div>
       <h2 class="section-title">Frequently Asked Questions</h2>
-      <div style="margin-top: 32px; max-width: 720px;">
+      <div class="content-wrap narrow">
         <div class="accordion-item">
           <button class="accordion-trigger">Is the event 21+? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></button>
           <div class="accordion-body"><div class="accordion-body-inner">Yes, CannaGrudge is strictly 21 and over. A valid government-issued ID is required for entry.</div></div>
@@ -170,10 +149,10 @@
     </div>
   </section>
 
-  <section class="section" style="border-top: 1px solid var(--cg-border); text-align: center;">
+  <section class="section section-divider text-center">
     <div class="container">
       <h2 class="section-title">Ready to Experience CannaGrudge?</h2>
-      <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-top: 24px;">
+      <div class="cta-row">
         <a href="tickets.html" class="btn btn-primary btn-lg">Get Tickets</a>
         <a href="mailto:production@Diablocanna.co" class="btn btn-outline btn-lg">Contact Us</a>
       </div>
