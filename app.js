@@ -226,6 +226,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
   updateCartBadge();
 
+  // Hero carousel auto-rotation
+  const carousel = document.querySelector('.hero-carousel');
+  if (carousel) {
+    let currentSlide = 0;
+    const slides = carousel.querySelectorAll('.carousel-slide');
+    const dots = carousel.querySelectorAll('.carousel-dots .dot');
+    const totalSlides = slides.length;
+
+    function showSlide(index) {
+      slides.forEach(s => s.classList.remove('active'));
+      dots.forEach(d => d.classList.remove('active'));
+      slides[index].classList.add('active');
+      dots[index].classList.add('active');
+      currentSlide = index;
+    }
+
+    // Auto-rotate every 6 seconds
+    let carouselInterval = setInterval(() => {
+      showSlide((currentSlide + 1) % totalSlides);
+    }, 6000);
+
+    // Manual dot navigation
+    dots.forEach((dot, idx) => {
+      dot.addEventListener('click', () => {
+        clearInterval(carouselInterval);
+        showSlide(idx);
+        carouselInterval = setInterval(() => {
+          showSlide((currentSlide + 1) % totalSlides);
+        }, 6000);
+      });
+    });
+  }
+
   // Scroll progress bar
   const progressBar = document.createElement('div');
   progressBar.className = 'scroll-progress';
