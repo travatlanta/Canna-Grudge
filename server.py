@@ -24,8 +24,8 @@ ALLOWED_EXTENSIONS = {'pdf', 'doc', 'docx', 'png', 'jpg', 'jpeg'}
 MAX_FILE_SIZE = 10 * 1024 * 1024
 
 DATABASE_URL = os.environ.get('DATABASE_URL', '')
-SQUARE_ACCESS_TOKEN = os.environ.get('SQUARE_ACCESS_TOKEN', '')
-SQUARE_LOCATION_ID = os.environ.get('SQUARE_LOCATION_ID', '')
+SQUARE_ACCESS_TOKEN = os.environ.get('SQUARE_ACCESS_TOKEN', '').strip()
+SQUARE_LOCATION_ID = os.environ.get('SQUARE_LOCATION_ID', '').strip()
 
 if not firebase_admin._apps:
     sa_key = os.environ.get('FIREBASE_SERVICE_ACCOUNT_KEY', '')
@@ -107,6 +107,47 @@ try:
     seed_email_templates()
 except Exception as e:
     print(f"[EMAIL SEED] {e}")
+
+def seed_ticket_tiers():
+    """Seed default ticket tiers if they don't exist"""
+    existing = query_db('SELECT COUNT(*) as cnt FROM ticket_tiers', one=True)
+    if existing['cnt'] > 0:
+        return
+    
+    tiers = [
+        {
+            'name': 'Regular Entry',
+            'price_cents': 4000,
+            'description': 'General admission ticket with full event access',
+            'features': 'Standing room access|Vendor marketplace|Games & activities area|Food & drink available|Live fight card + halftime entertainment',
+            'capacity': 500,
+            'sort_order': 1,
+            'active': True
+        },
+        {
+            'name': 'Early Entry Add-On',
+            'price_cents': 2000,
+            'description': 'Upgrade to enter one hour before general admission',
+            'features': 'Enter one hour early|Skip early lines|First access to vendors & merch|Get premium viewing spots|Requires Regular Entry ticket',
+            'capacity': 200,
+            'sort_order': 2,
+            'active': True
+        }
+    ]
+    
+    for tier in tiers:
+        execute_db(
+            '''INSERT INTO ticket_tiers (name, price_cents, description, features, capacity, sort_order, active)
+               VALUES (%s, %s, %s, %s, %s, %s, %s)''',
+            (tier['name'], tier['price_cents'], tier['description'], tier['features'], 
+             tier['capacity'], tier['sort_order'], tier['active'])
+        )
+    print(f"[TICKET SEED] Created {len(tiers)} default ticket tiers")
+
+try:
+    seed_ticket_tiers()
+except Exception as e:
+    print(f"[TICKET SEED] {e}")
 
 def send_email(to_email, template_slug, variables=None):
     variables = variables or {}
@@ -237,6 +278,12 @@ def create_payment():
     buyer_name = data.get('name', '')
     promo_code = (data.get('promoCode') or '').strip().upper()
 
+    # Map frontend item IDs to database names for tier lookup
+    item_id_to_tier_name = {
+        'regular-entry': 'Regular Entry',
+        'early-entry-addon': 'Early Entry Add-On',
+    }
+
     fallback_catalog = {
         'regular-entry': {'name': 'Regular Entry', 'price_cents': 4000},
         'early-entry-addon': {'name': 'Early Entry Add-On', 'price_cents': 2000},
@@ -250,11 +297,20 @@ def create_payment():
         tier_id = item.get('tierId')
         item_id = item.get('id', '')
         tier = None
+        
+        # First try by tier_id if provided
         if tier_id:
             tier = query_db('SELECT * FROM ticket_tiers WHERE id = %s AND active = TRUE', (tier_id,), one=True)
-        if not tier:
-            if item_id:
-                tier = query_db('SELECT * FROM ticket_tiers WHERE id = %s AND active = TRUE', (item_id,), one=True)
+        
+        # Then try by item_id as database ID
+        if not tier and item_id:
+            tier = query_db('SELECT * FROM ticket_tiers WHERE id = %s AND active = TRUE', (item_id,), one=True)
+        
+        # Finally try by matching tier name from item_id
+        if not tier and item_id in item_id_to_tier_name:
+            tier_name_lookup = item_id_to_tier_name[item_id]
+            tier = query_db('SELECT * FROM ticket_tiers WHERE name = %s AND active = TRUE', (tier_name_lookup,), one=True)
+        
         fallback = fallback_catalog.get(item_id)
         if not tier and not fallback:
             return jsonify({'error': f'Invalid ticket tier'}), 400
