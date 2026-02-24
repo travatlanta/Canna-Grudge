@@ -98,7 +98,7 @@
             <div class="unit">Secs</div>
           </div>
         </div>
-        <p class="ring-hint">Drag to rotate &bull; Pinch to zoom</p>
+        <p class="ring-hint">3D Boxing Ring</p>
         <div class="cta-row" style="margin-top: 24px;">
           <a href="tickets.html" class="btn btn-primary btn-lg">Secure Your Spot</a>
         </div>
@@ -107,19 +107,21 @@
         <model-viewer
           src="assets/3d%20models/boxing%20ring%203d%20model.glb"
           alt="CannaGrudge Boxing Ring"
-          camera-controls
           auto-rotate
-          auto-rotate-delay="500"
-          rotation-per-second="20deg"
+          auto-rotate-delay="0"
+          rotation-per-second="12deg"
+          interaction-prompt="none"
+          disable-zoom
+          disable-pan
+          disable-tap
           shadow-intensity="2"
           shadow-softness="0.8"
           exposure="1.2"
           environment-image="neutral"
           camera-orbit="45deg 65deg auto"
-          min-camera-orbit="auto auto auto"
-          max-camera-orbit="auto auto auto"
           field-of-view="32deg"
-          style="width:100%;height:100%;background:transparent;">
+          touch-action="none"
+          style="width:100%;height:100%;background:transparent;pointer-events:none;">
         </model-viewer>
       </div>
     </div>
