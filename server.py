@@ -201,9 +201,23 @@ def index():
 
 @app.route('/api/square-config', methods=['GET'])
 def square_config():
-    app_id = os.environ.get('SQUARE_APPLICATION_ID', '')
-    loc_id = os.environ.get('SQUARE_LOCATION_ID', '')
+    app_id = os.environ.get('SQUARE_APPLICATION_ID', '').strip()
+    loc_id = os.environ.get('SQUARE_LOCATION_ID', '').strip()
     return jsonify({'applicationId': app_id, 'locationId': loc_id})
+
+@app.route('/api/payment-status', methods=['GET'])
+def payment_status():
+    app_id = os.environ.get('SQUARE_APPLICATION_ID', '').strip()
+    loc_id = os.environ.get('SQUARE_LOCATION_ID', '').strip()
+    token = os.environ.get('SQUARE_ACCESS_TOKEN', '').strip()
+    return jsonify({
+        'square_app_id_set': bool(app_id),
+        'square_app_id_prefix': app_id[:12] + '...' if app_id else 'NOT SET',
+        'square_location_id_set': bool(loc_id),
+        'square_location_id': loc_id if loc_id else 'NOT SET',
+        'square_token_set': bool(token),
+        'all_configured': bool(app_id and loc_id and token)
+    })
 
 @app.route('/api/init-db', methods=['POST'])
 def init_db():
