@@ -76,29 +76,51 @@
   </section>
 
   <section class="section home-section home-glow-gold" data-animate>
-    <div class="container">
-      <div class="section-label">countdown</div>
-      <h2 class="section-title">Fight Night Is Coming</h2>
-      <div class="countdown">
-        <div class="countdown-item">
-          <div class="num" id="cd-days">--</div>
-          <div class="unit">Days</div>
+    <div class="countdown-ring-layout">
+      <div class="countdown-side">
+        <div class="section-label">countdown</div>
+        <h2 class="section-title">Fight Night Is Coming</h2>
+        <div class="countdown">
+          <div class="countdown-item">
+            <div class="num" id="cd-days">--</div>
+            <div class="unit">Days</div>
+          </div>
+          <div class="countdown-item">
+            <div class="num" id="cd-hours">--</div>
+            <div class="unit">Hours</div>
+          </div>
+          <div class="countdown-item">
+            <div class="num" id="cd-mins">--</div>
+            <div class="unit">Mins</div>
+          </div>
+          <div class="countdown-item">
+            <div class="num" id="cd-secs">--</div>
+            <div class="unit">Secs</div>
+          </div>
         </div>
-        <div class="countdown-item">
-          <div class="num" id="cd-hours">--</div>
-          <div class="unit">Hours</div>
-        </div>
-        <div class="countdown-item">
-          <div class="num" id="cd-mins">--</div>
-          <div class="unit">Mins</div>
-        </div>
-        <div class="countdown-item">
-          <div class="num" id="cd-secs">--</div>
-          <div class="unit">Secs</div>
+        <p class="ring-hint">Drag to rotate &bull; Pinch to zoom</p>
+        <div class="cta-row" style="margin-top: 24px;">
+          <a href="tickets.html" class="btn btn-primary btn-lg">Secure Your Spot</a>
         </div>
       </div>
-      <div class="cta-row" style="margin-top: 32px;">
-        <a href="tickets.html" class="btn btn-primary btn-lg">Secure Your Spot</a>
+      <div class="ring-viewer-wrap">
+        <model-viewer
+          src="assets/3d%20models/boxing%20ring%203d%20model.glb"
+          alt="CannaGrudge Boxing Ring"
+          camera-controls
+          auto-rotate
+          auto-rotate-delay="500"
+          rotation-per-second="20deg"
+          shadow-intensity="2"
+          shadow-softness="0.8"
+          exposure="1.2"
+          environment-image="neutral"
+          camera-orbit="45deg 65deg auto"
+          min-camera-orbit="auto auto auto"
+          max-camera-orbit="auto auto auto"
+          field-of-view="32deg"
+          style="width:100%;height:100%;background:transparent;">
+        </model-viewer>
       </div>
     </div>
   </section>
@@ -165,33 +187,6 @@
       </div>
       <div class="cta-row" style="margin-top: 32px;">
         <a href="tickets.html" class="btn btn-primary btn-lg">Get Your Tickets</a>
-      </div>
-    </div>
-  </section>
-
-  <!-- 3D Ring Section -->
-  <section class="section home-section ring-section" data-animate>
-    <div class="container" style="text-align:center;">
-      <div class="section-label">fight night</div>
-      <h2 class="section-title">Step Inside <span class="text-gradient">The Ring</span></h2>
-      <p class="section-subtitle" style="margin-bottom:32px;">Drag to rotate &bull; Pinch to zoom</p>
-      <div class="ring-viewer-wrap">
-        <model-viewer
-          src="assets/3d%20models/boxing%20ring%203d%20model.glb"
-          alt="CannaGrudge Boxing Ring"
-          camera-controls
-          auto-rotate
-          auto-rotate-delay="500"
-          rotation-per-second="20deg"
-          shadow-intensity="1"
-          exposure="1.2"
-          environment-image="neutral"
-          style="width:100%;height:100%;">
-          <div slot="progress-bar"></div>
-        </model-viewer>
-      </div>
-      <div class="cta-row" style="margin-top:32px;">
-        <a href="tickets.html" class="btn btn-primary btn-lg">Claim Your Ringside Seat</a>
       </div>
     </div>
   </section>

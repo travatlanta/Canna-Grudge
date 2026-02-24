@@ -1463,17 +1463,35 @@ body.page-padded {
 }
 
 /* ── 3D Ring Viewer ───────────────────────────────────── */
+.countdown-ring-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 0;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.countdown-side {
+  padding-right: 32px;
+}
+
+.ring-hint {
+  margin-top: 16px;
+  font-size: 13px;
+  color: var(--cg-text-dim);
+  letter-spacing: .5px;
+}
+
 .ring-viewer-wrap {
   width: 100%;
-  max-width: 900px;
-  height: 520px;
-  margin: 0 auto;
-  border-radius: var(--cg-radius-lg);
-  overflow: hidden;
-  border: 1px solid rgba(245,184,26,.15);
-  box-shadow: 0 0 60px rgba(245,184,26,.08), var(--cg-shadow-lg);
-  background: #0d0f13;
+  aspect-ratio: 1 / 1;
   position: relative;
+  overflow: visible;
+  background: transparent;
+  filter: drop-shadow(0 8px 40px rgba(245,184,26,.18))
+          drop-shadow(0 2px 12px rgba(0,0,0,.5));
 }
 
 .ring-viewer-wrap model-viewer {
@@ -1481,11 +1499,28 @@ body.page-padded {
   height: 100%;
   background: transparent;
   --poster-color: transparent;
+  --progress-bar-color: var(--cg-primary);
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
+  .countdown-ring-layout {
+    grid-template-columns: 1fr;
+    text-align: center;
+    padding: 0 16px;
+  }
+  .countdown-side {
+    padding-right: 0;
+    margin-bottom: 8px;
+  }
   .ring-viewer-wrap {
-    height: 340px;
+    max-width: 360px;
+    margin: 0 auto;
+  }
+  .countdown {
+    justify-content: center;
+  }
+  .ring-hint {
+    text-align: center;
   }
 }
 
