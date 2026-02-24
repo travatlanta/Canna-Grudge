@@ -1937,7 +1937,6 @@ body.page-padded {
     grid-template-columns: 1fr;
     gap: 32px;
   }
-  }
 
   .guidelines-layout > div:last-child {
     order: -1;
@@ -2001,4 +2000,176 @@ body.page-padded {
 
 .success-icon svg {
   color: var(--cg-green);
+}
+
+/* ══════════════════════════════════════════════════════════
+   MOBILE OPTIMIZATION  –  centering & proportion
+   ══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+
+  /* ── Global section centering ── */
+  .section-label {
+    justify-content: center;
+    text-align: center;
+    width: 100%;
+  }
+
+  .section-title,
+  .section-subtitle {
+    text-align: center;
+  }
+
+  .section-subtitle {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* ── Hero centering ── */
+  .hero-content {
+    text-align: center;
+  }
+
+  .hero-meta {
+    justify-content: center;
+  }
+
+  .hero-actions {
+    justify-content: center;
+  }
+
+  /* ── Countdown ── */
+  .countdown {
+    justify-content: center;
+  }
+
+  /* ── Features grid: single column, centered cards ── */
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .feature-card {
+    text-align: center;
+  }
+
+  .feature-card .icon {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* ── Schedule: stack time and content vertically ── */
+  .schedule-item {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .schedule-time {
+    min-width: unset;
+  }
+
+  /* ── Poster: center pills ── */
+  .event-highlights {
+    justify-content: center;
+  }
+
+  .poster-image {
+    margin: 0 auto;
+  }
+
+  /* ── Weight grid: single column on mobile ── */
+  .weight-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .weight-title {
+    text-align: center;
+  }
+
+  /* ── Tile grid (settings/profile pages) ── */
+  .tile-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* ── Venue heading center ── */
+  .venue-details h3 {
+    text-align: center;
+  }
+
+  /* ── Ticket grid: single column, centered ── */
+  .ticket-grid,
+  .ticket-grid.tight {
+    grid-template-columns: 1fr;
+    max-width: 420px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* ── CTA row ── */
+  .cta-row {
+    justify-content: center;
+  }
+
+  /* ── Page header centering ── */
+  .page-header {
+    text-align: center;
+  }
+
+  /* ── Auth card centering ── */
+  .auth-card {
+    text-align: center;
+  }
+
+  /* ── Profile/stat cards centering ── */
+  .stat-card {
+    text-align: center;
+  }
+
+  .profile-avatar {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+/* ── Extra-small screens (≤ 480px) ── */
+@media (max-width: 480px) {
+
+  .hero-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .hero-actions .btn {
+    text-align: center;
+    justify-content: center;
+  }
+
+  .ring-viewer-wrap {
+    max-width: 280px;
+  }
+
+  .tile-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .container {
+    padding: 0 16px;
+  }
+
+  .countdown-ring-layout {
+    padding: 0 12px;
+  }
+
+  .pill {
+    font-size: 12px;
+    padding: 8px 12px;
+  }
+
+  .poster-grid {
+    gap: 24px;
+  }
+
+  .footer {
+    padding: 40px 0 24px;
+  }
 }
