@@ -110,42 +110,46 @@ except Exception as e:
 
 def seed_ticket_tiers():
     """Seed default ticket tiers if they don't exist"""
-    existing = query_db('SELECT COUNT(*) as cnt FROM ticket_tiers', one=True)
-    if existing['cnt'] > 0:
-        return
-    
-    tiers = [
-        {
-            'name': 'Regular Entry',
-            'price_cents': 4000,
-            'description': 'General admission ticket with full event access',
-            'features': 'Standing room access|Vendor marketplace|Games & activities area|Food & drink available|Live fight card + halftime entertainment',
-            'capacity': 500,
-            'sort_order': 1,
-            'active': True
-        },
-        {
-            'name': 'Early Entry Add-On',
-            'price_cents': 2000,
-            'description': 'Upgrade to enter one hour before general admission',
-            'features': 'Enter one hour early|Skip early lines|First access to vendors & merch|Get premium viewing spots|Requires Regular Entry ticket',
-            'capacity': 200,
-            'sort_order': 2,
-            'active': True
-        }
-    ]
-    
-    for tier in tiers:
-        execute_db(
-            '''INSERT INTO ticket_tiers (name, price_cents, description, features, capacity, sort_order, active)
-               VALUES (%s, %s, %s, %s, %s, %s, %s)''',
-            (tier['name'], tier['price_cents'], tier['description'], tier['features'], 
-             tier['capacity'], tier['sort_order'], tier['active'])
-        )
-    print(f"[TICKET SEED] Created {len(tiers)} default ticket tiers")
+    try:
+        existing = query_db('SELECT COUNT(*) as cnt FROM ticket_tiers', one=True)
+        if existing and existing['cnt'] > 0:
+            return
+        
+        tiers = [
+            {
+                'name': 'Regular Entry',
+                'price_cents': 4000,
+                'description': 'General admission ticket with full event access',
+                'features': 'Standing room access|Vendor marketplace|Games & activities area|Food & drink available|Live fight card + halftime entertainment',
+                'capacity': 500,
+                'sort_order': 1,
+                'active': True
+            },
+            {
+                'name': 'Early Entry Add-On',
+                'price_cents': 2000,
+                'description': 'Upgrade to enter one hour before general admission',
+                'features': 'Enter one hour early|Skip early lines|First access to vendors & merch|Get premium viewing spots|Requires Regular Entry ticket',
+                'capacity': 200,
+                'sort_order': 2,
+                'active': True
+            }
+        ]
+        
+        for tier in tiers:
+            execute_db(
+                '''INSERT INTO ticket_tiers (name, price_cents, description, features, capacity, sort_order, active)
+                   VALUES (%s, %s, %s, %s, %s, %s, %s)''',
+                (tier['name'], tier['price_cents'], tier['description'], tier['features'], 
+                 tier['capacity'], tier['sort_order'], tier['active'])
+            )
+        print(f"[TICKET SEED] Created {len(tiers)} default ticket tiers")
+    except Exception as e:
+        print(f"[TICKET SEED ERROR] {e}")
 
 try:
-    seed_ticket_tiers()
+    if DATABASE_URL:
+        seed_ticket_tiers()
 except Exception as e:
     print(f"[TICKET SEED] {e}")
 
@@ -179,6 +183,10 @@ def add_headers(response):
     response.headers['Pragma'] = 'no-cache'
     response.headers['Expires'] = '0'
     return response
+
+@app.route('/health')
+def health_check():
+    return jsonify({'status': 'ok', 'service': 'cannagrudge'}), 200
 
 @app.route('/assets/deck/<path:filename>')
 def protected_deck_assets(filename):
