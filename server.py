@@ -237,31 +237,57 @@ def create_payment():
     buyer_name = data.get('name', '')
     promo_code = (data.get('promoCode') or '').strip().upper()
 
+    fallback_catalog = {
+        'regular-entry': {'name': 'Regular Entry', 'price_cents': 4000},
+        'early-entry-addon': {'name': 'Early Entry Add-On', 'price_cents': 2000},
+    }
+
     total = 0
+    regular_qty = 0
+    early_addon_qty = 0
     order_line_items = []
     for item in cart_items:
         tier_id = item.get('tierId')
+        item_id = item.get('id', '')
         tier = None
         if tier_id:
             tier = query_db('SELECT * FROM ticket_tiers WHERE id = %s AND active = TRUE', (tier_id,), one=True)
         if not tier:
-            item_id = item.get('id', '')
             if item_id:
                 tier = query_db('SELECT * FROM ticket_tiers WHERE id = %s AND active = TRUE', (item_id,), one=True)
-        if not tier:
+        fallback = fallback_catalog.get(item_id)
+        if not tier and not fallback:
             return jsonify({'error': f'Invalid ticket tier'}), 400
-        price = tier['price_cents']
+
+        if tier:
+            price = tier['price_cents']
+            tier_name = tier['name']
+            tier_pk = tier['id']
+        else:
+            price = fallback['price_cents']
+            tier_name = fallback['name']
+            tier_pk = None
+
         qty = max(1, min(int(item.get('qty', 1)), 50))
-        if tier['capacity'] > 0 and tier['sold'] + qty > tier['capacity']:
+        if tier and tier['capacity'] > 0 and tier['sold'] + qty > tier['capacity']:
             return jsonify({'error': f'{tier["name"]} is sold out or insufficient capacity'}), 400
+
+        if item_id == 'regular-entry':
+            regular_qty += qty
+        elif item_id == 'early-entry-addon':
+            early_addon_qty += qty
+
         line_total = price * qty
         total += line_total
         order_line_items.append({
-            'tier_id': tier['id'],
-            'tier_name': tier['name'],
+            'tier_id': tier_pk,
+            'tier_name': tier_name,
             'qty': qty,
             'unit_price': price
         })
+
+    if early_addon_qty > regular_qty:
+        return jsonify({'error': 'Early Entry add-ons must match the number of Regular Entry tickets.'}), 400
 
     discount = 0
     if promo_code:

@@ -12,7 +12,7 @@
   <div class="page-header">
     <div class="container">
       <h1>Get Your <span class="text-gradient">Tickets</span></h1>
-      <p class="section-subtitle">April 25, 2026 at Dunn's Arena, Litchfield Park, AZ</p>
+      <p class="section-subtitle">Regular Entry is $40. Add Early Entry for +$20 per ticket if you want in one hour early.</p>
     </div>
   </div>
 
@@ -20,59 +20,45 @@
     <div class="container">
       <div class="ticket-grid tight">
 
-        <div class="ticket-card" id="card-ga">
-          <div class="tier-name">General Admission</div>
-          <div class="tier-price">$45<small>/person</small></div>
+        <div class="ticket-card featured" id="card-regular">
+          <div class="badge badge-corner">Main Ticket</div>
+          <div class="tier-name">Regular Entry</div>
+          <div class="tier-price">$40<small>/person</small></div>
           <ul class="tier-features">
             <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Standing room access</li>
             <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Vendor marketplace</li>
             <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Games &amp; activities area</li>
             <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Food &amp; drink available</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Live fight card + halftime entertainment</li>
           </ul>
-          <div class="qty-control">
-            <button class="qty-btn" onclick="changeQty('ga',-1)">−</button>
-            <span class="qty-value" id="qty-ga">1</span>
-            <button class="qty-btn" onclick="changeQty('ga',1)">+</button>
+
+          <div class="addon-choice">
+            <label class="addon-toggle" for="earlyEntryToggle">
+              <input type="checkbox" id="earlyEntryToggle">
+              <span>Add Early Entry (+$20 each)</span>
+            </label>
+            <p class="addon-copy">Enter one hour before general doors and get first access to vendors, merch, and prime viewing spots.</p>
           </div>
-          <button class="btn btn-primary btn-block" onclick="addToCart('ga','General Admission',4500,getQty('ga'))">Add to Cart</button>
+
+          <div class="qty-control">
+            <button class="qty-btn" onclick="changeQty(-1)">−</button>
+            <span class="qty-value" id="qty-regular">1</span>
+            <button class="qty-btn" onclick="changeQty(1)">+</button>
+          </div>
+          <button class="btn btn-primary btn-block" onclick="addTicketPackage()">Add Selection to Cart</button>
         </div>
 
-        <div class="ticket-card featured" id="card-vip">
-          <div class="badge badge-corner">Most Popular</div>
-          <div class="tier-name">VIP Experience</div>
-          <div class="tier-price">$120<small>/person</small></div>
+        <div class="ticket-card" id="card-early-info">
+          <div class="badge badge-corner">Optional Add-On</div>
+          <div class="tier-name">Early Entry Details</div>
+          <div class="tier-price">+$20<small>/person</small></div>
           <ul class="tier-features">
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Everything in General</li>
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Reserved VIP seating</li>
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>VIP lounge access</li>
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Meet &amp; greet with fighters</li>
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>2 complimentary drinks</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Doors open to you one hour early</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Beat lines and secure better standing spots</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Extra time to shop vendors before crowd peak</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Add-on only (must include Regular Entry)</li>
           </ul>
-          <div class="qty-control">
-            <button class="qty-btn" onclick="changeQty('vip',-1)">−</button>
-            <span class="qty-value" id="qty-vip">1</span>
-            <button class="qty-btn" onclick="changeQty('vip',1)">+</button>
-          </div>
-          <button class="btn btn-primary btn-block" onclick="addToCart('vip','VIP Experience',12000,getQty('vip'))">Add to Cart</button>
-        </div>
-
-        <div class="ticket-card" id="card-ringside">
-          <div class="tier-name">Ringside</div>
-          <div class="tier-price">$250<small>/person</small></div>
-          <ul class="tier-features">
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Everything in VIP</li>
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Front row seating</li>
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Backstage pass</li>
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Premium open bar</li>
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Photo ops with fighters</li>
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Exclusive merch bag</li>
-          </ul>
-          <div class="qty-control">
-            <button class="qty-btn" onclick="changeQty('ringside',-1)">−</button>
-            <span class="qty-value" id="qty-ringside">1</span>
-            <button class="qty-btn" onclick="changeQty('ringside',1)">+</button>
-          </div>
-          <button class="btn btn-primary btn-block" onclick="addToCart('ringside','Ringside',25000,getQty('ringside'))">Add to Cart</button>
+          <a href="#card-regular" class="btn btn-outline btn-block">Customize Above</a>
         </div>
 
       </div>
@@ -95,6 +81,10 @@
           <li class="info-item">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--cg-gold)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
             Gates open at 12:00 PM
+          </li>
+          <li class="info-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--cg-gold)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            Early Entry add-on gets access 1 hour before standard doors
           </li>
         </ul>
       </div>
@@ -144,19 +134,22 @@
   <script src="app.js?v=2"></script>
   <script type="module" src="./firebase-config.js"></script>
   <script>
-    var qtyState = { ga: 1, vip: 1, ringside: 1 };
+    var regularQty = 1;
 
-    function getQty(id) {
-      return qtyState[id];
-    }
-
-    function changeQty(id, delta) {
-      var current = qtyState[id];
-      var next = current + delta;
+    function changeQty(delta) {
+      var next = regularQty + delta;
       if (next < 1) next = 1;
       if (next > 10) next = 10;
-      qtyState[id] = next;
-      document.getElementById('qty-' + id).textContent = next;
+      regularQty = next;
+      document.getElementById('qty-regular').textContent = next;
+    }
+
+    function addTicketPackage() {
+      addToCart('regular-entry', 'Regular Entry', 4000, regularQty);
+      var earlyToggle = document.getElementById('earlyEntryToggle');
+      if (earlyToggle && earlyToggle.checked) {
+        addToCart('early-entry-addon', 'Early Entry Add-On', 2000, regularQty);
+      }
     }
   </script>
 </body>

@@ -1348,6 +1348,39 @@ body.page-padded {
   right: 16px;
 }
 
+.addon-choice {
+  margin: 18px 0;
+  padding: 14px;
+  border-radius: var(--cg-radius);
+  border: 1px solid var(--cg-border);
+  background: rgba(255,255,255,.02);
+  text-align: left;
+}
+
+.addon-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-family: var(--cg-font-display);
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--cg-text);
+}
+
+.addon-toggle input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--cg-gold);
+}
+
+.addon-copy {
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--cg-text-secondary);
+  line-height: 1.6;
+}
+
 .section-surface {
   background: rgba(255,255,255,.015);
   border-top: 1px solid var(--cg-border);
