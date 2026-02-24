@@ -105,69 +105,47 @@ h1, h2, h3, h4, h5 {
   isolation: isolate;
 }
 
-.home-section::before,
-.home-section::after {
+.home-section::before {
   content: '';
   position: absolute;
-  border-radius: 999px;
-  filter: blur(60px);
+  inset: 0;
   opacity: 0;
-  transition: opacity .8s ease;
+  transition: opacity 1.2s ease;
   pointer-events: none;
   z-index: -1;
 }
 
-.home-section.visible::before,
-.home-section.visible::after {
-  opacity: .75;
+.home-section.visible::before {
+  opacity: 1;
 }
 
+/* Gradient section transitions */
 .home-glow-gold::before {
-  width: 340px;
-  height: 340px;
-  top: -80px;
-  left: -100px;
-  background: radial-gradient(circle, rgba(227,183,92,.34), rgba(227,183,92,0));
-}
-
-.home-glow-gold::after {
-  width: 300px;
-  height: 300px;
-  right: -100px;
-  bottom: -110px;
-  background: radial-gradient(circle, rgba(144,171,255,.2), rgba(144,171,255,0));
+  background: linear-gradient(
+    135deg,
+    rgba(227,183,92,.18) 0%,
+    rgba(16,19,26,0) 40%,
+    rgba(16,19,26,0) 60%,
+    rgba(144,171,255,.15) 100%
+  );
 }
 
 .home-glow-violet::before {
-  width: 340px;
-  height: 340px;
-  left: -100px;
-  bottom: -120px;
-  background: radial-gradient(circle, rgba(174,141,255,.28), rgba(174,141,255,0));
-}
-
-.home-glow-violet::after {
-  width: 320px;
-  height: 320px;
-  right: -90px;
-  top: -90px;
-  background: radial-gradient(circle, rgba(227,183,92,.24), rgba(227,183,92,0));
+  background: linear-gradient(
+    170deg,
+    rgba(174,141,255,.2) 0%,
+    rgba(16,19,26,0) 50%,
+    rgba(227,183,92,.16) 100%
+  );
 }
 
 .home-glow-blue::before {
-  width: 360px;
-  height: 360px;
-  left: -120px;
-  top: -80px;
-  background: radial-gradient(circle, rgba(119,163,255,.28), rgba(119,163,255,0));
-}
-
-.home-glow-blue::after {
-  width: 320px;
-  height: 320px;
-  right: -100px;
-  bottom: -120px;
-  background: radial-gradient(circle, rgba(227,183,92,.22), rgba(227,183,92,0));
+  background: linear-gradient(
+    210deg,
+    rgba(119,163,255,.18) 0%,
+    rgba(16,19,26,0) 45%,
+    rgba(227,183,92,.14) 100%
+  );
 }
 
 .section-tight-top {
@@ -598,32 +576,7 @@ textarea.input {
   z-index: 1;
 }
 
-.hero-orb {
-  position: absolute;
-  border-radius: 999px;
-  filter: blur(14px);
-  opacity: .55;
-  pointer-events: none;
-  z-index: 1;
-  animation: floatSlow 9s ease-in-out infinite;
-}
 
-.hero-orb-a {
-  width: 170px;
-  height: 170px;
-  top: 24%;
-  left: 8%;
-  background: radial-gradient(circle, rgba(227,183,92,.55), rgba(227,183,92,.05));
-}
-
-.hero-orb-b {
-  width: 210px;
-  height: 210px;
-  bottom: 16%;
-  right: 10%;
-  background: radial-gradient(circle, rgba(126,160,255,.5), rgba(126,160,255,.05));
-  animation-delay: 1.3s;
-}
 
 .hero-content {
   position: relative;
@@ -1259,15 +1212,11 @@ textarea.input {
   50% { transform: translateY(-8px); }
 }
 
-@keyframes floatSlow {
-  0%, 100% { transform: translateY(0) scale(1); }
-  50% { transform: translateY(-14px) scale(1.04); }
-}
+
 
 @media (prefers-reduced-motion: reduce) {
   .home-section::before,
-  .home-section::after,
-  .hero-orb {
+  .home-section::after {
     animation: none !important;
     transition: none !important;
   }
@@ -1326,53 +1275,7 @@ textarea.input {
   transform: scale(1.2);
 }
 
-.countdown-wrapper {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 40px;
-  align-items: center;
-  margin-top: 32px;
-}
-
-.countdown-content {
-  flex: 1;
-}
-
-.ring-container {
-  min-height: 320px;
-  border-radius: var(--cg-radius-lg);
-  overflow: hidden;
-  box-shadow: 0 20px 60px rgba(227,183,92,.2), 0 0 40px rgba(227,183,92,.12);
-  background: linear-gradient(135deg, rgba(22,27,37,.8), rgba(16,19,26,.9));
-}
-
-model-viewer {
-  width: 100%;
-  height: 100%;
-  --poster-color: transparent;
-}
-
-@media (max-width: 1024px) {
-  .countdown-wrapper {
-    grid-template-columns: 1fr;
-    gap: 32px;
-  }
-
-  .ring-container {
-    min-height: 280px;
-  }
-}
-
 @media (max-width: 768px) {
-  .countdown-wrapper {
-    grid-template-columns: 1fr;
-    gap: 24px;
-  }
-
-  .ring-container {
-    min-height: 240px;
-  }
-
   .carousel-dots {
     bottom: 16px;
   }
