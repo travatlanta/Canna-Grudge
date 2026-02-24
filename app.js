@@ -226,6 +226,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
   updateCartBadge();
 
+  // Scroll progress bar
+  const progressBar = document.createElement('div');
+  progressBar.className = 'scroll-progress';
+  document.body.appendChild(progressBar);
+  window.addEventListener('scroll', () => {
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const progress = docHeight > 0 ? (window.scrollY / docHeight) * 100 : 0;
+    progressBar.style.width = progress + '%';
+  });
+
+  // Parallax effect for elements with data-parallax attribute
+  let parallaxTicking = false;
+  window.addEventListener('scroll', () => {
+    if (!parallaxTicking) {
+      requestAnimationFrame(() => {
+        document.querySelectorAll('[data-parallax]').forEach(el => {
+          const speed = parseFloat(el.dataset.parallax) || 0.1;
+          const rect = el.getBoundingClientRect();
+          const progress = (window.innerHeight - rect.top) / (window.innerHeight + rect.height);
+          const offset = (progress - 0.5) * 40 * speed;
+          el.style.transform = `translate3d(0, ${offset}px, 0)`;
+        });
+        parallaxTicking = false;
+      });
+      parallaxTicking = true;
+    }
+  });
+
   if ('IntersectionObserver' in window) {
     const obs = new IntersectionObserver((entries, o) => {
       entries.forEach(entry => {
