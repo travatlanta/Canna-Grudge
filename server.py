@@ -156,6 +156,24 @@ def square_config():
     loc_id = os.environ.get('SQUARE_LOCATION_ID', '')
     return jsonify({'applicationId': app_id, 'locationId': loc_id})
 
+@app.route('/api/init-db', methods=['POST'])
+def init_db():
+    secret = os.environ.get('BOOTSTRAP_SECRET', '')
+    if not secret:
+        return jsonify({'error': 'Not available'}), 404
+    data = request.get_json() or {}
+    if data.get('secret') != secret:
+        return jsonify({'error': 'Forbidden'}), 403
+    schema_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'schema.sql')
+    with open(schema_path, 'r') as f:
+        sql = f.read()
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute(sql)
+    cur.close()
+    conn.close()
+    return jsonify({'success': True, 'message': 'Database initialized'})
+
 @app.route('/api/bootstrap-admin', methods=['POST'])
 def bootstrap_admin():
     secret = os.environ.get('BOOTSTRAP_SECRET', '')
