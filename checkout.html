@@ -225,12 +225,23 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   try {
+    if (typeof window.Square === 'undefined') {
+      document.getElementById('paymentError').textContent = 'Payment system is loading. Please refresh the page.';
+      document.getElementById('paymentError').style.display = 'block';
+      console.error('Square SDK not loaded');
+      return;
+    }
+
     const configRes = await fetch(window.CG_API_BASE + '/api/square-config');
+    if (!configRes.ok) {
+      throw new Error('Failed to fetch configuration');
+    }
     const config = await configRes.json();
 
-    if (!config.applicationId) {
-      document.getElementById('paymentError').textContent = 'Payment system not configured.';
+    if (!config.applicationId || !config.locationId) {
+      document.getElementById('paymentError').textContent = 'Payment system not configured properly.';
       document.getElementById('paymentError').style.display = 'block';
+      console.error('Square config missing:', config);
       return;
     }
 
@@ -301,7 +312,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     });
   } catch (err) {
-    document.getElementById('paymentError').textContent = 'Could not load payment form. Please try again.';
+    console.error('Payment form initialization error:', err);
+    document.getElementById('paymentError').textContent = 'Could not load payment form: ' + (err.message || 'Please try again.');
     document.getElementById('paymentError').style.display = 'block';
   }
 });

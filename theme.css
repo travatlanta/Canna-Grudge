@@ -96,56 +96,13 @@ h1, h2, h3, h4, h5 {
 }
 
 .section {
-  padding: 96px 0;
+  padding: 56px 0;
 }
 
 .home-section {
   position: relative;
   overflow: hidden;
   isolation: isolate;
-}
-
-.home-section::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  transition: opacity 1.2s ease;
-  pointer-events: none;
-  z-index: -1;
-}
-
-.home-section.visible::before {
-  opacity: 1;
-}
-
-/* Gradient section transitions */
-.home-glow-gold::before {
-  background: linear-gradient(
-    135deg,
-    rgba(227,183,92,.18) 0%,
-    rgba(16,19,26,0) 40%,
-    rgba(16,19,26,0) 60%,
-    rgba(144,171,255,.15) 100%
-  );
-}
-
-.home-glow-violet::before {
-  background: linear-gradient(
-    170deg,
-    rgba(174,141,255,.2) 0%,
-    rgba(16,19,26,0) 50%,
-    rgba(227,183,92,.16) 100%
-  );
-}
-
-.home-glow-blue::before {
-  background: linear-gradient(
-    210deg,
-    rgba(119,163,255,.18) 0%,
-    rgba(16,19,26,0) 45%,
-    rgba(227,183,92,.14) 100%
-  );
 }
 
 .section-tight-top {
@@ -1215,12 +1172,6 @@ textarea.input {
 
 
 @media (prefers-reduced-motion: reduce) {
-  .home-section::before,
-  .home-section::after {
-    animation: none !important;
-    transition: none !important;
-  }
-
   .parallax-node {
     transform: none !important;
   }
@@ -1696,7 +1647,7 @@ body.page-padded {
 
 @media (max-width: 768px) {
   .section {
-    padding: 72px 0;
+    padding: 40px 0;
   }
 
   .checkout-grid {
@@ -1867,6 +1818,28 @@ body.page-padded {
   font-size: 12px;
 }
 
+.venue-info {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 48px;
+  align-items: start;
+  margin-top: 32px;
+}
+
+.venue-details h3 {
+  color: var(--cg-gold);
+  font-family: var(--cg-font-display);
+  font-weight: 800;
+  font-size: 26px;
+  margin-bottom: 16px;
+}
+
+.venue-map {
+  border-radius: var(--cg-radius-lg);
+  overflow: hidden;
+  box-shadow: 0 12px 40px rgba(0,0,0,.3);
+}
+
 .section-divider {
   border-top: 1px solid var(--cg-border);
 }
@@ -1896,6 +1869,12 @@ body.page-padded {
 @media (max-width: 767px) {
   .guidelines-layout {
     grid-template-columns: 1fr;
+  }
+
+  .venue-info {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
   }
 
   .guidelines-layout > div:last-child {

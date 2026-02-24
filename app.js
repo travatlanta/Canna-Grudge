@@ -80,8 +80,8 @@ document.addEventListener('DOMContentLoaded', () => {
         </a>
         <div class="nav-links">
           <a href="index.html" class="${page === 'index' || page === '' ? 'active' : ''}">Home</a>
-          <a href="event.html" class="${page === 'event' ? 'active' : ''}">Event</a>
           <a href="tickets.html" class="${page === 'tickets' ? 'active' : ''}">Tickets</a>
+          <a href="sponsors.html" class="${page === 'sponsors' ? 'active' : ''}">Sponsors</a>
         </div>
         <div class="nav-actions">
           <button class="nav-cart-btn" id="cartToggle" aria-label="Cart">
@@ -102,10 +102,10 @@ document.addEventListener('DOMContentLoaded', () => {
     mobileMenu.id = 'mobileMenu';
     mobileMenu.innerHTML = `
       <a href="index.html">Home</a>
-      <a href="event.html">Event</a>
       <a href="tickets.html">Tickets</a>
+      <a href="sponsors.html">Sponsors</a>
       ${loggedIn ? '<a href="dashboard.html">My Account</a>' : '<a href="login.html">Sign In</a>'}
-      <a href="tickets.html" style="color: var(--cg-gold); margin-top: 16px;">Tickets &rarr;</a>
+      <a href="tickets.html" style="color: var(--cg-gold); margin-top: 16px;">Get Tickets &rarr;</a>
     `;
     document.body.appendChild(mobileMenu);
 
