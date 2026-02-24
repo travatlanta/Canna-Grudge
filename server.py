@@ -156,6 +156,22 @@ def square_config():
     loc_id = os.environ.get('SQUARE_LOCATION_ID', '')
     return jsonify({'applicationId': app_id, 'locationId': loc_id})
 
+@app.route('/api/bootstrap-admin', methods=['POST'])
+def bootstrap_admin():
+    secret = os.environ.get('BOOTSTRAP_SECRET', '')
+    if not secret:
+        return jsonify({'error': 'Not available'}), 404
+    data = request.get_json() or {}
+    if data.get('secret') != secret:
+        return jsonify({'error': 'Forbidden'}), 403
+    email = data.get('email', '').strip().lower()
+    if not email:
+        return jsonify({'error': 'email required'}), 400
+    result = execute_db('UPDATE users SET is_admin = TRUE WHERE LOWER(email) = %s RETURNING id, email', (email,))
+    if not result:
+        return jsonify({'error': f'No user found with email {email}'}), 404
+    return jsonify({'success': True, 'admin_set_for': result['email']})
+
 @app.route('/api/tickets', methods=['GET'])
 def get_public_tickets():
     tiers = query_db('SELECT id, name, price_cents, description, features, capacity, sold, active FROM ticket_tiers WHERE active = TRUE ORDER BY sort_order')
