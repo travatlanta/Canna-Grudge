@@ -1,5 +1,5 @@
 # Fly.io configuration for CannaGrudge
-app = 'cannagrudge'
+app = 'cannagrudge-app'
 primary_region = 'iad'
 
 [build]
