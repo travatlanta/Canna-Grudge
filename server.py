@@ -14,8 +14,10 @@ import resend
 import firebase_admin
 from firebase_admin import credentials, auth as fb_auth
 
-# Disable Flask's built-in static handler so our catch-all route handles clean URLs
-app = Flask(__name__, static_folder=None)
+# Use an explicit absolute path for serving files
+_ROOT = os.path.dirname(os.path.abspath(__file__))
+
+app = Flask(__name__, static_folder=_ROOT, static_url_path='')
 CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
 
 UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
@@ -209,35 +211,32 @@ def health_check():
 
 @app.route('/')
 def index():
-    return send_from_directory('.', 'index.html')
+    return send_from_directory(_ROOT, 'index.html')
 
 # Clean URL routing — serve /deck → deck.html, /tickets → tickets.html, etc.
-@app.route('/<path:path>')
-def static_files(path):
-    # If the path already has a file extension, serve it directly
-    if '.' in path.split('/')[-1]:
-        try:
-            return send_from_directory('.', path)
-        except Exception:
-            return send_from_directory('.', 'error.html'), 404
+# These explicit routes take priority over Flask's static file handler.
+_HTML_PAGES = set()
+for _f in os.listdir(_ROOT):
+    if _f.endswith('.html') and _f != 'index.html':
+        _HTML_PAGES.add(_f[:-5])  # e.g. 'deck', 'tickets', 'sponsors'
 
-    # Try serving path + .html for clean URLs
-    html_path = path.rstrip('/') + '.html'
+@app.route('/<page>')
+def serve_page(page):
+    if page in _HTML_PAGES:
+        return send_from_directory(_ROOT, page + '.html')
+    # Let Flask's static handler try, or fall through to 404
     try:
-        return send_from_directory('.', html_path)
+        return send_from_directory(_ROOT, page)
     except Exception:
-        pass
-
-    # Fallback: 404 error page
-    return send_from_directory('.', 'error.html'), 404
+        return send_from_directory(_ROOT, 'error.html'), 404
 
 @app.errorhandler(404)
 def page_not_found(e):
-    return send_from_directory('.', 'error.html'), 404
+    return send_from_directory(_ROOT, 'error.html'), 404
 
 @app.errorhandler(500)
 def internal_error(e):
-    return send_from_directory('.', 'error.html'), 500
+    return send_from_directory(_ROOT, 'error.html'), 500
 
 @app.route('/api/square-config', methods=['GET'])
 def square_config():
