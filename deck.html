@@ -23,11 +23,11 @@
       position: relative;
       overflow: auto;
       display: flex;
-      gap: 12px;
+      gap: 0;
       scroll-snap-type: x mandatory;
       padding-bottom: 8px;
-      border-radius: var(--cg-r-lg);
-      box-shadow: var(--cg-elev);
+      border-radius: var(--cg-radius-lg);
+      box-shadow: var(--cg-shadow);
       background: var(--cg-surface);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
@@ -53,14 +53,15 @@
       align-items: center;
       justify-content: center;
       background: var(--cg-surface);
-      border-radius: var(--cg-r-lg);
+      border-radius: var(--cg-radius-lg);
     }
     .deck-slide img {
       width: 100%;
-      height: calc(100vh - var(--cg-nav-h) - 240px);
+      height: calc(100vh - var(--cg-nav-height) - 240px);
+      min-height: 400px;
       object-fit: contain;
-      border-radius: var(--cg-r-lg);
-      background: var(--cg-ink-925);
+      border-radius: var(--cg-radius-lg);
+      background: var(--cg-bg);
     }
 
     .deck-controls {
@@ -74,11 +75,12 @@
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
       border: 1px solid var(--cg-border);
-      color: var(--cg-text-strong);
-      border-radius: var(--cg-r-md);
+      color: var(--cg-text);
+      border-radius: var(--cg-radius);
       padding: 8px 16px;
       cursor: pointer;
       font-weight: 600;
+      font-size: 14px;
       transition: transform .08s ease, border-color .25s ease, box-shadow .25s ease;
     }
     .deck-btn:hover {
@@ -96,13 +98,13 @@
       background: var(--cg-surface);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
-      border-radius: var(--cg-r-lg);
+      border-radius: var(--cg-radius-lg);
       padding: 24px;
       border: 1px solid var(--cg-border);
-      box-shadow: var(--cg-elev);
+      box-shadow: var(--cg-shadow);
     }
     .sponsor-form h2 {
-      border-bottom: 2px solid var(--cg-gold-300);
+      border-bottom: 2px solid var(--cg-gold);
       padding-bottom: 12px;
       margin: 0;
     }
@@ -118,18 +120,19 @@
     .sponsor-form label {
       font-weight: 700;
       font-size: 14px;
-      color: var(--cg-text-strong);
+      color: var(--cg-text);
     }
     .sponsor-form input,
     .sponsor-form select,
     .sponsor-form textarea {
       width: 100%;
       padding: 12px;
-      border-radius: var(--cg-r-sm);
+      border-radius: var(--cg-radius-sm);
       border: 1px solid var(--cg-border);
       background: var(--cg-surface-2);
       color: var(--cg-text);
       font-size: 14px;
+      font-family: var(--cg-font-body);
       transition: border-color .2s ease, box-shadow .2s ease;
     }
     .sponsor-form input:focus,
@@ -143,14 +146,21 @@
       min-height: 120px;
       resize: vertical;
     }
+    .slide-counter {
+      text-align: center;
+      font-size: 14px;
+      color: var(--cg-text-muted);
+      margin-top: 8px;
+      font-weight: 600;
+    }
     .toast {
       display: none;
       margin-top: 8px;
       padding: 10px 12px;
-      border-radius: var(--cg-r-sm);
+      border-radius: var(--cg-radius-sm);
       background: rgba(22, 163, 74, .18);
       border: 1px solid rgba(22, 163, 74, .38);
-      color: var(--cg-text-strong);
+      color: var(--cg-text);
       font-size: 14px;
     }
     .toast.show {
@@ -183,28 +193,29 @@
       <div class="deck-slide"><img src="assets/deck/12.png" alt="Deck page 12" loading="lazy"></div>
       <div class="deck-slide"><img src="assets/deck/13.png" alt="Deck page 13" loading="lazy"></div>
       <div class="deck-slide"><img src="assets/deck/14.png" alt="Deck page 14" loading="lazy"></div>
-      <div class="deck-slide"><img src="assets/deck/15.png" alt="Deck page 14" loading="lazy"></div>
+      <div class="deck-slide"><img src="assets/deck/15.png" alt="Deck page 15" loading="lazy"></div>
     </div>
 
     <div class="deck-controls" data-animate>
       <button type="button" class="deck-btn" id="prevSlide">◀ Prev</button>
+      <span class="slide-counter" id="slideCounter">1 / 15</span>
       <button type="button" class="deck-btn" id="nextSlide">Next ▶</button>
     </div>
 
-    <p style="margin-top:16px;" data-animate>
-      <button type="button" id="downloadPdfBtn" class="button button--primary">Download PDF</button>
+    <p style="margin-top:16px;text-align:center;" data-animate>
+      <button type="button" id="downloadPdfBtn" class="btn btn-primary">Download PDF</button>
     </p>
 
     <form id="sponsorForm" class="sponsor-form" novalidate data-animate>
       <h2>Interested in Sponsoring?</h2>
       <div class="row">
         <div>
-          <label for="brand">Brand name</label>
-          <input id="brand" name="brand" type="text" placeholder="Brand Inc." required>
+          <label for="company">Brand / Company name</label>
+          <input id="company" name="company" type="text" placeholder="Brand Inc." required>
         </div>
         <div>
-          <label for="contact">Contact name</label>
-          <input id="contact" name="contact" type="text" placeholder="Jane Smith" required>
+          <label for="contact_name">Contact name</label>
+          <input id="contact_name" name="contact_name" type="text" placeholder="Jane Smith" required>
         </div>
       </div>
       <div class="row">
@@ -234,8 +245,8 @@
         <label for="message">Message</label>
         <textarea id="message" name="message" placeholder="Tell us what you have in mind…"></textarea>
       </div>
-      <div style="display:flex;gap:10px;align-items:center;">
-        <button class="button button--primary" type="submit">Send</button>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+        <button class="btn btn-primary" type="submit" id="sponsorSubmitBtn">Send Inquiry</button>
         <div id="sponsorToast" class="toast">Thanks! We'll be in touch.</div>
       </div>
     </form>
@@ -249,10 +260,38 @@
   (function() {
     const params = new URLSearchParams(location.search);
     const token = params.get('token');
+    const preview = params.get('preview');
     const gate = document.getElementById('deckGate');
     const main = document.getElementById('deckMain');
     const msg = document.getElementById('gateMsg');
     const reqBtn = document.getElementById('gateRequestBtn');
+
+    function showDeck() {
+      gate.style.display = 'none';
+      main.style.display = '';
+    }
+
+    // Allow admin preview via ?preview=1 when logged into Firebase
+    if (preview === '1') {
+      import('./firebase-config.js').then(mod => {
+        const { getAuth, onAuthStateChanged } = mod;
+        const auth = getAuth();
+        onAuthStateChanged(auth, user => {
+          if (user) {
+            showDeck();
+          } else {
+            msg.textContent = 'Sign in as admin to preview the deck.';
+            reqBtn.style.display = '';
+            reqBtn.href = 'login.html';
+            reqBtn.textContent = 'Sign In';
+          }
+        });
+      }).catch(() => {
+        // If Firebase is not available, still show the deck for local preview
+        showDeck();
+      });
+      return;
+    }
 
     if (!token) {
       msg.textContent = 'Access to the sponsorship deck requires a valid invitation link.';
@@ -264,8 +303,7 @@
       .then(r => r.json())
       .then(data => {
         if (data.access) {
-          gate.style.display = 'none';
-          main.style.display = '';
+          showDeck();
         } else {
           msg.textContent = data.error || 'Access denied. Your link may have expired.';
           reqBtn.style.display = '';
@@ -285,13 +323,20 @@
     const slides = Array.from(slider.querySelectorAll('.deck-slide'));
     const prev = document.getElementById('prevSlide');
     const next = document.getElementById('nextSlide');
+    const counter = document.getElementById('slideCounter');
+    const total = slides.length;
     const getIndex = () => Math.round(slider.scrollLeft / slider.clientWidth);
+    const updateCounter = () => {
+      if (counter) counter.textContent = (getIndex() + 1) + ' / ' + total;
+    };
     const goTo = (i) => {
       const index = Math.max(0, Math.min(i, slides.length - 1));
       slider.scrollTo({ left: index * slider.clientWidth, behavior: 'smooth' });
+      setTimeout(updateCounter, 350);
     };
     if (prev) prev.addEventListener('click', () => goTo(getIndex() - 1));
     if (next) next.addEventListener('click', () => goTo(getIndex() + 1));
+    slider.addEventListener('scroll', () => { requestAnimationFrame(updateCounter); });
     slider.addEventListener('wheel', (e) => {
       if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
         e.preventDefault();
@@ -303,19 +348,55 @@
       if (e.key === 'ArrowRight') goTo(getIndex() + 1);
       if (e.key === 'ArrowLeft')  goTo(getIndex() - 1);
     });
+    updateCounter();
   })();
 
   (function() {
     const form = document.getElementById('sponsorForm');
     const toast = document.getElementById('sponsorToast');
+    const submitBtn = document.getElementById('sponsorSubmitBtn');
     if (!form) return;
-    form.addEventListener('submit', function(e) {
+    form.addEventListener('submit', async function(e) {
       e.preventDefault();
-      if (toast) {
+      const data = {
+        company: form.company.value.trim(),
+        contact_name: form.contact_name.value.trim(),
+        email: form.email.value.trim(),
+        message: (form.level.value ? '[' + form.level.value + '] ' : '') + form.message.value.trim()
+      };
+      if (!data.company || !data.contact_name || !data.email) {
+        toast.textContent = 'Please fill in brand name, contact name, and email.';
+        toast.style.background = 'rgba(239,68,68,.18)';
+        toast.style.borderColor = 'rgba(239,68,68,.38)';
         toast.classList.add('show');
         setTimeout(() => toast.classList.remove('show'), 4000);
+        return;
       }
-      form.reset();
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Sending...';
+      try {
+        const res = await fetch(window.CG_API_BASE + '/api/sponsors/request', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        if (!res.ok) throw new Error('Request failed');
+        toast.textContent = 'Thanks! We\'ll be in touch soon.';
+        toast.style.background = 'rgba(22,163,74,.18)';
+        toast.style.borderColor = 'rgba(22,163,74,.38)';
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 5000);
+        form.reset();
+      } catch (err) {
+        toast.textContent = 'Something went wrong. Please email us directly.';
+        toast.style.background = 'rgba(239,68,68,.18)';
+        toast.style.borderColor = 'rgba(239,68,68,.38)';
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 5000);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Send Inquiry';
+      }
     });
   })();
 
