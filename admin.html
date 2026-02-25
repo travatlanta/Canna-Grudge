@@ -115,16 +115,24 @@
 
     .mobile-menu-toggle {
       display: none;
-      width: 40px;
-      height: 40px;
+      width: 44px;
+      height: 44px;
       border-radius: var(--cg-radius-sm);
       background: var(--cg-surface);
       border: 1px solid var(--cg-border);
-      color: var(--cg-text);
+      color: var(--cg-gold);
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      font-size: 20px;
+      font-size: 22px;
+      flex-shrink: 0;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+
+    .mobile-menu-toggle:active {
+      background: var(--cg-gold-glow);
+      transform: scale(.95);
     }
 
     .sidebar-overlay {
@@ -133,14 +141,79 @@
       inset: 0;
       background: rgba(0,0,0,.6);
       z-index: 99;
+      -webkit-tap-highlight-color: transparent;
     }
 
+    /* ─── Mobile-first: Sidebar & layout ─── */
     @media (max-width: 768px) {
-      .admin-sidebar { transform: translateX(-100%); }
+      .admin-sidebar {
+        transform: translateX(-100%);
+        width: 280px;
+        max-width: 85vw;
+      }
       .admin-sidebar.open { transform: translateX(0); }
-      .admin-main { margin-left: 0; padding: 20px; }
+      .admin-main { margin-left: 0; padding: 16px; }
       .mobile-menu-toggle { display: flex; }
       .sidebar-overlay.open { display: block; }
+
+      .admin-main-header { margin-bottom: 20px; }
+      .admin-main-header h1 { font-size: 22px; }
+
+      .admin-nav-btn {
+        padding: 14px 20px;
+        font-size: 15px;
+        min-height: 48px;
+      }
+
+      .admin-sidebar-footer a,
+      .admin-sidebar-footer button {
+        padding: 14px 0;
+        font-size: 14px;
+        min-height: 44px;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      .form-row {
+        grid-template-columns: 1fr !important;
+      }
+
+      .modal-card {
+        padding: 20px;
+        border-radius: var(--cg-radius-sm);
+        max-height: 95vh;
+      }
+
+      .modal-overlay { padding: 10px; }
+
+      .copy-link {
+        flex-direction: column;
+        gap: 6px;
+        font-size: 12px;
+      }
+      .copy-link button { width: 100%; }
+    }
+
+    @media (max-width: 480px) {
+      .admin-main { padding: 12px; }
+      .admin-main-header h1 { font-size: 18px; }
+
+      .stats-grid { grid-template-columns: 1fr; gap: 8px; }
+
+      .admin-table th,
+      .admin-table td { padding: 10px 8px; font-size: 12px; }
+
+      .admin-table .actions {
+        flex-direction: column;
+        gap: 4px;
+      }
+      .admin-table .actions .btn { width: 100%; min-height: 36px; }
+
+      .modal-card { padding: 16px; }
+      .modal-card h3 { font-size: 18px; margin-bottom: 16px; }
     }
 
     .tab-content { display: none; }
@@ -153,12 +226,18 @@
       margin-bottom: 32px;
     }
 
-    .admin-table-wrap { overflow-x: auto; }
+    .admin-table-wrap {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      margin: 0 -4px;
+      padding: 0 4px;
+    }
 
     .admin-table {
       width: 100%;
       border-collapse: collapse;
       font-size: 14px;
+      min-width: 600px;
     }
 
     .admin-table th {
@@ -173,6 +252,9 @@
       background: var(--cg-surface);
       border-bottom: 1px solid var(--cg-border);
       white-space: nowrap;
+      position: sticky;
+      top: 0;
+      z-index: 1;
     }
 
     .admin-table td {
@@ -184,7 +266,7 @@
 
     .admin-table tr:hover td { background: rgba(255,255,255,.02); }
 
-    .admin-table .actions { display: flex; gap: 6px; }
+    .admin-table .actions { display: flex; gap: 6px; flex-wrap: wrap; }
 
     .badge-green { background: rgba(34,197,94,.1); color: var(--cg-green); border-color: rgba(34,197,94,.2); }
     .badge-red { background: rgba(239,68,68,.1); color: var(--cg-red); border-color: rgba(239,68,68,.2); }
@@ -332,6 +414,53 @@
       background-repeat: no-repeat;
       background-position: right 12px center;
       padding-right: 36px;
+    }
+
+    /* ─── Scroll hint for tables on mobile ─── */
+    @media (max-width: 768px) {
+      .admin-table-wrap {
+        position: relative;
+      }
+      .admin-table-wrap::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 24px;
+        background: linear-gradient(to right, transparent, rgba(0,0,0,.3));
+        pointer-events: none;
+        opacity: 1;
+        transition: opacity .3s;
+      }
+      .admin-table-wrap.scrolled-end::after { opacity: 0; }
+    }
+
+    /* ─── Touch-friendly action buttons ─── */
+    @media (max-width: 768px) {
+      .btn-sm { min-height: 36px; padding: 8px 14px; }
+      .admin-table .btn-sm { font-size: 12px; }
+    }
+
+    /* ─── Email editor modal responsive ─── */
+    @media (max-width: 768px) {
+      #emailEditorModal .modal-card {
+        width: 100% !important;
+        max-width: 100% !important;
+        border-radius: var(--cg-radius-sm);
+        max-height: 95vh;
+      }
+      #emailHtmlInput { font-size: 11px !important; }
+      #emailEditorModal .form-group:last-of-type div[style*="display:flex"] {
+        flex-direction: column;
+      }
+    }
+
+    /* ─── Invoice attachment area responsive ─── */
+    @media (max-width: 480px) {
+      #invoiceHasAttachment div[style*="display:flex"] {
+        flex-wrap: wrap;
+      }
     }
   </style>
 </head>
@@ -737,7 +866,7 @@
     });
 
     const tabs = document.querySelectorAll('.admin-nav-btn[data-tab]');
-    const tabTitles = { dashboard: 'Dashboard', tickets: 'Tickets', orders: 'Orders', promos: 'Promo Codes', sponsors: 'Sponsors', invoices: 'Invoices', 'purchase-links': 'Purchase Links', admins: 'Admins' };
+    const tabTitles = { dashboard: 'Dashboard', tickets: 'Tickets', orders: 'Orders', promos: 'Promo Codes', sponsors: 'Sponsors', invoices: 'Invoices', 'purchase-links': 'Purchase Links', emails: 'Email Templates', admins: 'Admins' };
 
     tabs.forEach(btn => {
       btn.addEventListener('click', () => {
@@ -761,6 +890,28 @@
     $('sidebarOverlay').addEventListener('click', () => {
       $('adminSidebar').classList.remove('open');
       $('sidebarOverlay').classList.remove('open');
+    });
+
+    /* Swipe-to-close sidebar on mobile */
+    (function() {
+      let touchStartX = 0;
+      const sidebar = $('adminSidebar');
+      sidebar.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true });
+      sidebar.addEventListener('touchend', e => {
+        const dx = e.changedTouches[0].clientX - touchStartX;
+        if (dx < -60) {
+          sidebar.classList.remove('open');
+          $('sidebarOverlay').classList.remove('open');
+        }
+      }, { passive: true });
+    })();
+
+    /* Table scroll-hint: hide gradient when scrolled to end */
+    document.querySelectorAll('.admin-table-wrap').forEach(wrap => {
+      wrap.addEventListener('scroll', () => {
+        const atEnd = wrap.scrollLeft + wrap.clientWidth >= wrap.scrollWidth - 4;
+        wrap.classList.toggle('scrolled-end', atEnd);
+      });
     });
 
     $('signOutBtn').addEventListener('click', async () => {
