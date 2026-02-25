@@ -30,8 +30,11 @@ SQUARE_ACCESS_TOKEN = os.environ.get('SQUARE_ACCESS_TOKEN', '').strip()
 SQUARE_LOCATION_ID = os.environ.get('SQUARE_LOCATION_ID', '').strip()
 
 if not firebase_admin._apps:
-    sa_key = os.environ.get('FIREBASE_SERVICE_ACCOUNT_KEY', '')
+    sa_key = os.environ.get('FIREBASE_SERVICE_ACCOUNT_KEY', '').strip()
     if sa_key:
+        # Strip UTF-8 BOM if present
+        if sa_key.startswith('\ufeff'):
+            sa_key = sa_key[1:]
         cred = credentials.Certificate(json.loads(sa_key))
         firebase_admin.initialize_app(cred)
     else:
