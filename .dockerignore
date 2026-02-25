@@ -1,0 +1,11 @@
+__pycache__
+*.pyc
+.git
+.gitignore
+attached_assets
+readme.txt
+replit.md
+RENDER_DEPLOYMENT.md
+render.yaml
+.env
+*.md
