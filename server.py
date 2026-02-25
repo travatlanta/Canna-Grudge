@@ -207,13 +207,6 @@ def add_headers(response):
 def health_check():
     return jsonify({'status': 'ok', 'service': 'cannagrudge'}), 200
 
-@app.route('/assets/deck/<path:filename>')
-def protected_deck_assets(filename):
-    referer = request.headers.get('Referer', '')
-    if 'deck' not in referer:
-        return jsonify({'error': 'Access denied'}), 403
-    return send_from_directory('assets/deck', filename)
-
 @app.route('/')
 def index():
     return send_from_directory('.', 'index.html')
