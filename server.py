@@ -14,8 +14,8 @@ import resend
 import firebase_admin
 from firebase_admin import credentials, auth as fb_auth
 
-# Serve static files from Flask whether local or on Render
-app = Flask(__name__, static_folder='.', static_url_path='')
+# Disable Flask's built-in static handler so our catch-all route handles clean URLs
+app = Flask(__name__, static_folder=None)
 CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
 
 UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
