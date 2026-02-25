@@ -210,13 +210,41 @@ def health_check():
 @app.route('/assets/deck/<path:filename>')
 def protected_deck_assets(filename):
     referer = request.headers.get('Referer', '')
-    if 'deck.html' not in referer or 'token=' not in referer:
+    if 'deck' not in referer:
         return jsonify({'error': 'Access denied'}), 403
     return send_from_directory('assets/deck', filename)
 
 @app.route('/')
 def index():
     return send_from_directory('.', 'index.html')
+
+# Clean URL routing — serve /deck → deck.html, /tickets → tickets.html, etc.
+@app.route('/<path:path>')
+def static_files(path):
+    # If the path already has a file extension, serve it directly
+    if '.' in path.split('/')[-1]:
+        try:
+            return send_from_directory('.', path)
+        except Exception:
+            return send_from_directory('.', 'error.html'), 404
+
+    # Try serving path + .html for clean URLs
+    html_path = path.rstrip('/') + '.html'
+    try:
+        return send_from_directory('.', html_path)
+    except Exception:
+        pass
+
+    # Fallback: 404 error page
+    return send_from_directory('.', 'error.html'), 404
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return send_from_directory('.', 'error.html'), 404
+
+@app.errorhandler(500)
+def internal_error(e):
+    return send_from_directory('.', 'error.html'), 500
 
 @app.route('/api/square-config', methods=['GET'])
 def square_config():
@@ -641,7 +669,7 @@ def admin_approve_sponsor(sid):
         'UPDATE sponsor_requests SET status=%s, deck_token=%s, deck_token_expires=%s WHERE id=%s RETURNING *',
         ('approved', token, expires, sid)
     )
-    return jsonify({'sponsor': sponsor, 'deck_url': f'/deck.html?token={token}'})
+    return jsonify({'sponsor': sponsor, 'deck_url': f'/deck?token={token}'})
 
 @app.route('/api/admin/sponsors/<int:sid>/deny', methods=['POST'])
 @verify_admin
@@ -724,7 +752,7 @@ def admin_send_invoice(iid):
             'amount': f'${inv["amount_cents"] / 100:.2f}',
             'description': inv.get('description', ''),
             'due_date': inv['due_date'].strftime('%B %d, %Y') if hasattr(inv.get('due_date'), 'strftime') else str(inv.get('due_date', '')),
-            'invoice_url': f'{base_url}/invoice.html?token={inv["view_token"]}',
+            'invoice_url': f'{base_url}/invoice?token={inv["view_token"]}',
         })
     return jsonify(inv)
 
@@ -984,10 +1012,6 @@ def admin_test_email_template(tid):
         return jsonify({'success': True, 'message': f'Test email sent to {test_email}'})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
-@app.route('/<path:path>')
-def static_files(path):
-    return send_from_directory('.', path)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=False)

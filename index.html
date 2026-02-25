@@ -98,14 +98,13 @@
             <div class="unit">Secs</div>
           </div>
         </div>
-        <p class="ring-hint">3D Boxing Ring</p>
         <div class="cta-row" style="margin-top: 24px;">
           <a href="tickets.html" class="btn btn-primary btn-lg">Secure Your Spot</a>
         </div>
       </div>
       <div class="ring-viewer-wrap">
         <model-viewer
-          src="assets/3d%20models/boxing%20ring%203d%20model.glb"
+          src="assets/3d%20models/boxing-ring-optimized.glb"
           alt="CannaGrudge Boxing Ring"
           auto-rotate
           auto-rotate-delay="0"
@@ -120,8 +119,16 @@
           environment-image="neutral"
           camera-orbit="45deg 78deg auto"
           field-of-view="32deg"
+          loading="eager"
+          reveal="auto"
           touch-action="none"
           style="width:100%;height:100%;background:transparent;pointer-events:none;">
+          <div slot="poster" style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;">
+            <div style="color:var(--cg-text-muted);font-size:14px;text-align:center;">
+              <div style="margin-bottom:8px;font-size:28px;">🥊</div>
+              Loading ring...
+            </div>
+          </div>
         </model-viewer>
       </div>
     </div>

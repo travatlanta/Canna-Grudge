@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Page Not Found • CannaGrudge</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔥</text></svg>">
+  <link rel="stylesheet" href="theme.css">
+  <style>
+    .error-page {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: calc(100vh - var(--cg-nav-height) - 200px);
+      text-align: center;
+      padding: 40px 20px;
+    }
+    .error-code {
+      font-family: var(--cg-font-display);
+      font-size: clamp(80px, 20vw, 160px);
+      font-weight: 900;
+      line-height: 1;
+      background: linear-gradient(135deg, var(--cg-gold-light), var(--cg-gold), var(--cg-gold-dark));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+      letter-spacing: -0.04em;
+    }
+    .error-title {
+      font-family: var(--cg-font-display);
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      color: var(--cg-text);
+      margin-bottom: 12px;
+    }
+    .error-desc {
+      color: var(--cg-text-secondary);
+      font-size: 16px;
+      max-width: 480px;
+      margin: 0 auto 32px;
+      line-height: 1.6;
+    }
+    .error-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .error-divider {
+      width: 60px;
+      height: 3px;
+      border-radius: 2px;
+      background: linear-gradient(90deg, var(--cg-gold), var(--cg-gold-dark));
+      margin: 0 auto 24px;
+    }
+    .error-links {
+      margin-top: 40px;
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .error-links a {
+      color: var(--cg-text-muted);
+      font-size: 14px;
+      font-weight: 500;
+      transition: color .2s ease;
+    }
+    .error-links a:hover {
+      color: var(--cg-gold);
+    }
+  </style>
+</head>
+<body class="page-padded">
+  <main class="error-page">
+    <div class="error-code" id="errorCode">404</div>
+    <h1 class="error-title" id="errorTitle">Page Not Found</h1>
+    <div class="error-divider"></div>
+    <p class="error-desc" id="errorDesc">
+      The page you're looking for doesn't exist or may have been moved.
+      Let's get you back on track.
+    </p>
+    <div class="error-actions">
+      <a href="/" class="btn btn-primary">Back to Home</a>
+      <a href="/tickets" class="btn btn-outline">Get Tickets</a>
+      <a href="/sponsors" class="btn btn-outline">Sponsors</a>
+    </div>
+    <div class="error-links">
+      <a href="/event">Event Info</a>
+      <a href="/login">Sign In</a>
+      <a href="mailto:production@Diablocanna.co">Contact Us</a>
+    </div>
+  </main>
+
+  <script src="api-config.js"></script>
+  <script src="app.js?v=2"></script>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <div class="footer-brand">Canna<span>Grudge</span></div>
+          <p class="footer-desc">The ultimate cannabis boxing event. Live fights, music, vendors, and more in Litchfield Park, AZ.</p>
+          <div class="footer-social">
+            <a href="https://www.instagram.com/" target="_blank" aria-label="Instagram"><img src="assets/Icons/instagram.png" alt="Instagram"></a>
+            <a href="https://www.facebook.com/" target="_blank" aria-label="Facebook"><img src="assets/Icons/facebook.png" alt="Facebook"></a>
+            <a href="https://twitter.com/" target="_blank" aria-label="X"><img src="assets/Icons/twitter.png" alt="X"></a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h4>Event</h4>
+          <a href="/">Home</a>
+          <a href="/event">Event</a>
+          <a href="/sponsors">Sponsors</a>
+          <a href="/tickets">Tickets</a>
+        </div>
+        <div class="footer-col">
+          <h4>Support</h4>
+          <a href="mailto:production@Diablocanna.co">Contact</a>
+          <a href="/tos">Terms &amp; Conditions</a>
+        </div>
+        <div class="footer-col">
+          <h4>Legal</h4>
+          <a href="/privacy">Privacy Policy</a>
+          <a href="/delete-data">Delete Data</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; 2026 CannaGrudge. All rights reserved.</span>
+        <div>
+          <a href="/privacy">Privacy</a> &nbsp;&middot;&nbsp; <a href="/tos">Terms</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
