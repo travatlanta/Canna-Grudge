@@ -58,6 +58,7 @@ CREATE TABLE IF NOT EXISTS orders (
     status TEXT DEFAULT 'completed',
     square_payment_id TEXT,
     receipt_url TEXT,
+    billing_address TEXT,
     notes TEXT DEFAULT '',
     created_at TIMESTAMPTZ DEFAULT NOW()
 );

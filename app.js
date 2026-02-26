@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const page = (location.pathname.split('/').pop() || 'index.html').replace('.html', '');
+  const page = location.pathname.split('/').pop() || 'index';
 
   window.getCart = function() {
     try {
@@ -68,20 +68,20 @@ document.addEventListener('DOMContentLoaded', () => {
     if (loggedIn) {
       const name = localStorage.getItem('fullName') || 'Account';
       const first = name.split(' ')[0];
-      ctaBtn = `<a href="dashboard.html" class="btn btn-primary btn-sm nav-tickets-cta">${first}</a>`;
+      ctaBtn = `<a href="/dashboard" class="btn btn-primary btn-sm nav-tickets-cta">${first}</a>`;
     } else {
-      ctaBtn = `<a href="login.html" class="btn btn-primary btn-sm nav-tickets-cta">Sign In</a>`;
+      ctaBtn = `<a href="/login" class="btn btn-primary btn-sm nav-tickets-cta">Sign In</a>`;
     }
 
     nav.innerHTML = `
       <div class="nav-inner">
-        <a href="index.html" class="nav-brand">
+        <a href="/" class="nav-brand">
           Canna<span>Grudge</span>
         </a>
         <div class="nav-links">
-          <a href="index.html" class="${page === 'index' || page === '' ? 'active' : ''}">Home</a>
-          <a href="tickets.html" class="${page === 'tickets' ? 'active' : ''}">Tickets</a>
-          <a href="sponsors.html" class="${page === 'sponsors' ? 'active' : ''}">Sponsors</a>
+          <a href="/" class="${page === 'index' || page === '' ? 'active' : ''}">Home</a>
+          <a href="/tickets" class="${page === 'tickets' ? 'active' : ''}">Tickets</a>
+          <a href="/sponsors" class="${page === 'sponsors' ? 'active' : ''}">Sponsors</a>
         </div>
         <div class="nav-actions">
           <button class="nav-cart-btn" id="cartToggle" aria-label="Cart">
@@ -101,11 +101,11 @@ document.addEventListener('DOMContentLoaded', () => {
     mobileMenu.className = 'mobile-menu';
     mobileMenu.id = 'mobileMenu';
     mobileMenu.innerHTML = `
-      <a href="index.html">Home</a>
-      <a href="tickets.html">Tickets</a>
-      <a href="sponsors.html">Sponsors</a>
-      ${loggedIn ? '<a href="dashboard.html">My Account</a>' : '<a href="login.html">Sign In</a>'}
-      <a href="tickets.html" style="color: var(--cg-gold); margin-top: 16px;">Get Tickets &rarr;</a>
+      <a href="/">Home</a>
+      <a href="/tickets">Tickets</a>
+      <a href="/sponsors">Sponsors</a>
+      ${loggedIn ? '<a href="/dashboard">My Account</a>' : '<a href="/login">Sign In</a>'}
+      <a href="/tickets" style="color: var(--cg-gold); margin-top: 16px;">Get Tickets &rarr;</a>
     `;
     document.body.appendChild(mobileMenu);
 
@@ -218,7 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <span class="total-label">Total</span>
         <span class="total-amount">$${(total / 100).toFixed(2)}</span>
       </div>
-      <a href="checkout.html" class="btn btn-primary btn-block">Checkout</a>
+      <a href="/checkout" class="btn btn-primary btn-block">Checkout</a>
     `;
   }
 

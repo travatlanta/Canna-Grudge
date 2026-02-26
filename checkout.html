@@ -32,6 +32,30 @@
             <input type="text" class="input" id="nameInput" placeholder="Your full name">
           </div>
           <div class="form-group">
+            <label class="label" for="billingAddress1">Billing Address</label>
+            <input type="text" class="input" id="billingAddress1" placeholder="Street address">
+          </div>
+          <div class="form-group">
+            <label class="label" for="billingAddress2">Address Line 2 (optional)</label>
+            <input type="text" class="input" id="billingAddress2" placeholder="Apt, suite, etc.">
+          </div>
+          <div class="form-group">
+            <label class="label" for="billingCity">City</label>
+            <input type="text" class="input" id="billingCity" placeholder="City">
+          </div>
+          <div class="form-group">
+            <label class="label" for="billingState">State</label>
+            <input type="text" class="input" id="billingState" placeholder="AZ">
+          </div>
+          <div class="form-group">
+            <label class="label" for="billingPostalCode">ZIP / Postal Code</label>
+            <input type="text" class="input" id="billingPostalCode" placeholder="85340">
+          </div>
+          <div class="form-group">
+            <label class="label" for="billingCountry">Country (2-letter code)</label>
+            <input type="text" class="input" id="billingCountry" value="US" maxlength="2" placeholder="US">
+          </div>
+          <div class="form-group">
             <label class="label" for="promoInput">Promo Code (optional)</label>
             <div class="promo-row">
               <input type="text" class="input" id="promoInput" placeholder="Enter promo code">
@@ -72,27 +96,27 @@
         </div>
         <div class="footer-col">
           <h4>Event</h4>
-          <a href="index.html">Home</a>
-          <a href="index.html#schedule">Schedule</a>
-          <a href="sponsors.html">Sponsors</a>
-          <a href="tickets.html">Tickets</a>
+          <a href="/">Home</a>
+          <a href="/#schedule">Schedule</a>
+          <a href="/sponsors">Sponsors</a>
+          <a href="/tickets">Tickets</a>
         </div>
         <div class="footer-col">
           <h4>Support</h4>
-          <a href="index.html#faq">FAQ</a>
+          <a href="/#faq">FAQ</a>
           <a href="mailto:production@Diablocanna.co">Contact</a>
-          <a href="tos.html">Terms &amp; Conditions</a>
+          <a href="/tos">Terms &amp; Conditions</a>
         </div>
         <div class="footer-col">
           <h4>Legal</h4>
-          <a href="privacy.html">Privacy Policy</a>
-          <a href="delete-data.html">Delete Data</a>
+          <a href="/privacy">Privacy Policy</a>
+          <a href="/delete-data">Delete Data</a>
         </div>
       </div>
       <div class="footer-bottom">
         <span>&copy; 2026 CannaGrudge. All rights reserved.</span>
         <div>
-          <a href="privacy.html">Privacy</a> &nbsp;&middot;&nbsp; <a href="tos.html">Terms</a>
+          <a href="/privacy">Privacy</a> &nbsp;&middot;&nbsp; <a href="/tos">Terms</a>
         </div>
       </div>
     </div>
@@ -132,7 +156,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   if (cart.length === 0) {
-    location.href = 'tickets.html';
+    location.href = '/tickets';
     return;
   }
 
@@ -257,9 +281,23 @@ document.addEventListener('DOMContentLoaded', async () => {
       e.preventDefault();
       const email = document.getElementById('emailInput').value.trim();
       const name = document.getElementById('nameInput').value.trim();
+      const billingAddress = {
+        addressLine1: document.getElementById('billingAddress1').value.trim(),
+        addressLine2: document.getElementById('billingAddress2').value.trim(),
+        city: document.getElementById('billingCity').value.trim(),
+        state: document.getElementById('billingState').value.trim().toUpperCase(),
+        postalCode: document.getElementById('billingPostalCode').value.trim(),
+        country: document.getElementById('billingCountry').value.trim().toUpperCase() || 'US'
+      };
 
       if (!email || !name) {
         document.getElementById('paymentError').textContent = 'Please fill in all fields.';
+        document.getElementById('paymentError').style.display = 'block';
+        return;
+      }
+
+      if (!billingAddress.addressLine1 || !billingAddress.city || !billingAddress.state || !billingAddress.postalCode || !billingAddress.country) {
+        document.getElementById('paymentError').textContent = 'Please enter a complete billing address.';
         document.getElementById('paymentError').style.display = 'block';
         return;
       }
@@ -282,7 +320,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             items: cart.map(function(item) { return { id: item.id, name: item.name, price: item.price, qty: item.qty, tierId: item.tierId }; }),
             email: email,
             name: name,
-            promoCode: appliedPromoCode || ''
+            promoCode: appliedPromoCode || '',
+            billingAddress: billingAddress
           })
         });
 
@@ -295,6 +334,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             discount: payData.discount || 0,
             email: email,
             name: name,
+            billingAddress: billingAddress,
             paymentId: payData.payment.id,
             orderId: payData.order_id,
             promoCode: appliedPromoCode || '',
@@ -302,7 +342,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             date: new Date().toISOString()
           }));
           localStorage.removeItem('cg_cart');
-          location.href = 'confirmation.html';
+          location.href = '/confirmation';
         } else {
           throw new Error(payData.errors?.[0]?.detail || 'Payment failed');
         }
