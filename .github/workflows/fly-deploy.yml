@@ -13,6 +13,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: superfly/flyctl-actions/setup-flyctl@master
-      - run: flyctl deploy --remote-only
+      - name: Validate Fly token
+        run: |
+          if [ -z "${FLY_API_TOKEN}" ]; then
+            echo "FLY_API_TOKEN secret is not set for this repository." >&2
+            exit 1
+          fi
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+      - run: flyctl deploy --remote-only --verbose
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
