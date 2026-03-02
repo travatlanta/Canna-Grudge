@@ -364,8 +364,8 @@ def create_payment():
         if tier_id:
             tier = query_db('SELECT * FROM ticket_tiers WHERE id = %s AND active = TRUE', (tier_id,), one=True)
         
-        # Then try by item_id as database ID
-        if not tier and item_id:
+        # Then try by item_id as database ID (only if it looks like an integer)
+        if not tier and item_id and str(item_id).isdigit():
             tier = query_db('SELECT * FROM ticket_tiers WHERE id = %s AND active = TRUE', (item_id,), one=True)
         
         # Finally try by matching tier name from item_id
