@@ -2269,17 +2269,7 @@ body.page-padded {
 }
 
 /* ── Ring skirt brand hotspots ───────────────────────── */
-.ring-brand-hotspot {
-  width: 100px;
-  pointer-events: none;
-  display: block;
-}
 
-.ring-brand-hotspot img {
-  width: 100%;
-  height: auto;
-  display: block;
-}
 
 /* ══════════════════════════════════════════════════
    Fliers Showcase

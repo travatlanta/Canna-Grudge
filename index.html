@@ -104,7 +104,7 @@
       </div>
       <div class="ring-viewer-wrap">
         <model-viewer
-          src="assets/3d%20models/boxing-ring-TEST.glb"
+          src="assets/3d%20models/boxing-ring-optimized.glb"
           alt="CannaGrudge Boxing Ring"
           auto-rotate
           auto-rotate-delay="0"
@@ -123,38 +123,6 @@
           reveal="auto"
           touch-action="none"
           style="width:100%;height:100%;background:transparent;pointer-events:none;">
-
-          <!-- Diablo — front face skirt -->
-          <div slot="hotspot-diablo-front"
-               class="ring-brand-hotspot"
-               data-position="0 -0.08 0.47"
-               data-normal="0 0 1">
-            <img src="assets/brands/Diablo%20Cannabis.png" alt="Diablo Cannabis">
-          </div>
-
-          <!-- Nirvana — right face skirt -->
-          <div slot="hotspot-nirvana-right"
-               class="ring-brand-hotspot"
-               data-position="0.47 -0.08 0"
-               data-normal="1 0 0">
-            <img src="assets/brands/Nirvana.png" alt="Nirvana">
-          </div>
-
-          <!-- Diablo — back face skirt -->
-          <div slot="hotspot-diablo-back"
-               class="ring-brand-hotspot"
-               data-position="0 -0.08 -0.47"
-               data-normal="0 0 -1">
-            <img src="assets/brands/Diablo%20Cannabis.png" alt="Diablo Cannabis">
-          </div>
-
-          <!-- Nirvana — left face skirt -->
-          <div slot="hotspot-nirvana-left"
-               class="ring-brand-hotspot"
-               data-position="-0.47 -0.08 0"
-               data-normal="-1 0 0">
-            <img src="assets/brands/Nirvana.png" alt="Nirvana">
-          </div>
 
           <div slot="poster" style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;">
             <div style="color:var(--cg-text-muted);font-size:14px;text-align:center;">
@@ -280,6 +248,9 @@
       <div class="section-label">for fighters</div>
       <h2 class="section-title">Fighter Guidelines & Weight Classes</h2>
       <div class="guidelines-layout">
+        <div class="centered-media">
+          <img src="assets/guidelines.png" alt="CannaGrudge Guidelines" class="poster-image">
+        </div>
         <div>
           <div class="card card-pad-lg">
             <p class="body-copy">Welcome to Nirvana x Diablo first annual Canna Grudge. This is meant to be fun and entertaining for all of us. This is <strong>NOT</strong> an official boxing match or exhibition match. It is simply a couple brands getting together and sparring in a ring for entertainment purposes.</p>
@@ -304,9 +275,6 @@
               <div class="weight-item"><strong>Welterweight</strong><br><span>140-147 lbs</span></div>
             </div>
           </div>
-        </div>
-        <div class="centered-media">
-          <img src="assets/guidelines.png" alt="CannaGrudge Guidelines" class="poster-image">
         </div>
       </div>
     </div>
