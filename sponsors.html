@@ -49,6 +49,145 @@
       font-size: 14px;
       margin-top: 12px;
     }
+
+    /* ── Brands Section ── */
+    .brands-intro {
+      text-align: center;
+      max-width: 600px;
+      margin: 0 auto 56px;
+    }
+    .brands-intro .section-label { justify-content: center; }
+    .brands-intro .section-title { margin-bottom: 12px; }
+    .brands-intro p {
+      color: var(--cg-text-secondary);
+      font-size: 16px;
+      line-height: 1.7;
+    }
+
+    /* Marquee strip */
+    .brands-marquee-wrap {
+      overflow: hidden;
+      position: relative;
+      padding: 4px 0;
+      margin-bottom: 56px;
+    }
+    .brands-marquee-wrap::before,
+    .brands-marquee-wrap::after {
+      content: '';
+      position: absolute;
+      top: 0; bottom: 0;
+      width: 120px;
+      z-index: 2;
+      pointer-events: none;
+    }
+    .brands-marquee-wrap::before {
+      left: 0;
+      background: linear-gradient(to right, var(--cg-bg) 0%, transparent 100%);
+    }
+    .brands-marquee-wrap::after {
+      right: 0;
+      background: linear-gradient(to left, var(--cg-bg) 0%, transparent 100%);
+    }
+    .brands-marquee-track {
+      display: flex;
+      gap: 32px;
+      width: max-content;
+      animation: marquee-scroll 32s linear infinite;
+    }
+    .brands-marquee-wrap:hover .brands-marquee-track {
+      animation-play-state: paused;
+    }
+    @keyframes marquee-scroll {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+    .marquee-logo {
+      flex-shrink: 0;
+      width: 120px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 12px;
+      padding: 10px 14px;
+      transition: background 0.3s ease, border-color 0.3s ease;
+    }
+    .marquee-logo img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      filter: brightness(0.85) grayscale(0.2);
+      transition: filter 0.3s ease;
+    }
+    .marquee-logo:hover {
+      background: rgba(212,175,55,0.08);
+      border-color: rgba(212,175,55,0.25);
+    }
+    .marquee-logo:hover img {
+      filter: brightness(1) grayscale(0);
+    }
+
+    /* Full logo grid */
+    .brands-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 20px;
+    }
+    .brand-logo-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 24px 16px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 16px;
+      cursor: default;
+      transition: background 0.3s ease, border-color 0.3s ease,
+                  transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .brand-logo-card:hover {
+      background: rgba(212,175,55,0.07);
+      border-color: rgba(212,175,55,0.28);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 36px rgba(0,0,0,0.45),
+                  0 0 24px rgba(212,175,55,0.12);
+    }
+    .brand-logo-card img {
+      width: 100%;
+      max-height: 72px;
+      object-fit: contain;
+      filter: brightness(0.88) saturate(0.9);
+      transition: filter 0.3s ease;
+    }
+    .brand-logo-card:hover img {
+      filter: brightness(1.05) saturate(1.1);
+    }
+    .brand-logo-name {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--cg-text-muted);
+      text-align: center;
+      transition: color 0.3s ease;
+    }
+    .brand-logo-card:hover .brand-logo-name {
+      color: var(--cg-gold-light);
+    }
+
+    @media (max-width: 480px) {
+      .brands-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+      }
+      .brand-logo-card {
+        padding: 16px 10px;
+      }
+    }
   </style>
 </head>
 <body class="page-padded">
@@ -121,6 +260,107 @@
             <p style="font-size: 16px; color: var(--cg-text-secondary); line-height: 1.7;">Thank you! We'll review your request and send the deck access link to your email.</p>
           </div>
           <div id="errorMsg" style="display:none;"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Competing Brands ──────────────────────────── -->
+  <section class="section" style="padding-top: 0;" data-animate>
+    <div class="container">
+      <div class="brands-intro">
+        <div class="section-label">competing brands</div>
+        <h2 class="section-title">The <span class="text-gradient">Brands</span> in the Ring</h2>
+        <p>These are the AZ cannabis brands suiting up and stepping into the CannaGrudge ring. Each one represents their brand with pride — and bragging rights on the line.</p>
+      </div>
+
+      <!-- Scrolling marquee -->
+      <div class="brands-marquee-wrap">
+        <div class="brands-marquee-track" id="marqueeTrack">
+          <!-- set A -->
+          <div class="marquee-logo"><img src="assets/brands/Diablo%20Cannabis.png" alt="Diablo Cannabis"></div>
+          <div class="marquee-logo"><img src="assets/brands/Dime%20Industries.png" alt="Dime Industries"></div>
+          <div class="marquee-logo"><img src="assets/brands/Dr%20Zodiak.png" alt="Dr Zodiak"></div>
+          <div class="marquee-logo"><img src="assets/brands/Gold%20Smith%20Extracts.png" alt="Gold Smith Extracts"></div>
+          <div class="marquee-logo"><img src="assets/brands/Mint%20Cannabis.png" alt="Mint Cannabis"></div>
+          <div class="marquee-logo"><img src="assets/brands/Nirvana.png" alt="Nirvana"></div>
+          <div class="marquee-logo"><img src="assets/brands/Pressure.png" alt="Pressure"></div>
+          <div class="marquee-logo"><img src="assets/brands/Pucks.png" alt="Pucks"></div>
+          <div class="marquee-logo"><img src="assets/brands/Stiiizy.png" alt="Stiiizy"></div>
+          <div class="marquee-logo"><img src="assets/brands/Sweeto.png" alt="Sweeto"></div>
+          <div class="marquee-logo"><img src="assets/brands/Terp%20City.png" alt="Terp City"></div>
+          <div class="marquee-logo"><img src="assets/brands/Toasted.png" alt="Toasted"></div>
+          <div class="marquee-logo"><img src="assets/brands/Tyson.png" alt="Tyson"></div>
+          <!-- set B (duplicate for seamless loop) -->
+          <div class="marquee-logo"><img src="assets/brands/Diablo%20Cannabis.png" alt="Diablo Cannabis"></div>
+          <div class="marquee-logo"><img src="assets/brands/Dime%20Industries.png" alt="Dime Industries"></div>
+          <div class="marquee-logo"><img src="assets/brands/Dr%20Zodiak.png" alt="Dr Zodiak"></div>
+          <div class="marquee-logo"><img src="assets/brands/Gold%20Smith%20Extracts.png" alt="Gold Smith Extracts"></div>
+          <div class="marquee-logo"><img src="assets/brands/Mint%20Cannabis.png" alt="Mint Cannabis"></div>
+          <div class="marquee-logo"><img src="assets/brands/Nirvana.png" alt="Nirvana"></div>
+          <div class="marquee-logo"><img src="assets/brands/Pressure.png" alt="Pressure"></div>
+          <div class="marquee-logo"><img src="assets/brands/Pucks.png" alt="Pucks"></div>
+          <div class="marquee-logo"><img src="assets/brands/Stiiizy.png" alt="Stiiizy"></div>
+          <div class="marquee-logo"><img src="assets/brands/Sweeto.png" alt="Sweeto"></div>
+          <div class="marquee-logo"><img src="assets/brands/Terp%20City.png" alt="Terp City"></div>
+          <div class="marquee-logo"><img src="assets/brands/Toasted.png" alt="Toasted"></div>
+          <div class="marquee-logo"><img src="assets/brands/Tyson.png" alt="Tyson"></div>
+        </div>
+      </div>
+
+      <!-- Full grid -->
+      <div class="brands-grid">
+        <div class="brand-logo-card">
+          <img src="assets/brands/Diablo%20Cannabis.png" alt="Diablo Cannabis">
+          <span class="brand-logo-name">Diablo Cannabis</span>
+        </div>
+        <div class="brand-logo-card">
+          <img src="assets/brands/Dime%20Industries.png" alt="Dime Industries">
+          <span class="brand-logo-name">Dime Industries</span>
+        </div>
+        <div class="brand-logo-card">
+          <img src="assets/brands/Dr%20Zodiak.png" alt="Dr Zodiak">
+          <span class="brand-logo-name">Dr Zodiak</span>
+        </div>
+        <div class="brand-logo-card">
+          <img src="assets/brands/Gold%20Smith%20Extracts.png" alt="Gold Smith Extracts">
+          <span class="brand-logo-name">Gold Smith Extracts</span>
+        </div>
+        <div class="brand-logo-card">
+          <img src="assets/brands/Mint%20Cannabis.png" alt="Mint Cannabis">
+          <span class="brand-logo-name">Mint Cannabis</span>
+        </div>
+        <div class="brand-logo-card">
+          <img src="assets/brands/Nirvana.png" alt="Nirvana">
+          <span class="brand-logo-name">Nirvana</span>
+        </div>
+        <div class="brand-logo-card">
+          <img src="assets/brands/Pressure.png" alt="Pressure">
+          <span class="brand-logo-name">Pressure</span>
+        </div>
+        <div class="brand-logo-card">
+          <img src="assets/brands/Pucks.png" alt="Pucks">
+          <span class="brand-logo-name">Pucks</span>
+        </div>
+        <div class="brand-logo-card">
+          <img src="assets/brands/Stiiizy.png" alt="Stiiizy">
+          <span class="brand-logo-name">Stiiizy</span>
+        </div>
+        <div class="brand-logo-card">
+          <img src="assets/brands/Sweeto.png" alt="Sweeto">
+          <span class="brand-logo-name">Sweeto</span>
+        </div>
+        <div class="brand-logo-card">
+          <img src="assets/brands/Terp%20City.png" alt="Terp City">
+          <span class="brand-logo-name">Terp City</span>
+        </div>
+        <div class="brand-logo-card">
+          <img src="assets/brands/Toasted.png" alt="Toasted">
+          <span class="brand-logo-name">Toasted</span>
+        </div>
+        <div class="brand-logo-card">
+          <img src="assets/brands/Tyson.png" alt="Tyson">
+          <span class="brand-logo-name">Tyson</span>
         </div>
       </div>
     </div>
