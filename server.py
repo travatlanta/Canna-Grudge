@@ -28,6 +28,7 @@ MAX_FILE_SIZE = 10 * 1024 * 1024
 DATABASE_URL = os.environ.get('DATABASE_URL', '')
 SQUARE_ACCESS_TOKEN = os.environ.get('SQUARE_ACCESS_TOKEN', '').strip()
 SQUARE_LOCATION_ID = os.environ.get('SQUARE_LOCATION_ID', '').strip()
+SQUARE_ENVIRONMENT = os.environ.get('SQUARE_ENVIRONMENT', 'production').strip()
 
 if not firebase_admin._apps:
     sa_key = os.environ.get('FIREBASE_SERVICE_ACCOUNT_KEY', '').lstrip('\ufeff').strip()
@@ -255,6 +256,8 @@ def payment_status():
         'square_location_id_set': bool(loc_id),
         'square_location_id': loc_id if loc_id else 'NOT SET',
         'square_token_set': bool(token),
+        'square_token_prefix': token[:12] + '...' if token else 'NOT SET',
+        'square_environment': SQUARE_ENVIRONMENT,
         'all_configured': bool(app_id and loc_id and token)
     })
 
@@ -424,7 +427,7 @@ def create_payment():
         charge_amount = 0
 
     if charge_amount > 0:
-        client = Client(access_token=SQUARE_ACCESS_TOKEN, environment='production')
+        client = Client(access_token=SQUARE_ACCESS_TOKEN, environment=SQUARE_ENVIRONMENT)
         body = {
             'source_id': data['sourceId'],
             'idempotency_key': str(uuid.uuid4()),
@@ -436,6 +439,7 @@ def create_payment():
             body['buyer_email_address'] = email
         result = client.payments.create_payment(body=body)
         if not result.is_success():
+            print(f'[SQUARE ERROR] {result.errors}')
             return jsonify({'success': False, 'errors': result.errors}), 400
         payment = result.body.get('payment', {})
         payment_id = payment.get('id', '')
