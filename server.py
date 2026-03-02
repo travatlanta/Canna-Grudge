@@ -7,7 +7,7 @@ import psycopg2.extras
 from datetime import datetime, timedelta, timezone
 from functools import wraps
 from werkzeug.utils import secure_filename
-from flask import Flask, send_from_directory, request, jsonify, redirect
+from flask import Flask, send_from_directory, request, jsonify
 from flask_cors import CORS
 
 import resend
@@ -28,279 +28,14 @@ MAX_FILE_SIZE = 10 * 1024 * 1024
 DATABASE_URL = os.environ.get('DATABASE_URL', '')
 SQUARE_ACCESS_TOKEN = os.environ.get('SQUARE_ACCESS_TOKEN', '').strip()
 SQUARE_LOCATION_ID = os.environ.get('SQUARE_LOCATION_ID', '').strip()
-FIREBASE_PROJECT_ID = (
-    os.environ.get('FIREBASE_PROJECT_ID', '').strip()
-    or os.environ.get('GOOGLE_CLOUD_PROJECT', '').strip()
-    or os.environ.get('GCLOUD_PROJECT', '').strip()
-)
-
-
-def _parse_service_account_key(raw_value):
-    if not raw_value:
-        return None
-
-    candidates = [
-        raw_value,
-        raw_value.strip(),
-        raw_value.encode('utf-8').decode('utf-8-sig').strip(),
-    ]
-
-    tried = set()
-    for candidate in candidates:
-        if not candidate or candidate in tried:
-            continue
-        tried.add(candidate)
-
-        variants = [candidate]
-        if (candidate.startswith('"') and candidate.endswith('"')) or (candidate.startswith("'") and candidate.endswith("'")):
-            variants.append(candidate[1:-1])
-
-        for value in variants:
-            current = value
-            for _ in range(3):
-                try:
-                    parsed = json.loads(current)
-                except Exception:
-                    break
-
-                if isinstance(parsed, dict):
-                    return parsed
-
-                if isinstance(parsed, str):
-                    current = parsed.strip()
-                    continue
-
-                break
-
-    return None
 
 if not firebase_admin._apps:
-    sa_key_raw = os.environ.get('FIREBASE_SERVICE_ACCOUNT_KEY', '')
-    sa_dict = _parse_service_account_key(sa_key_raw)
-
-    if sa_dict:
-        try:
-            cred = credentials.Certificate(sa_dict)
-            firebase_admin.initialize_app(cred)
-            print("[FIREBASE INIT] SUCCESS (service account)")
-        except Exception as e:
-            print(f"[FIREBASE INIT ERROR] {type(e).__name__}: {e}")
-            if FIREBASE_PROJECT_ID:
-                firebase_admin.initialize_app(options={'projectId': FIREBASE_PROJECT_ID})
-                print(f"[FIREBASE INIT] FALLBACK projectId={FIREBASE_PROJECT_ID}")
-            else:
-                firebase_admin.initialize_app()
-                print("[FIREBASE INIT] FALLBACK default app (no projectId configured)")
+    sa_key = os.environ.get('FIREBASE_SERVICE_ACCOUNT_KEY', '')
+    if sa_key:
+        cred = credentials.Certificate(json.loads(sa_key))
+        firebase_admin.initialize_app(cred)
     else:
-        if FIREBASE_PROJECT_ID:
-            firebase_admin.initialize_app(options={'projectId': FIREBASE_PROJECT_ID})
-            print(f"[FIREBASE INIT] SUCCESS (projectId fallback) projectId={FIREBASE_PROJECT_ID}")
-        else:
-            firebase_admin.initialize_app()
-            print("[FIREBASE INIT] WARNING: default app initialized without service account/projectId")
-
-# ── Ensure all required tables exist ──────────────────────────────
-def _ensure_tables():
-    if not DATABASE_URL:
-        return
-    try:
-        conn = psycopg2.connect(DATABASE_URL)
-        conn.autocommit = True
-        cur = conn.cursor()
-        stmts = [
-            """CREATE TABLE IF NOT EXISTS users (
-                id SERIAL PRIMARY KEY, firebase_uid TEXT UNIQUE NOT NULL,
-                email TEXT, name TEXT, is_admin BOOLEAN DEFAULT FALSE,
-                created_at TIMESTAMPTZ DEFAULT NOW())""",
-            """CREATE TABLE IF NOT EXISTS email_templates (
-                id SERIAL PRIMARY KEY, slug TEXT UNIQUE NOT NULL, name TEXT,
-                subject TEXT, html_body TEXT, description TEXT,
-                created_at TIMESTAMPTZ DEFAULT NOW(), updated_at TIMESTAMPTZ DEFAULT NOW())""",
-            """CREATE TABLE IF NOT EXISTS ticket_tiers (
-                id SERIAL PRIMARY KEY, name TEXT NOT NULL,
-                price_cents INTEGER NOT NULL DEFAULT 0, description TEXT DEFAULT '',
-                features TEXT DEFAULT '', capacity INTEGER DEFAULT 0,
-                sold INTEGER DEFAULT 0, active BOOLEAN DEFAULT TRUE,
-                sort_order INTEGER DEFAULT 0, sale_start TIMESTAMPTZ,
-                sale_end TIMESTAMPTZ, created_at TIMESTAMPTZ DEFAULT NOW())""",
-            """CREATE TABLE IF NOT EXISTS promo_codes (
-                id SERIAL PRIMARY KEY, code TEXT UNIQUE NOT NULL,
-                discount_type TEXT DEFAULT 'percent', discount_amount INTEGER DEFAULT 0,
-                max_uses INTEGER DEFAULT 0, uses INTEGER DEFAULT 0,
-                starts_at TIMESTAMPTZ, ends_at TIMESTAMPTZ,
-                active BOOLEAN DEFAULT TRUE, created_at TIMESTAMPTZ DEFAULT NOW())""",
-            """CREATE TABLE IF NOT EXISTS orders (
-                id SERIAL PRIMARY KEY, email TEXT, name TEXT,
-                total_cents INTEGER DEFAULT 0, discount_cents INTEGER DEFAULT 0,
-                promo_code TEXT, status TEXT DEFAULT 'completed',
-                square_payment_id TEXT, receipt_url TEXT, billing_address TEXT, notes TEXT DEFAULT '',
-                created_at TIMESTAMPTZ DEFAULT NOW())""",
-            """CREATE TABLE IF NOT EXISTS order_items (
-                id SERIAL PRIMARY KEY,
-                order_id INTEGER REFERENCES orders(id) ON DELETE CASCADE,
-                ticket_tier_id INTEGER, tier_name TEXT,
-                qty INTEGER DEFAULT 1, unit_price_cents INTEGER DEFAULT 0)""",
-            """CREATE TABLE IF NOT EXISTS sponsor_requests (
-                id SERIAL PRIMARY KEY, company TEXT NOT NULL,
-                contact_name TEXT NOT NULL, email TEXT NOT NULL,
-                phone TEXT DEFAULT '', message TEXT DEFAULT '',
-                status TEXT DEFAULT 'pending', deck_token TEXT,
-                deck_token_expires TIMESTAMPTZ, created_at TIMESTAMPTZ DEFAULT NOW())""",
-            """CREATE TABLE IF NOT EXISTS admin_invites (
-                id SERIAL PRIMARY KEY, email TEXT NOT NULL, token TEXT NOT NULL,
-                expires_at TIMESTAMPTZ, used_at TIMESTAMPTZ,
-                created_by TEXT, created_at TIMESTAMPTZ DEFAULT NOW())""",
-            """CREATE TABLE IF NOT EXISTS purchase_links (
-                id SERIAL PRIMARY KEY, token TEXT UNIQUE NOT NULL,
-                email TEXT DEFAULT '', tier_id INTEGER, qty INTEGER DEFAULT 1,
-                promo_code TEXT, expires_at TIMESTAMPTZ, used_at TIMESTAMPTZ,
-                created_at TIMESTAMPTZ DEFAULT NOW())""",
-            """CREATE TABLE IF NOT EXISTS invoices (
-                id SERIAL PRIMARY KEY,
-                sponsor_request_id INTEGER REFERENCES sponsor_requests(id),
-                recipient_name TEXT NOT NULL, recipient_email TEXT NOT NULL,
-                company TEXT DEFAULT '', amount_cents INTEGER NOT NULL DEFAULT 0,
-                description TEXT DEFAULT '', status TEXT DEFAULT 'draft',
-                due_date DATE, view_token TEXT UNIQUE NOT NULL,
-                notes TEXT DEFAULT '', attachment_filename TEXT,
-                attachment_path TEXT, created_at TIMESTAMPTZ DEFAULT NOW())""",
-        ]
-        for s in stmts:
-            try:
-                cur.execute(s)
-            except Exception as e:
-                print(f"[TABLE CREATE] {e}")
-
-        # Reconcile legacy schemas where users table already existed without newer columns.
-        user_table_migrations = [
-            "ALTER TABLE users ADD COLUMN IF NOT EXISTS firebase_uid TEXT",
-            "ALTER TABLE users ADD COLUMN IF NOT EXISTS email TEXT",
-            "ALTER TABLE users ADD COLUMN IF NOT EXISTS name TEXT",
-            "ALTER TABLE users ADD COLUMN IF NOT EXISTS is_admin BOOLEAN DEFAULT FALSE",
-            "ALTER TABLE users ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW()",
-            "CREATE UNIQUE INDEX IF NOT EXISTS users_firebase_uid_uq ON users(firebase_uid) WHERE firebase_uid IS NOT NULL",
-        ]
-        for s in user_table_migrations:
-            try:
-                cur.execute(s)
-            except Exception as e:
-                print(f"[USERS MIGRATION] {e}")
-
-        order_table_migrations = [
-            "ALTER TABLE orders ADD COLUMN IF NOT EXISTS total_cents INTEGER DEFAULT 0",
-            "ALTER TABLE orders ADD COLUMN IF NOT EXISTS discount_cents INTEGER DEFAULT 0",
-            "ALTER TABLE orders ADD COLUMN IF NOT EXISTS promo_code TEXT",
-            "ALTER TABLE orders ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'completed'",
-            "ALTER TABLE orders ADD COLUMN IF NOT EXISTS square_payment_id TEXT",
-            "ALTER TABLE orders ADD COLUMN IF NOT EXISTS receipt_url TEXT",
-            "ALTER TABLE orders ADD COLUMN IF NOT EXISTS billing_address TEXT",
-            "ALTER TABLE orders ADD COLUMN IF NOT EXISTS notes TEXT DEFAULT ''",
-            "ALTER TABLE orders ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW()",
-        ]
-        for s in order_table_migrations:
-            try:
-                cur.execute(s)
-            except Exception as e:
-                print(f"[ORDERS MIGRATION] {e}")
-
-        order_item_table_migrations = [
-            "ALTER TABLE order_items ADD COLUMN IF NOT EXISTS order_id INTEGER",
-            "ALTER TABLE order_items ADD COLUMN IF NOT EXISTS ticket_tier_id INTEGER",
-            "ALTER TABLE order_items ADD COLUMN IF NOT EXISTS tier_name TEXT",
-            "ALTER TABLE order_items ADD COLUMN IF NOT EXISTS qty INTEGER DEFAULT 1",
-            "ALTER TABLE order_items ADD COLUMN IF NOT EXISTS unit_price_cents INTEGER DEFAULT 0",
-        ]
-        for s in order_item_table_migrations:
-            try:
-                cur.execute(s)
-            except Exception as e:
-                print(f"[ORDER ITEMS MIGRATION] {e}")
-
-        invite_table_migrations = [
-            "ALTER TABLE admin_invites ADD COLUMN IF NOT EXISTS email TEXT",
-            "ALTER TABLE admin_invites ADD COLUMN IF NOT EXISTS token TEXT",
-            "ALTER TABLE admin_invites ADD COLUMN IF NOT EXISTS expires_at TIMESTAMPTZ",
-            "ALTER TABLE admin_invites ADD COLUMN IF NOT EXISTS used_at TIMESTAMPTZ",
-            "ALTER TABLE admin_invites ADD COLUMN IF NOT EXISTS created_by TEXT",
-            "ALTER TABLE admin_invites ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW()",
-        ]
-        for s in invite_table_migrations:
-            try:
-                cur.execute(s)
-            except Exception as e:
-                print(f"[INVITES MIGRATION] {e}")
-
-        # If an old uid column exists, backfill firebase_uid once.
-        try:
-            cur.execute("""
-                DO $$
-                BEGIN
-                    IF EXISTS (
-                        SELECT 1
-                        FROM information_schema.columns
-                        WHERE table_schema = 'public' AND table_name = 'users' AND column_name = 'uid'
-                    ) THEN
-                        UPDATE users
-                        SET firebase_uid = uid
-                        WHERE firebase_uid IS NULL AND uid IS NOT NULL;
-                    END IF;
-                END $$;
-            """)
-        except Exception as e:
-            print(f"[USERS UID BACKFILL] {e}")
-
-        # Backfill common legacy order/order_item columns.
-        try:
-            cur.execute("""
-                DO $$
-                BEGIN
-                    IF EXISTS (
-                        SELECT 1 FROM information_schema.columns
-                        WHERE table_schema = 'public' AND table_name = 'orders' AND column_name = 'amount_cents'
-                    ) THEN
-                        UPDATE orders
-                        SET total_cents = COALESCE(total_cents, amount_cents, 0)
-                        WHERE total_cents IS NULL OR total_cents = 0;
-                    END IF;
-
-                    IF EXISTS (
-                        SELECT 1 FROM information_schema.columns
-                        WHERE table_schema = 'public' AND table_name = 'orders' AND column_name = 'total'
-                    ) THEN
-                        UPDATE orders
-                        SET total_cents = COALESCE(total_cents, total, 0)
-                        WHERE total_cents IS NULL OR total_cents = 0;
-                    END IF;
-
-                    IF EXISTS (
-                        SELECT 1 FROM information_schema.columns
-                        WHERE table_schema = 'public' AND table_name = 'order_items' AND column_name = 'unit_price'
-                    ) THEN
-                        UPDATE order_items
-                        SET unit_price_cents = COALESCE(unit_price_cents, unit_price, 0)
-                        WHERE unit_price_cents IS NULL OR unit_price_cents = 0;
-                    END IF;
-
-                    IF EXISTS (
-                        SELECT 1 FROM information_schema.columns
-                        WHERE table_schema = 'public' AND table_name = 'order_items' AND column_name = 'name'
-                    ) THEN
-                        UPDATE order_items
-                        SET tier_name = COALESCE(tier_name, name)
-                        WHERE tier_name IS NULL;
-                    END IF;
-                END $$;
-            """)
-        except Exception as e:
-            print(f"[ORDER BACKFILL] {e}")
-
-        cur.close()
-        conn.close()
-        print("[TABLES] All required tables ensured")
-    except Exception as e:
-        print(f"[TABLES ERROR] {e}")
-
-_ensure_tables()
+        firebase_admin.initialize_app()
 
 resend.api_key = os.environ.get('RESEND_API_KEY', '')
 RESEND_FROM_EMAIL = os.environ.get('RESEND_FROM_EMAIL', 'CannaGrudge <onboarding@resend.dev>')
@@ -347,17 +82,6 @@ def verify_admin(f):
             uid = decoded['uid']
             email = decoded.get('email', '')
             user = query_db('SELECT * FROM users WHERE firebase_uid = %s', (uid,), one=True)
-            if not user and email:
-                user = query_db(
-                    'SELECT * FROM users WHERE LOWER(email) = LOWER(%s) ORDER BY is_admin DESC, id ASC LIMIT 1',
-                    (email,),
-                    one=True,
-                )
-                if user and not user.get('firebase_uid'):
-                    user = execute_db(
-                        'UPDATE users SET firebase_uid = %s, name = COALESCE(NULLIF(name, %s), %s) WHERE id = %s RETURNING *',
-                        (uid, '', decoded.get('name', ''), user['id'])
-                    )
             if not user:
                 user = execute_db(
                     'INSERT INTO users (firebase_uid, email, name) VALUES (%s, %s, %s) RETURNING *',
@@ -485,24 +209,6 @@ def add_headers(response):
 def health_check():
     return jsonify({'status': 'ok', 'service': 'cannagrudge'}), 200
 
-@app.route('/api/debug/status')
-def debug_status():
-    """Temporary diagnostic endpoint — remove after admin works"""
-    info = {'firebase_init': bool(firebase_admin._apps)}
-    try:
-        conn = psycopg2.connect(DATABASE_URL)
-        cur = conn.cursor()
-        cur.execute("SELECT table_name FROM information_schema.tables WHERE table_schema='public' ORDER BY table_name")
-        info['tables'] = [r[0] for r in cur.fetchall()]
-        cur.execute("SELECT id, email, is_admin, firebase_uid FROM users WHERE is_admin = TRUE")
-        info['admins'] = [{'id': r[0], 'email': r[1], 'is_admin': r[2], 'uid': (r[3][:12] + '...') if r[3] else None} for r in cur.fetchall()]
-        cur.close()
-        conn.close()
-        info['db'] = 'ok'
-    except Exception as e:
-        info['db'] = str(e)
-    return jsonify(info)
-
 @app.route('/')
 def index():
     return send_from_directory(_ROOT, 'index.html')
@@ -516,14 +222,6 @@ for _f in os.listdir(_ROOT):
 
 @app.route('/<page>')
 def serve_page(page):
-    # Redirect .html URLs to clean versions (301 permanent)
-    if page.endswith('.html'):
-        clean = page[:-5]
-        target = '/' if clean == 'index' else '/' + clean
-        qs = request.query_string.decode()
-        if qs:
-            target += '?' + qs
-        return redirect(target, code=301)
     if page in _HTML_PAGES:
         return send_from_directory(_ROOT, page + '.html')
     # Let Flask's static handler try, or fall through to 404
@@ -637,26 +335,9 @@ def create_payment():
         return jsonify({'error': 'Missing payment source'}), 400
 
     cart_items = data.get('items', [])
-    email = (data.get('email') or '').strip()
-    buyer_name = (data.get('name') or '').strip()
+    email = data.get('email', '')
+    buyer_name = data.get('name', '')
     promo_code = (data.get('promoCode') or '').strip().upper()
-    billing_address_raw = data.get('billingAddress') or {}
-
-    if not cart_items:
-        return jsonify({'error': 'Your cart is empty'}), 400
-    if not email or '@' not in email:
-        return jsonify({'error': 'A valid email is required'}), 400
-    if not buyer_name:
-        return jsonify({'error': 'Buyer name is required'}), 400
-
-    billing_address = {
-        'address_line_1': (billing_address_raw.get('addressLine1') or '').strip(),
-        'address_line_2': (billing_address_raw.get('addressLine2') or '').strip(),
-        'locality': (billing_address_raw.get('city') or '').strip(),
-        'administrative_district_level_1': (billing_address_raw.get('state') or '').strip().upper(),
-        'postal_code': (billing_address_raw.get('postalCode') or '').strip(),
-        'country': (billing_address_raw.get('country') or '').strip().upper() or 'US',
-    }
 
     # Map frontend item IDs to database names for tier lookup
     item_id_to_tier_name = {
@@ -667,6 +348,7 @@ def create_payment():
     fallback_catalog = {
         'regular-entry': {'name': 'Regular Entry', 'price_cents': 4000},
         'early-entry-addon': {'name': 'Early Entry Add-On', 'price_cents': 2000},
+        'test-ticket': {'name': 'Test Ticket', 'price_cents': 100},  # DELETE after checkout verified
     }
 
     total = 0
@@ -742,17 +424,6 @@ def create_payment():
         charge_amount = 0
 
     if charge_amount > 0:
-        required_billing_fields = [
-            billing_address['address_line_1'],
-            billing_address['locality'],
-            billing_address['administrative_district_level_1'],
-            billing_address['postal_code'],
-            billing_address['country'],
-        ]
-        if any(not field for field in required_billing_fields):
-            return jsonify({'error': 'Complete billing address is required for payment'}), 400
-
-    if charge_amount > 0:
         client = Client(access_token=SQUARE_ACCESS_TOKEN, environment='production')
         body = {
             'source_id': data['sourceId'],
@@ -760,7 +431,6 @@ def create_payment():
             'amount_money': {'amount': charge_amount, 'currency': 'USD'},
             'location_id': SQUARE_LOCATION_ID,
             'note': f'CannaGrudge Tickets - {buyer_name}',
-            'billing_address': billing_address,
         }
         if email:
             body['buyer_email_address'] = email
@@ -775,9 +445,9 @@ def create_payment():
         receipt_url = ''
 
     order = execute_db(
-        '''INSERT INTO orders (email, name, total_cents, discount_cents, promo_code, status, square_payment_id, receipt_url, billing_address)
-           VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING *''',
-        (email, buyer_name, total, discount, promo_code or None, 'completed', payment_id, receipt_url, json.dumps(billing_address))
+        '''INSERT INTO orders (email, name, total_cents, discount_cents, promo_code, status, square_payment_id, receipt_url)
+           VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING *''',
+        (email, buyer_name, total, discount, promo_code or None, 'completed', payment_id, receipt_url)
     )
 
     for li in order_line_items:
@@ -820,25 +490,13 @@ def create_payment():
 def admin_verify():
     auth_header = request.headers.get('Authorization', '')
     if not auth_header.startswith('Bearer '):
-        return jsonify({'error': 'Unauthorized', 'detail': 'No Bearer token'}), 401
+        return jsonify({'error': 'Unauthorized'}), 401
     token = auth_header.split('Bearer ')[1]
     try:
         decoded = fb_auth.verify_id_token(token)
         uid = decoded['uid']
         email = decoded.get('email', '')
-        print(f"[ADMIN VERIFY] uid={uid}, email={email}")
         user = query_db('SELECT * FROM users WHERE firebase_uid = %s', (uid,), one=True)
-        if not user and email:
-            user = query_db(
-                'SELECT * FROM users WHERE LOWER(email) = LOWER(%s) ORDER BY is_admin DESC, id ASC LIMIT 1',
-                (email,),
-                one=True,
-            )
-            if user and not user.get('firebase_uid'):
-                user = execute_db(
-                    'UPDATE users SET firebase_uid = %s, name = COALESCE(NULLIF(name, %s), %s) WHERE id = %s RETURNING *',
-                    (uid, '', decoded.get('name', ''), user['id'])
-                )
         if not user:
             admin_count = query_db('SELECT COUNT(*) as cnt FROM users WHERE is_admin = TRUE', one=True)
             is_first = admin_count['cnt'] == 0
@@ -859,15 +517,12 @@ def admin_verify():
             execute_db('UPDATE users SET is_admin = TRUE WHERE id = %s', (user['id'],))
             execute_db('UPDATE admin_invites SET used_at = NOW() WHERE id = %s', (invite['id'],))
             user['is_admin'] = True
-        print(f"[ADMIN VERIFY] is_admin={user.get('is_admin', False)}")
         return jsonify({
             'is_admin': user.get('is_admin', False),
             'user': {'id': user['id'], 'email': user['email'], 'name': user['name']}
         })
     except Exception as e:
-        import traceback
         print(f"[ADMIN VERIFY ERROR] {type(e).__name__}: {e}")
-        traceback.print_exc()
         return jsonify({'error': str(e)}), 401
 
 
@@ -1200,124 +855,15 @@ def admin_invite_admin():
         'INSERT INTO admin_invites (email, token, expires_at, created_by) VALUES (%s, %s, %s, %s) RETURNING *',
         (email, token, expires, request.admin_user['id'])
     )
-    app_base = request.host_url.rstrip('/')
-    accept_url = f'{app_base}/admin?invite={token}'
-    invite_html = f'''
-        <div style="font-family:Arial,sans-serif;line-height:1.6;color:#111;">
-          <h2 style="margin-bottom:8px;">Admin Invitation</h2>
-          <p>You were invited to become an admin for CannaGrudge.</p>
-          <p>Use this link to accept the invite and sign in with <strong>{email}</strong>:</p>
-          <p><a href="{accept_url}" style="display:inline-block;padding:10px 16px;background:#d4a843;color:#111;text-decoration:none;border-radius:6px;font-weight:700;">Accept Admin Invite</a></p>
-          <p>If the button doesn't work, copy and paste this URL:</p>
-          <p><a href="{accept_url}">{accept_url}</a></p>
-          <p>This invite expires in 7 days.</p>
-        </div>
-    '''
+    return jsonify(invite), 201
 
-    from_candidates = []
-    if RESEND_FROM_EMAIL:
-        from_candidates.append(RESEND_FROM_EMAIL)
-    fallback_from = 'CannaGrudge <onboarding@resend.dev>'
-    if fallback_from not in from_candidates:
-        from_candidates.append(fallback_from)
-
-    sent = False
-    send_error = None
-    sender_used = None
-    for from_email in from_candidates:
-        try:
-            resend.Emails.send({
-                'from': from_email,
-                'to': [email],
-                'subject': 'You were invited as a CannaGrudge admin',
-                'html': invite_html,
-            })
-            sent = True
-            sender_used = from_email
-            break
-        except Exception as e:
-            send_error = str(e)
-
-    if not sent:
-        return jsonify({
-            'invite': invite,
-            'email_sent': False,
-            'warning': f'Invite created, but email failed to send: {send_error}',
-            'invite_url': accept_url,
-        }), 201
-
-    return jsonify({'invite': invite, 'email_sent': True, 'sender': sender_used, 'invite_url': accept_url}), 201
-
-@app.route('/api/admin/invites/accept', methods=['POST'])
-def admin_accept_invite():
-    auth_header = request.headers.get('Authorization', '')
-    if not auth_header.startswith('Bearer '):
-        return jsonify({'error': 'Unauthorized'}), 401
-
-    token = (request.get_json(silent=True) or {}).get('token', '').strip()
-    if not token:
-        return jsonify({'error': 'Invite token required'}), 400
-
-    try:
-        decoded = fb_auth.verify_id_token(auth_header.split('Bearer ')[1])
-    except Exception as e:
-        return jsonify({'error': 'Invalid token', 'detail': str(e)}), 401
-
-    email = (decoded.get('email') or '').strip().lower()
-    uid = decoded.get('uid')
-    if not email or not uid:
-        return jsonify({'error': 'Authenticated user missing email/uid'}), 400
-
-    invite = query_db(
-        'SELECT * FROM admin_invites WHERE token = %s AND used_at IS NULL AND expires_at > NOW()',
-        (token,), one=True
-    )
-    if not invite:
-        return jsonify({'error': 'Invite is invalid or expired'}), 404
-
-    if (invite.get('email') or '').strip().lower() != email:
-        return jsonify({'error': 'Invite email does not match signed-in account'}), 403
-
-    user = query_db('SELECT * FROM users WHERE firebase_uid = %s', (uid,), one=True)
-    if not user:
-        user = query_db('SELECT * FROM users WHERE LOWER(email) = LOWER(%s) ORDER BY id ASC LIMIT 1', (email,), one=True)
-        if user:
-            user = execute_db(
-                'UPDATE users SET firebase_uid = %s, is_admin = TRUE WHERE id = %s RETURNING *',
-                (uid, user['id'])
-            )
-        else:
-            user = execute_db(
-                'INSERT INTO users (firebase_uid, email, name, is_admin) VALUES (%s, %s, %s, TRUE) RETURNING *',
-                (uid, email, decoded.get('name', ''))
-            )
-    else:
-        if not user.get('is_admin'):
-            user = execute_db('UPDATE users SET is_admin = TRUE WHERE id = %s RETURNING *', (user['id'],))
-
-    execute_db('UPDATE admin_invites SET used_at = NOW() WHERE id = %s', (invite['id'],))
-    return jsonify({'success': True, 'is_admin': True, 'email': email})
-
-@app.route('/api/admin/admins/<uid>/remove', methods=['POST'])
+@app.route('/api/admin/admins/<int:uid>/remove', methods=['POST'])
 @verify_admin
 def admin_remove_admin(uid):
-    if str(uid) == str(request.admin_user['id']):
+    if uid == request.admin_user['id']:
         return jsonify({'error': 'Cannot remove yourself'}), 400
-    updated = execute_db('UPDATE users SET is_admin = FALSE WHERE id = %s RETURNING id', (uid,))
-    if not updated:
-        return jsonify({'error': 'Admin not found'}), 404
-    return jsonify({'removed': True, 'id': updated['id']})
-
-@app.route('/api/admin/invites/<invite_id>/delete', methods=['POST'])
-@verify_admin
-def admin_delete_invite(invite_id):
-    deleted = execute_db(
-        'DELETE FROM admin_invites WHERE id::text = %s AND used_at IS NULL RETURNING id, email',
-        (str(invite_id),)
-    )
-    if not deleted:
-        return jsonify({'error': 'Invite not found or already used'}), 404
-    return jsonify({'deleted': True, 'id': deleted['id'], 'email': deleted['email']})
+    execute_db('UPDATE users SET is_admin = FALSE WHERE id = %s', (uid,))
+    return jsonify({'removed': True})
 
 
 @app.route('/api/admin/purchase-links', methods=['GET'])
@@ -1344,7 +890,7 @@ def admin_create_purchase_link():
         'INSERT INTO purchase_links (token, email, tier_id, qty, promo_code, expires_at) VALUES (%s, %s, %s, %s, %s, %s) RETURNING *',
         (token, d.get('email', ''), d.get('tier_id'), d.get('qty', 1), d.get('promo_code'), expires)
     )
-    return jsonify({'link': link, 'url': f'/tickets?invite={token}'}), 201
+    return jsonify({'link': link, 'url': f'/tickets.html?invite={token}'}), 201
 
 @app.route('/api/purchase-links/<token>', methods=['GET'])
 def get_purchase_link(token):
