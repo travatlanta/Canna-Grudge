@@ -10,6 +10,61 @@
   <meta property="og:description" content="April 25, 2026 · Dunn's Arena, Litchfield Park AZ. Get your tickets now!">
   <meta property="og:image" content="https://cannagrudge.com/assets/event-poster.png">
   <link rel="stylesheet" href="theme.css">
+  <style>
+    .brands-marquee-wrap {
+      overflow: hidden;
+      position: relative;
+      padding: 28px 0;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      background: rgba(255,255,255,0.015);
+    }
+    .brands-marquee-wrap::before,
+    .brands-marquee-wrap::after {
+      content: '';
+      position: absolute;
+      top: 0; bottom: 0;
+      width: 120px;
+      z-index: 2;
+      pointer-events: none;
+    }
+    .brands-marquee-wrap::before {
+      left: 0;
+      background: linear-gradient(to right, var(--cg-bg) 0%, transparent 100%);
+    }
+    .brands-marquee-wrap::after {
+      right: 0;
+      background: linear-gradient(to left, var(--cg-bg) 0%, transparent 100%);
+    }
+    .brands-marquee-track {
+      display: flex;
+      gap: 24px;
+      width: max-content;
+      animation: marquee-scroll 32s linear infinite;
+    }
+    @keyframes marquee-scroll {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+    .marquee-logo {
+      flex-shrink: 0;
+      width: 110px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 10px;
+      padding: 8px 12px;
+    }
+    .marquee-logo img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      filter: brightness(0.85) grayscale(0.2);
+    }
+  </style>
 </head>
 <body class="page-padded">
 
@@ -17,6 +72,39 @@
     <div class="container">
       <h1>Get Your <span class="text-gradient">Tickets</span></h1>
       <p class="section-subtitle">Regular Entry is $40. Add Early Entry for +$20 per ticket if you want in one hour early.</p>
+    </div>
+  </div>
+
+  <!-- ── Brand marquee ── -->
+  <div class="brands-marquee-wrap">
+    <div class="brands-marquee-track">
+      <div class="marquee-logo"><img src="assets/brands/Diablo%20Cannabis.png" alt="Diablo Cannabis"></div>
+      <div class="marquee-logo"><img src="assets/brands/Dime%20Industries.png" alt="Dime Industries"></div>
+      <div class="marquee-logo"><img src="assets/brands/Dr%20Zodiak.png" alt="Dr Zodiak"></div>
+      <div class="marquee-logo"><img src="assets/brands/Gold%20Smith%20Extracts.png" alt="Gold Smith Extracts"></div>
+      <div class="marquee-logo"><img src="assets/brands/Mint%20Cannabis.png" alt="Mint Cannabis"></div>
+      <div class="marquee-logo"><img src="assets/brands/Nirvana.png" alt="Nirvana"></div>
+      <div class="marquee-logo"><img src="assets/brands/Pressure.png" alt="Pressure"></div>
+      <div class="marquee-logo"><img src="assets/brands/Pucks.png" alt="Pucks"></div>
+      <div class="marquee-logo"><img src="assets/brands/Stiiizy.png" alt="Stiiizy"></div>
+      <div class="marquee-logo"><img src="assets/brands/Sweeto.png" alt="Sweeto"></div>
+      <div class="marquee-logo"><img src="assets/brands/Terp%20City.png" alt="Terp City"></div>
+      <div class="marquee-logo"><img src="assets/brands/Toasted.png" alt="Toasted"></div>
+      <div class="marquee-logo"><img src="assets/brands/Tyson.png" alt="Tyson"></div>
+      <!-- duplicate set for seamless loop -->
+      <div class="marquee-logo"><img src="assets/brands/Diablo%20Cannabis.png" alt="Diablo Cannabis"></div>
+      <div class="marquee-logo"><img src="assets/brands/Dime%20Industries.png" alt="Dime Industries"></div>
+      <div class="marquee-logo"><img src="assets/brands/Dr%20Zodiak.png" alt="Dr Zodiak"></div>
+      <div class="marquee-logo"><img src="assets/brands/Gold%20Smith%20Extracts.png" alt="Gold Smith Extracts"></div>
+      <div class="marquee-logo"><img src="assets/brands/Mint%20Cannabis.png" alt="Mint Cannabis"></div>
+      <div class="marquee-logo"><img src="assets/brands/Nirvana.png" alt="Nirvana"></div>
+      <div class="marquee-logo"><img src="assets/brands/Pressure.png" alt="Pressure"></div>
+      <div class="marquee-logo"><img src="assets/brands/Pucks.png" alt="Pucks"></div>
+      <div class="marquee-logo"><img src="assets/brands/Stiiizy.png" alt="Stiiizy"></div>
+      <div class="marquee-logo"><img src="assets/brands/Sweeto.png" alt="Sweeto"></div>
+      <div class="marquee-logo"><img src="assets/brands/Terp%20City.png" alt="Terp City"></div>
+      <div class="marquee-logo"><img src="assets/brands/Toasted.png" alt="Toasted"></div>
+      <div class="marquee-logo"><img src="assets/brands/Tyson.png" alt="Tyson"></div>
     </div>
   </div>
 
