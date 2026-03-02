@@ -2174,6 +2174,89 @@ body.page-padded {
   }
 }
 
+/* ── About: Producer logos ───────────────────────────── */
+.about-producers {
+  margin-top: 36px;
+  padding: 28px 32px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: var(--cg-radius-lg);
+}
+
+.about-producers-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cg-gold);
+  margin: 0 0 20px;
+}
+
+.about-producers-logos {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.about-producer-logo {
+  height: 56px;
+  display: flex;
+  align-items: center;
+}
+
+.about-producer-logo img {
+  max-height: 56px;
+  max-width: 160px;
+  width: auto;
+  object-fit: contain;
+  filter: brightness(1.1) saturate(1.05);
+}
+
+.about-producers-divider {
+  font-size: 22px;
+  font-weight: 300;
+  color: var(--cg-text-muted);
+  line-height: 1;
+}
+
+@media (max-width: 480px) {
+  .about-producers {
+    padding: 20px 18px;
+  }
+  .about-producer-logo img {
+    max-height: 44px;
+    max-width: 120px;
+  }
+}
+
+/* ── Ring skirt brand hotspots ───────────────────────── */
+.ring-brand-hotspot {
+  width: 88px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 8px;
+  padding: 7px 12px;
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  opacity: 0;
+  transform: scale(0.8);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  pointer-events: none;
+}
+
+.ring-brand-hotspot[visible] {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.ring-brand-hotspot img {
+  width: 100%;
+  height: auto;
+  display: block;
+  filter: brightness(1.2) contrast(1.05) drop-shadow(0 2px 6px rgba(0,0,0,0.7));
+}
+
 /* ══════════════════════════════════════════════════
    Fliers Showcase
 ══════════════════════════════════════════════════ */
