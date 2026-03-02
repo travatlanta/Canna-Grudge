@@ -2175,86 +2175,123 @@ body.page-padded {
 }
 
 /* ── About: Producer logos ───────────────────────────── */
-.about-producers {
-  margin-top: 36px;
-  padding: 28px 32px;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.08);
+/* ── About Section Layout ────────────────────────────── */
+.about-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 64px;
+  align-items: center;
+}
+
+.about-content {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.about-content .section-title {
+  margin-bottom: 0;
+}
+
+.about-producer-card {
+  background: linear-gradient(135deg, rgba(212,175,55,0.07) 0%, rgba(255,255,255,0.02) 100%);
+  border: 1px solid rgba(212,175,55,0.28);
   border-radius: var(--cg-radius-lg);
+  padding: 44px 40px;
+  text-align: center;
+  box-shadow: 0 0 64px rgba(212,175,55,0.10), inset 0 1px 0 rgba(212,175,55,0.15);
 }
 
 .about-producers-label {
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--cg-gold);
-  margin: 0 0 20px;
+  margin: 0 0 28px;
 }
 
-.about-producers-logos {
+.about-producer-logos-row {
   display: flex;
   align-items: center;
-  gap: 24px;
+  justify-content: center;
+  gap: 32px;
   flex-wrap: wrap;
+  margin-bottom: 32px;
 }
 
 .about-producer-logo {
-  height: 56px;
+  height: 110px;
   display: flex;
   align-items: center;
 }
 
 .about-producer-logo img {
-  max-height: 56px;
-  max-width: 160px;
+  max-height: 110px;
+  max-width: 220px;
   width: auto;
   object-fit: contain;
-  filter: brightness(1.1) saturate(1.05);
+  filter: brightness(1.15) saturate(1.1);
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.about-producer-logo img:hover {
+  transform: scale(1.06);
+  filter: brightness(1.35) saturate(1.25);
 }
 
 .about-producers-divider {
-  font-size: 22px;
-  font-weight: 300;
-  color: var(--cg-text-muted);
+  font-size: 40px;
+  font-weight: 100;
+  color: var(--cg-gold);
+  opacity: 0.5;
   line-height: 1;
 }
 
-@media (max-width: 480px) {
-  .about-producers {
-    padding: 20px 18px;
+@media (max-width: 900px) {
+  .about-layout {
+    grid-template-columns: 1fr;
+    gap: 44px;
+  }
+  .about-producer-card {
+    padding: 36px 28px;
+  }
+  .about-producer-logo {
+    height: 88px;
   }
   .about-producer-logo img {
-    max-height: 44px;
-    max-width: 120px;
+    max-height: 88px;
+    max-width: 180px;
+  }
+  .about-producers-divider {
+    font-size: 30px;
   }
 }
 
 /* ── Ring skirt brand hotspots ───────────────────────── */
 .ring-brand-hotspot {
-  width: 88px;
-  background: rgba(0, 0, 0, 0.5);
-  border-radius: 8px;
-  padding: 7px 12px;
-  backdrop-filter: blur(3px);
-  -webkit-backdrop-filter: blur(3px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  opacity: 0;
-  transform: scale(0.8);
-  transition: opacity 0.4s ease, transform 0.4s ease;
+  width: 120px;
+  background: rgba(0, 0, 0, 0.55);
+  border-radius: 10px;
+  padding: 10px 14px;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  opacity: 1;
+  transform: scale(1);
   pointer-events: none;
 }
 
-.ring-brand-hotspot[visible] {
-  opacity: 1;
-  transform: scale(1);
+/* keep visibility-attribute toggle working when model-viewer fires it */
+.ring-brand-hotspot:not([visible]) {
+  opacity: 0.15;
 }
 
 .ring-brand-hotspot img {
   width: 100%;
   height: auto;
   display: block;
-  filter: brightness(1.2) contrast(1.05) drop-shadow(0 2px 6px rgba(0,0,0,0.7));
+  filter: brightness(1.3) contrast(1.1) drop-shadow(0 2px 8px rgba(0,0,0,0.8));
 }
 
 /* ══════════════════════════════════════════════════
