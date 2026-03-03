@@ -173,6 +173,7 @@ def run_migrations():
         "ALTER TABLE orders ALTER COLUMN total_amount SET DEFAULT 0",
         "ALTER TABLE orders ALTER COLUMN order_number SET DEFAULT 'LEGACY'",
         "ALTER TABLE order_items ALTER COLUMN product_id DROP NOT NULL",
+        "ALTER TABLE order_items ALTER COLUMN quantity DROP NOT NULL",
     ]
     for sql in migrations:
         try:
@@ -457,6 +458,22 @@ def create_payment():
     if charge_amount < 0:
         charge_amount = 0
 
+    # Write order to DB FIRST (pending) — so a DB failure never charges the card
+    order_number = 'CG-' + str(uuid.uuid4())[:8].upper()
+    order = execute_db(
+        '''INSERT INTO orders (order_number, email, name, subtotal, total_amount, total_cents, discount_cents, promo_code, status, square_payment_id, receipt_url)
+           VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING *''',
+        (order_number, email, buyer_name, total, charge_amount, total, discount, promo_code or None, 'pending', '', '')
+    )
+    for li in order_line_items:
+        execute_db(
+            'INSERT INTO order_items (order_id, ticket_tier_id, product_id, tier_name, qty, quantity, unit_price_cents) VALUES (%s, %s, %s, %s, %s, %s, %s)',
+            (order['id'], li['tier_id'], li['product_id'], li['tier_name'], li['qty'], li['qty'], li['unit_price'])
+        )
+        if li['tier_id']:
+            execute_db('UPDATE ticket_tiers SET sold = sold + %s WHERE id = %s', (li['qty'], li['tier_id']))
+
+    # Now charge Square
     if charge_amount > 0:
         client = Client(access_token=SQUARE_ACCESS_TOKEN, environment=SQUARE_ENVIRONMENT)
         body = {
@@ -471,6 +488,7 @@ def create_payment():
         result = client.payments.create_payment(body=body)
         if not result.is_success():
             print(f'[SQUARE ERROR] {result.errors}')
+            execute_db("UPDATE orders SET status='failed' WHERE id=%s", (order['id'],))
             return jsonify({'success': False, 'errors': result.errors}), 400
         payment = result.body.get('payment', {})
         payment_id = payment.get('id', '')
@@ -479,21 +497,13 @@ def create_payment():
         payment_id = 'FREE-' + str(uuid.uuid4())[:8]
         receipt_url = ''
 
-    order_number = 'CG-' + payment_id[:8].upper()
-
-    order = execute_db(
-        '''INSERT INTO orders (order_number, email, name, subtotal, total_amount, total_cents, discount_cents, promo_code, status, square_payment_id, receipt_url)
-           VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING *''',
-        (order_number, email, buyer_name, total, charge_amount, total, discount, promo_code or None, 'completed', payment_id, receipt_url)
+    # Mark order completed now that payment succeeded
+    execute_db(
+        "UPDATE orders SET status='completed', square_payment_id=%s, receipt_url=%s WHERE id=%s",
+        (payment_id, receipt_url, order['id'])
     )
-
-    for li in order_line_items:
-        execute_db(
-            'INSERT INTO order_items (order_id, ticket_tier_id, product_id, tier_name, qty, unit_price_cents) VALUES (%s, %s, %s, %s, %s, %s)',
-            (order['id'], li['tier_id'], li['product_id'], li['tier_name'], li['qty'], li['unit_price'])
-        )
-        if li['tier_id']:
-            execute_db('UPDATE ticket_tiers SET sold = sold + %s WHERE id = %s', (li['qty'], li['tier_id']))
+    order['square_payment_id'] = payment_id
+    order['receipt_url'] = receipt_url
 
     if email:
         items_html = ''
