@@ -155,12 +155,35 @@ try:
 except Exception as e:
     print(f"[TICKET SEED] {e}")
 
+def run_migrations():
+    """Add any missing columns to existing tables."""
+    migrations = [
+        "ALTER TABLE orders ADD COLUMN IF NOT EXISTS email TEXT",
+        "ALTER TABLE orders ADD COLUMN IF NOT EXISTS name TEXT",
+        "ALTER TABLE orders ADD COLUMN IF NOT EXISTS discount_cents INTEGER DEFAULT 0",
+        "ALTER TABLE orders ADD COLUMN IF NOT EXISTS promo_code TEXT",
+        "ALTER TABLE orders ADD COLUMN IF NOT EXISTS square_payment_id TEXT",
+        "ALTER TABLE orders ADD COLUMN IF NOT EXISTS receipt_url TEXT",
+        "ALTER TABLE orders ADD COLUMN IF NOT EXISTS billing_address TEXT",
+        "ALTER TABLE orders ADD COLUMN IF NOT EXISTS notes TEXT DEFAULT ''",
+    ]
+    for sql in migrations:
+        try:
+            execute_db(sql)
+        except Exception as e:
+            print(f"[MIGRATION] {sql[:60]}... => {e}")
+
 _seeded = False
 def _lazy_seed():
     global _seeded
     if _seeded:
         return
     _seeded = True
+    try:
+        if DATABASE_URL:
+            run_migrations()
+    except Exception as e:
+        print(f"[MIGRATION] {e}")
     try:
         seed_email_templates()
     except Exception as e:
