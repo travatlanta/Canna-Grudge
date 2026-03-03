@@ -172,7 +172,7 @@ def run_migrations():
         "ALTER TABLE orders ALTER COLUMN subtotal SET DEFAULT 0",
         "ALTER TABLE orders ALTER COLUMN total_amount SET DEFAULT 0",
         "ALTER TABLE orders ALTER COLUMN order_number SET DEFAULT 'LEGACY'",
-        "ALTER TABLE order_items ALTER COLUMN product_id SET DEFAULT 'unknown'",
+        "ALTER TABLE order_items ALTER COLUMN product_id SET DEFAULT NULL",
     ]
     for sql in migrations:
         try:
@@ -432,7 +432,7 @@ def create_payment():
         total += line_total
         order_line_items.append({
             'tier_id': tier_pk,
-            'product_id': item_id,
+            'product_id': int(item_id) if str(item_id).isdigit() else None,
             'tier_name': tier_name,
             'qty': qty,
             'unit_price': price
