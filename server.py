@@ -171,6 +171,7 @@ def run_migrations():
         # Set defaults on all NOT NULL numeric columns so INSERTs without them don't fail
         "ALTER TABLE orders ALTER COLUMN subtotal SET DEFAULT 0",
         "ALTER TABLE orders ALTER COLUMN total_amount SET DEFAULT 0",
+        "ALTER TABLE orders ALTER COLUMN order_number SET DEFAULT 'LEGACY'",
     ]
     for sql in migrations:
         try:
@@ -476,10 +477,12 @@ def create_payment():
         payment_id = 'FREE-' + str(uuid.uuid4())[:8]
         receipt_url = ''
 
+    order_number = 'CG-' + payment_id[:8].upper()
+
     order = execute_db(
-        '''INSERT INTO orders (email, name, subtotal, total_amount, total_cents, discount_cents, promo_code, status, square_payment_id, receipt_url)
-           VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING *''',
-        (email, buyer_name, total, charge_amount, total, discount, promo_code or None, 'completed', payment_id, receipt_url)
+        '''INSERT INTO orders (order_number, email, name, subtotal, total_amount, total_cents, discount_cents, promo_code, status, square_payment_id, receipt_url)
+           VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING *''',
+        (order_number, email, buyer_name, total, charge_amount, total, discount, promo_code or None, 'completed', payment_id, receipt_url)
     )
 
     for li in order_line_items:
