@@ -172,8 +172,15 @@ def run_migrations():
         "ALTER TABLE orders ALTER COLUMN subtotal SET DEFAULT 0",
         "ALTER TABLE orders ALTER COLUMN total_amount SET DEFAULT 0",
         "ALTER TABLE orders ALTER COLUMN order_number SET DEFAULT 'LEGACY'",
+        # Drop NOT NULL on every non-PK column in order_items so no column surprises
         "ALTER TABLE order_items ALTER COLUMN product_id DROP NOT NULL",
         "ALTER TABLE order_items ALTER COLUMN quantity DROP NOT NULL",
+        "ALTER TABLE order_items ALTER COLUMN unit_price DROP NOT NULL",
+        "ALTER TABLE order_items ALTER COLUMN unit_price_cents DROP NOT NULL",
+        "ALTER TABLE order_items ALTER COLUMN tier_name DROP NOT NULL",
+        "ALTER TABLE order_items ALTER COLUMN qty DROP NOT NULL",
+        "ALTER TABLE order_items ALTER COLUMN ticket_tier_id DROP NOT NULL",
+        "ALTER TABLE order_items ALTER COLUMN order_id DROP NOT NULL",
     ]
     for sql in migrations:
         try:
@@ -467,8 +474,8 @@ def create_payment():
     )
     for li in order_line_items:
         execute_db(
-            'INSERT INTO order_items (order_id, ticket_tier_id, product_id, tier_name, qty, quantity, unit_price_cents) VALUES (%s, %s, %s, %s, %s, %s, %s)',
-            (order['id'], li['tier_id'], li['product_id'], li['tier_name'], li['qty'], li['qty'], li['unit_price'])
+            'INSERT INTO order_items (order_id, ticket_tier_id, product_id, tier_name, qty, quantity, unit_price, unit_price_cents) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)',
+            (order['id'], li['tier_id'], li['product_id'], li['tier_name'], li['qty'], li['qty'], li['unit_price'], li['unit_price'])
         )
         if li['tier_id']:
             execute_db('UPDATE ticket_tiers SET sold = sold + %s WHERE id = %s', (li['qty'], li['tier_id']))
