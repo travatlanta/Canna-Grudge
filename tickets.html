@@ -140,20 +140,6 @@
           <button class="btn btn-primary btn-block" onclick="addTicketPackage()">Add Selection to Cart</button>
         </div>
 
-        <!-- ── TEST TICKET — DELETE AFTER VERIFYING CHECKOUT ── -->
-        <div class="ticket-card" id="card-test" style="border:2px dashed rgba(255,80,80,0.5);opacity:0.9;">
-          <div class="badge badge-corner" style="background:rgba(255,80,80,0.25);color:#ff6060;">TEST ONLY</div>
-          <div class="tier-name" style="color:#ff8080;">Test Ticket</div>
-          <div class="tier-price">$1<small>/charge</small></div>
-          <ul class="tier-features">
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ff8080" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Payment system verification only</li>
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ff8080" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>No event admission included</li>
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ff8080" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Delete this card once checkout is confirmed</li>
-          </ul>
-          <button class="btn btn-outline btn-block" style="border-color:rgba(255,80,80,0.4);color:#ff8080;" onclick="try{var c=JSON.parse(localStorage.getItem('cg_cart')||'[]');c=c.filter(function(i){return i.id!=='test-ticket'});c.push({id:'test-ticket',name:'Test Ticket',price:100,qty:1});localStorage.setItem('cg_cart',JSON.stringify(c));}catch(e){}window.location.href='/checkout.html';">Charge $1.00 to Test Checkout</button>
-        </div>
-        <!-- ── END TEST TICKET ── -->
-
         <div class="ticket-card" id="card-early-info">
           <div class="badge badge-corner">Optional Add-On</div>
           <div class="tier-name">Early Entry Details</div>

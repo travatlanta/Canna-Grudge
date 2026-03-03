@@ -389,7 +389,6 @@ def create_payment():
     fallback_catalog = {
         'regular-entry': {'name': 'Regular Entry', 'price_cents': 4000},
         'early-entry-addon': {'name': 'Early Entry Add-On', 'price_cents': 2000},
-        'test-ticket': {'name': 'Test Ticket', 'price_cents': 100},  # DELETE after checkout verified
     }
 
     total = 0
