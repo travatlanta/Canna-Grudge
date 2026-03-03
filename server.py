@@ -168,6 +168,7 @@ def run_migrations():
         "ALTER TABLE orders ADD COLUMN IF NOT EXISTS notes TEXT DEFAULT ''",
         # Convert status from ENUM to TEXT if needed
         "ALTER TABLE orders ALTER COLUMN status TYPE TEXT USING status::TEXT",
+        "ALTER TABLE orders ALTER COLUMN subtotal SET DEFAULT 0",
     ]
     for sql in migrations:
         try:
@@ -474,9 +475,9 @@ def create_payment():
         receipt_url = ''
 
     order = execute_db(
-        '''INSERT INTO orders (email, name, total_cents, discount_cents, promo_code, status, square_payment_id, receipt_url)
-           VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING *''',
-        (email, buyer_name, total, discount, promo_code or None, 'completed', payment_id, receipt_url)
+        '''INSERT INTO orders (email, name, subtotal, total_cents, discount_cents, promo_code, status, square_payment_id, receipt_url)
+           VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING *''',
+        (email, buyer_name, total, total, discount, promo_code or None, 'completed', payment_id, receipt_url)
     )
 
     for li in order_line_items:
