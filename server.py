@@ -166,6 +166,8 @@ def run_migrations():
         "ALTER TABLE orders ADD COLUMN IF NOT EXISTS receipt_url TEXT",
         "ALTER TABLE orders ADD COLUMN IF NOT EXISTS billing_address TEXT",
         "ALTER TABLE orders ADD COLUMN IF NOT EXISTS notes TEXT DEFAULT ''",
+        # Convert status from ENUM to TEXT if needed
+        "ALTER TABLE orders ALTER COLUMN status TYPE TEXT USING status::TEXT",
     ]
     for sql in migrations:
         try:
