@@ -172,7 +172,7 @@ def run_migrations():
         "ALTER TABLE orders ALTER COLUMN subtotal SET DEFAULT 0",
         "ALTER TABLE orders ALTER COLUMN total_amount SET DEFAULT 0",
         "ALTER TABLE orders ALTER COLUMN order_number SET DEFAULT 'LEGACY'",
-        "ALTER TABLE order_items ALTER COLUMN product_id SET DEFAULT NULL",
+        "ALTER TABLE order_items ALTER COLUMN product_id DROP NOT NULL",
     ]
     for sql in migrations:
         try:
