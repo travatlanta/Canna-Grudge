@@ -172,6 +172,7 @@ def run_migrations():
         "ALTER TABLE orders ALTER COLUMN subtotal SET DEFAULT 0",
         "ALTER TABLE orders ALTER COLUMN total_amount SET DEFAULT 0",
         "ALTER TABLE orders ALTER COLUMN order_number SET DEFAULT 'LEGACY'",
+        "ALTER TABLE order_items ALTER COLUMN product_id SET DEFAULT 'unknown'",
     ]
     for sql in migrations:
         try:
@@ -431,6 +432,7 @@ def create_payment():
         total += line_total
         order_line_items.append({
             'tier_id': tier_pk,
+            'product_id': item_id,
             'tier_name': tier_name,
             'qty': qty,
             'unit_price': price
@@ -487,8 +489,8 @@ def create_payment():
 
     for li in order_line_items:
         execute_db(
-            'INSERT INTO order_items (order_id, ticket_tier_id, tier_name, qty, unit_price_cents) VALUES (%s, %s, %s, %s, %s)',
-            (order['id'], li['tier_id'], li['tier_name'], li['qty'], li['unit_price'])
+            'INSERT INTO order_items (order_id, ticket_tier_id, product_id, tier_name, qty, unit_price_cents) VALUES (%s, %s, %s, %s, %s, %s)',
+            (order['id'], li['tier_id'], li['product_id'], li['tier_name'], li['qty'], li['unit_price'])
         )
         if li['tier_id']:
             execute_db('UPDATE ticket_tiers SET sold = sold + %s WHERE id = %s', (li['qty'], li['tier_id']))
