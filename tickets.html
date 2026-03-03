@@ -150,7 +150,7 @@
             <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ff8080" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>No event admission included</li>
             <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ff8080" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Delete this card once checkout is confirmed</li>
           </ul>
-          <button class="btn btn-outline btn-block" style="border-color:rgba(255,80,80,0.4);color:#ff8080;" onclick="addToCart('test-ticket','Test Ticket',100,1); window.location.href='/checkout.html';">Charge $1.00 to Test Checkout</button>
+          <button class="btn btn-outline btn-block" style="border-color:rgba(255,80,80,0.4);color:#ff8080;" onclick="try{var c=JSON.parse(localStorage.getItem('cg_cart')||'[]');c=c.filter(function(i){return i.id!=='test-ticket'});c.push({id:'test-ticket',name:'Test Ticket',price:100,qty:1});localStorage.setItem('cg_cart',JSON.stringify(c));}catch(e){}window.location.href='/checkout.html';">Charge $1.00 to Test Checkout</button>
         </div>
         <!-- ── END TEST TICKET ── -->
 
