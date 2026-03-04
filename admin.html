@@ -594,7 +594,7 @@
         </div>
 
         <div id="tab-orders" class="tab-content">
-          <div class="admin-table-wrap"><table class="admin-table" id="ordersTable"><thead><tr><th>#</th><th>Date</th><th>Customer</th><th>Email</th><th>Billing Address</th><th>Items</th><th>Total</th><th>Discount</th><th>Promo</th><th>Status</th></tr></thead><tbody></tbody></table></div>
+          <div class="admin-table-wrap"><table class="admin-table" id="ordersTable"><thead><tr><th>#</th><th>Date</th><th>Customer</th><th>Email</th><th>Billing Address</th><th>Items</th><th>Total</th><th>Discount</th><th>Promo</th><th>Status</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
         </div>
 
         <div id="tab-promos" class="tab-content">
@@ -771,6 +771,18 @@
           <button type="submit" class="btn btn-primary">Create</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="orderDetailModal">
+    <div class="modal-card" style="max-width:760px;">
+      <button class="modal-close" onclick="closeModal('orderDetailModal')">&times;</button>
+      <h3>Order Details</h3>
+      <div id="orderDetailBody" style="font-size:14px;"></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px;">
+        <button type="button" class="btn btn-outline" id="resendOrderEmailBtn">Resend Confirmation Email</button>
+        <button type="button" class="btn btn-ghost" onclick="closeModal('orderDetailModal')">Close</button>
+      </div>
     </div>
   </div>
 
@@ -1115,10 +1127,48 @@
       } catch (e) { showMsg(e.message, 'error'); }
     });
 
+    let adminOrders = [];
+    let activeOrderId = null;
+
+    function renderOrderDetail(order) {
+      const itemRows = (order.items || []).map(i => {
+        const qty = Number(i.qty ?? i.quantity ?? 0);
+        const unit = Number(i.unit_price_cents ?? i.unit_price ?? 0);
+        return `<tr><td style="padding:8px;border-bottom:1px solid var(--cg-border);">${i.tier_name || 'Ticket'}</td><td style="padding:8px;border-bottom:1px solid var(--cg-border);text-align:center;">${qty}</td><td style="padding:8px;border-bottom:1px solid var(--cg-border);text-align:right;">${fmtMoney(unit * qty)}</td></tr>`;
+      }).join('') || '<tr><td colspan="3" style="padding:10px;color:var(--cg-text-muted);text-align:center;">No line items</td></tr>';
+
+      return `
+        <div class="form-row" style="grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+          <div><span style="color:var(--cg-text-muted);">Order ID</span><div style="color:var(--cg-text);font-weight:700;">${order.id}</div></div>
+          <div><span style="color:var(--cg-text-muted);">Order Number</span><div style="color:var(--cg-text);font-weight:700;">${order.order_number || '—'}</div></div>
+          <div><span style="color:var(--cg-text-muted);">Date</span><div>${fmtDateTime(order.created_at)}</div></div>
+          <div><span style="color:var(--cg-text-muted);">Status</span><div>${statusBadge(order.status || 'pending')}</div></div>
+          <div><span style="color:var(--cg-text-muted);">Customer</span><div>${order.name || '—'}</div></div>
+          <div><span style="color:var(--cg-text-muted);">Email</span><div>${order.email || '—'}</div></div>
+          <div><span style="color:var(--cg-text-muted);">Promo</span><div>${order.promo_code || '—'}</div></div>
+          <div><span style="color:var(--cg-text-muted);">Payment ID</span><div>${order.square_payment_id || '—'}</div></div>
+        </div>
+        <div style="margin-bottom:12px;"><span style="color:var(--cg-text-muted);">Billing Address</span><div style="margin-top:4px;">${fmtBillingAddress(order.billing_address)}</div></div>
+        <div style="margin-bottom:12px;"><span style="color:var(--cg-text-muted);">Receipt URL</span><div style="margin-top:4px;">${order.receipt_url ? `<a href="${order.receipt_url}" target="_blank" rel="noopener" style="color:var(--cg-gold);">Open Receipt</a>` : '—'}</div></div>
+        <div style="margin-bottom:12px;"><span style="color:var(--cg-text-muted);">Notes</span><div style="margin-top:4px;white-space:pre-wrap;">${order.notes || '—'}</div></div>
+        <div style="border:1px solid var(--cg-border);border-radius:8px;overflow:hidden;">
+          <table style="width:100%;border-collapse:collapse;">
+            <thead><tr><th style="text-align:left;padding:8px;background:var(--cg-surface-2);">Item</th><th style="padding:8px;background:var(--cg-surface-2);">Qty</th><th style="text-align:right;padding:8px;background:var(--cg-surface-2);">Amount</th></tr></thead>
+            <tbody>${itemRows}</tbody>
+          </table>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:20px;margin-top:12px;font-weight:700;">
+          <span>Discount: ${order.discount_cents ? fmtMoney(order.discount_cents) : '$0.00'}</span>
+          <span>Total: <span style="color:var(--cg-gold);">${fmtMoney(order.total_cents)}</span></span>
+        </div>
+      `;
+    }
+
     async function loadOrders() {
       const data = await apiFetch('/api/admin/orders');
+      adminOrders = data;
       const tbody = $('ordersTable').querySelector('tbody');
-      if (!data.length) { tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:var(--cg-text-muted);padding:32px;">No orders</td></tr>'; return; }
+      if (!data.length) { tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;color:var(--cg-text-muted);padding:32px;">No orders</td></tr>'; return; }
       tbody.innerHTML = data.map(o => {
         const items = (o.items || []).map(i => `${i.qty}x ${i.tier_name}`).join(', ');
         return `<tr>
@@ -1132,9 +1182,43 @@
           <td>${o.discount_cents ? fmtMoney(o.discount_cents) : '—'}</td>
           <td>${o.promo_code || '—'}</td>
           <td>${statusBadge(o.status)}</td>
+          <td><button class="btn btn-ghost btn-sm" onclick="viewOrder(${o.id})">View</button></td>
         </tr>`;
       }).join('');
     }
+
+    window.viewOrder = async function(id) {
+      activeOrderId = id;
+      const quick = adminOrders.find(o => o.id === id);
+      $('orderDetailBody').innerHTML = '<div class="loading-spinner" style="padding:24px;">Loading order details...</div>';
+      $('resendOrderEmailBtn').disabled = !quick?.email;
+      openModal('orderDetailModal');
+      try {
+        const order = await apiFetch(`/api/admin/orders/${id}`);
+        $('orderDetailBody').innerHTML = renderOrderDetail(order);
+        $('resendOrderEmailBtn').disabled = !order.email;
+      } catch (e) {
+        $('orderDetailBody').innerHTML = `<div class="msg msg-error">${e.message}</div>`;
+        $('resendOrderEmailBtn').disabled = true;
+      }
+    };
+
+    $('resendOrderEmailBtn').addEventListener('click', async () => {
+      if (!activeOrderId) return;
+      const btn = $('resendOrderEmailBtn');
+      btn.disabled = true;
+      const original = btn.textContent;
+      btn.textContent = 'Sending...';
+      try {
+        const res = await apiFetch(`/api/admin/orders/${activeOrderId}/resend-confirmation`, { method: 'POST' });
+        showMsg(res.message || 'Confirmation email resent');
+      } catch (e) {
+        showMsg(e.message, 'error');
+      } finally {
+        btn.textContent = original;
+        btn.disabled = false;
+      }
+    });
 
     async function loadPromos() {
       const data = await apiFetch('/api/admin/promos');

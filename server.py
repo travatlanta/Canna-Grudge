@@ -237,6 +237,46 @@ def send_email(to_email, template_slug, variables=None):
         print(f"[EMAIL ERROR] {e}")
         return None
 
+def _as_cents(value, default=0):
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return default
+
+def build_order_items_html(order_items):
+    rows = ''
+    for li in (order_items or []):
+        tier_name = li.get('tier_name') or 'Ticket'
+        qty = _as_cents(li.get('qty') if li.get('qty') is not None else li.get('quantity'), 0)
+        unit_price = _as_cents(li.get('unit_price_cents') if li.get('unit_price_cents') is not None else li.get('unit_price'), 0)
+        rows += (
+            f'<tr><td style="padding:10px 12px;border-bottom:1px solid #2a2a2a;color:#ffffff;">{tier_name}</td>'
+            f'<td style="padding:10px 12px;border-bottom:1px solid #2a2a2a;color:#ffffff;text-align:center;">{qty}</td>'
+            f'<td style="padding:10px 12px;border-bottom:1px solid #2a2a2a;color:#d4a843;text-align:right;">${unit_price * qty / 100:.2f}</td></tr>'
+        )
+    return rows
+
+def send_purchase_confirmation_email(order, order_items, subtotal_cents=None, discount_cents=None, total_cents=None):
+    email = (order.get('email') or '').strip().lower()
+    if not email:
+        return False
+
+    subtotal = _as_cents(subtotal_cents, _as_cents(order.get('subtotal'), _as_cents(order.get('total_cents'))))
+    discount = _as_cents(discount_cents, _as_cents(order.get('discount_cents')))
+    total = _as_cents(total_cents, _as_cents(order.get('total_cents'), subtotal - discount))
+
+    result = send_email(email, 'purchase_confirmation', {
+        'buyer_name': (order.get('name') or 'Guest').strip() or 'Guest',
+        'order_id': str(order.get('id') or ''),
+        'order_items': build_order_items_html(order_items),
+        'subtotal': f'${subtotal / 100:.2f}',
+        'discount': f'${discount / 100:.2f}',
+        'total': f'${total / 100:.2f}',
+        'receipt_url': order.get('receipt_url') or '#',
+        'payment_id': order.get('square_payment_id') or '',
+    })
+    return bool(result)
+
 @app.after_request
 def add_headers(response):
     response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
@@ -376,7 +416,7 @@ def create_payment():
         return jsonify({'error': 'Missing payment source'}), 400
 
     cart_items = data.get('items', [])
-    email = data.get('email', '')
+    email = (data.get('email') or '').strip().lower()
     buyer_name = data.get('name', '')
     promo_code = (data.get('promoCode') or '').strip().upper()
 
@@ -512,19 +552,13 @@ def create_payment():
     order['receipt_url'] = receipt_url
 
     if email:
-        items_html = ''
-        for li in order_line_items:
-            items_html += f'<tr><td style="padding:10px 12px;border-bottom:1px solid #2a2a2a;color:#ffffff;">{li["tier_name"]}</td><td style="padding:10px 12px;border-bottom:1px solid #2a2a2a;color:#ffffff;text-align:center;">{li["qty"]}</td><td style="padding:10px 12px;border-bottom:1px solid #2a2a2a;color:#d4a843;text-align:right;">${li["unit_price"] * li["qty"] / 100:.2f}</td></tr>'
-        send_email(email, 'purchase_confirmation', {
-            'buyer_name': buyer_name or 'Guest',
-            'order_id': str(order['id']),
-            'order_items': items_html,
-            'subtotal': f'${total / 100:.2f}',
-            'discount': f'${discount / 100:.2f}',
-            'total': f'${charge_amount / 100:.2f}',
-            'receipt_url': receipt_url or '#',
-            'payment_id': payment_id,
-        })
+        send_purchase_confirmation_email(
+            order,
+            order_line_items,
+            subtotal_cents=total,
+            discount_cents=discount,
+            total_cents=charge_amount,
+        )
 
     return jsonify({
         'success': True,
@@ -650,6 +684,46 @@ def admin_update_order(oid):
     order = execute_db('UPDATE orders SET status=%s, notes=%s WHERE id=%s RETURNING *',
                        (d.get('status', 'completed'), d.get('notes', ''), oid))
     return jsonify(order)
+
+@app.route('/api/admin/orders/<int:oid>', methods=['GET'])
+@verify_admin
+def admin_get_order_detail(oid):
+    order = query_db('SELECT * FROM orders WHERE id = %s', (oid,), one=True)
+    if not order:
+        return jsonify({'error': 'Order not found'}), 404
+
+    items = query_db(
+        '''SELECT tier_name, qty, quantity, unit_price, unit_price_cents
+           FROM order_items WHERE order_id = %s ORDER BY id''',
+        (oid,)
+    )
+    if order.get('created_at'):
+        order['created_at'] = order['created_at'].isoformat()
+    if order.get('updated_at') and hasattr(order['updated_at'], 'isoformat'):
+        order['updated_at'] = order['updated_at'].isoformat()
+    order['items'] = items or []
+    return jsonify(order)
+
+@app.route('/api/admin/orders/<int:oid>/resend-confirmation', methods=['POST'])
+@verify_admin
+def admin_resend_order_confirmation(oid):
+    order = query_db('SELECT * FROM orders WHERE id = %s', (oid,), one=True)
+    if not order:
+        return jsonify({'error': 'Order not found'}), 404
+
+    items = query_db(
+        '''SELECT tier_name, qty, quantity, unit_price, unit_price_cents
+           FROM order_items WHERE order_id = %s ORDER BY id''',
+        (oid,)
+    )
+
+    if not (order.get('email') or '').strip():
+        return jsonify({'error': 'Order has no customer email address'}), 400
+
+    sent = send_purchase_confirmation_email(order, items or [])
+    if not sent:
+        return jsonify({'error': 'Failed to send confirmation email'}), 500
+    return jsonify({'success': True, 'message': f'Confirmation email resent to {order.get("email")}'})
 
 
 @app.route('/api/admin/promos', methods=['GET'])
