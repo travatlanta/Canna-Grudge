@@ -1,7 +1,8 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
 import {
   getAuth, onAuthStateChanged, signInWithPopup,
-  GoogleAuthProvider, FacebookAuthProvider, OAuthProvider, signOut
+  GoogleAuthProvider, signOut,
+  signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile
 } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
 
 // Your Firebase project config
@@ -22,16 +23,15 @@ auth.useDeviceLanguage();
 
 // Providers
 const googleProvider = new GoogleAuthProvider();
-const facebookProvider = new FacebookAuthProvider();
-const appleProvider = new OAuthProvider('apple.com');
 
 // Expose tiny API for other pages
 window.__cgAuth = {
   auth,
   onAuthStateChanged,
   signInWithPopup,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  updateProfile,
   signOut,
-  googleProvider,
-  facebookProvider,
-  appleProvider
+  googleProvider
 };
