@@ -300,4 +300,39 @@ document.addEventListener('DOMContentLoaded', () => {
   } else {
     document.querySelectorAll('[data-animate]').forEach(el => el.classList.add('visible'));
   }
+
+  // ─── Lightweight Analytics Tracker ───────────────────────
+  (function(){
+    if (location.pathname.startsWith('/admin')) return; // don't track admins
+    var sid = sessionStorage.getItem('cg_sid');
+    if (!sid) { sid = Math.random().toString(36).slice(2) + Date.now().toString(36); sessionStorage.setItem('cg_sid', sid); }
+    var params = new URLSearchParams(location.search);
+    var ua = navigator.userAgent;
+    var mobile = /Mobi|Android/i.test(ua);
+    var tablet = /Tablet|iPad/i.test(ua);
+    var dt = tablet ? 'tablet' : mobile ? 'mobile' : 'desktop';
+    var br = /Edg\//.test(ua) ? 'Edge' : /OPR\//.test(ua) ? 'Opera' : /Chrome\//.test(ua) ? 'Chrome' : /Safari\//.test(ua) ? 'Safari' : /Firefox\//.test(ua) ? 'Firefox' : 'Other';
+    var os = /Windows/.test(ua) ? 'Windows' : /Mac OS/.test(ua) ? 'macOS' : /Android/.test(ua) ? 'Android' : /iPhone|iPad/.test(ua) ? 'iOS' : /Linux/.test(ua) ? 'Linux' : 'Other';
+    var startTime = Date.now();
+    var pagePath = location.pathname || '/';
+
+    function sendView(dur) {
+      var data = { sid: sid, page: pagePath, ref: document.referrer || '',
+        us: params.get('utm_source') || '', um: params.get('utm_medium') || '', uc: params.get('utm_campaign') || '',
+        dt: dt, br: br, os: os, sw: screen.width, dur: dur || 0 };
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon((window.CG_API_BASE || '') + '/api/track', JSON.stringify(data));
+      } else {
+        fetch((window.CG_API_BASE || '') + '/api/track', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data), keepalive: true });
+      }
+    }
+
+    // Send initial pageview after short delay (to filter bots)
+    setTimeout(function(){ sendView(0); }, 800);
+
+    // Send duration on page leave
+    document.addEventListener('visibilitychange', function() {
+      if (document.visibilityState === 'hidden') { sendView(Date.now() - startTime); }
+    });
+  })();
 });

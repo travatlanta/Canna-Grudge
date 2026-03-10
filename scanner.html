@@ -1,69 +1,217 @@
 <!doctype html>
 <html lang="en" data-theme="dark"><head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Scanner 🔥 • CannaGrudge</title>
+  <title>Check-In Scanner 🔥 • CannaGrudge</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔥</text></svg>">
   <link rel="stylesheet" href="theme.css">
+  <style>
+    :root {
+      --cg-gold: #C8A84E;
+      --cg-green: #27ae60;
+      --cg-red: #e74c3c;
+    }
+    body { min-height: 100vh; background: #0a0a0a; }
+    .scanner-wrap { max-width: 600px; margin: 0 auto; padding: 20px 16px 80px; }
+    .back-link { display: inline-flex; align-items: center; gap: 6px; color: var(--cg-gold); font-weight: 600; text-decoration: none; margin-bottom: 16px; font-size: 14px; }
+    .scanner-title { font-size: 24px; font-weight: 900; letter-spacing: -.02em; margin-bottom: 16px; }
+    .search-bar { display: flex; gap: 8px; margin-bottom: 20px; }
+    .search-bar input {
+      flex: 1; padding: 12px 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.04); color: #fff; font-size: 16px; outline: none;
+    }
+    .search-bar input:focus { border-color: var(--cg-gold); box-shadow: 0 0 0 2px rgba(200,168,78,.15); }
+    .search-bar input::placeholder { color: rgba(255,255,255,.35); }
+    .search-bar button {
+      padding: 12px 20px; border-radius: 12px; border: none;
+      background: var(--cg-gold); color: #000; font-weight: 700; font-size: 14px; cursor: pointer;
+    }
+    .search-bar button:hover { filter: brightness(1.1); }
+    .result-card {
+      background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.06);
+      border-radius: 16px; padding: 20px; margin-bottom: 12px; transition: all .2s;
+    }
+    .result-card.checked-in { border-color: rgba(39,174,96,.3); background: rgba(39,174,96,.05); }
+    .result-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+    .result-name { font-size: 18px; font-weight: 800; }
+    .result-email { font-size: 13px; color: rgba(255,255,255,.5); margin-top: 2px; }
+    .result-order-num { font-size: 11px; font-weight: 700; color: var(--cg-gold); letter-spacing: .05em; }
+    .result-items { margin: 12px 0; padding: 12px; background: rgba(255,255,255,.03); border-radius: 10px; }
+    .result-item-row { display: flex; justify-content: space-between; font-size: 14px; padding: 4px 0; }
+    .result-item-label { color: rgba(255,255,255,.7); }
+    .result-item-qty { color: #fff; font-weight: 700; }
+    .badge { display: inline-flex; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
+    .badge-green { background: rgba(39,174,96,.15); color: var(--cg-green); }
+    .badge-gold { background: rgba(200,168,78,.15); color: var(--cg-gold); }
+    .badge-red { background: rgba(231,76,60,.15); color: var(--cg-red); }
+    .btn-checkin {
+      width: 100%; padding: 14px; border-radius: 12px; border: none;
+      background: var(--cg-green); color: #fff; font-size: 15px; font-weight: 800;
+      cursor: pointer; transition: all .2s; margin-top: 8px;
+    }
+    .btn-checkin:hover { filter: brightness(1.1); }
+    .btn-checkin:disabled { opacity: .4; cursor: not-allowed; }
+    .btn-undo {
+      width: 100%; padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,.1);
+      background: transparent; color: rgba(255,255,255,.6); font-size: 13px; font-weight: 600;
+      cursor: pointer; margin-top: 6px;
+    }
+    .btn-undo:hover { border-color: var(--cg-red); color: var(--cg-red); }
+    .checkin-time { font-size: 12px; color: rgba(255,255,255,.4); margin-top: 8px; text-align: center; }
+    .no-results { text-align: center; color: rgba(255,255,255,.4); padding: 40px 0; font-size: 15px; }
+    .loading-msg { text-align: center; color: var(--cg-gold); padding: 30px 0; }
+    .access-denied-card { text-align: center; padding: 60px 20px; }
+    .access-denied-card h2 { font-size: 22px; margin-bottom: 8px; }
+    .access-denied-card p { color: rgba(255,255,255,.4); }
+    #scannerAuth { display:none; }
+  </style>
 </head>
-<body class="page-padded">
-  <main class="container">
-    <section class="card"><h1 class="display" style="font-size:26px;">Ticket Scanner</h1><p class="muted">Camera scanner placeholder.</p></section>
-  </main>
+<body>
+  <div id="scannerLoading" style="display:flex;align-items:center;justify-content:center;min-height:100vh;color:var(--cg-gold);font-weight:700;">Loading...</div>
+  <div id="scannerDenied" style="display:none;">
+    <div class="scanner-wrap">
+      <div class="access-denied-card">
+        <h2>Access Denied</h2>
+        <p>You must be an admin to use the check-in scanner.</p>
+        <a href="/admin" style="display:inline-block;margin-top:16px;color:var(--cg-gold);font-weight:600;">Go to Admin</a>
+      </div>
+    </div>
+  </div>
+  <div id="scannerAuth" style="display:none;">
+    <div class="scanner-wrap">
+      <a href="/admin" class="back-link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        Admin
+      </a>
+      <h1 class="scanner-title">Check-In Scanner</h1>
+      <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="Order #, email, or name..." autocomplete="off">
+        <button id="searchBtn" onclick="doSearch()">Search</button>
+      </div>
+      <div id="results"></div>
+    </div>
+  </div>
 
-  <footer class="footer">
-    <div class="container">
-      <div class="footer-grid">
-        <div class="footer-col">
-          <div class="footer-brand">Canna<span>Grudge</span></div>
-          <p class="footer-desc">The ultimate fight night event. Live bouts, music, vendors, and more in Litchfield Park, AZ.</p>
-          <div class="footer-social">
-            <a href="https://www.instagram.com/" target="_blank" aria-label="Instagram"><img src="assets/Icons/instagram.png" alt="Instagram"></a>
-            <a href="https://www.facebook.com/" target="_blank" aria-label="Facebook"><img src="assets/Icons/facebook.png" alt="Facebook"></a>
-            <a href="https://twitter.com/" target="_blank" aria-label="X"><img src="assets/Icons/twitter.png" alt="X"></a>
+  <script src="api-config.js"></script>
+  <script src="firebase-config.js" type="module"></script>
+  <script type="module">
+    const { auth, onAuthStateChanged } = window.__cgAuth || {};
+
+    function waitForAuth() {
+      return new Promise(resolve => {
+        if (window.__cgAuth) return resolve();
+        const iv = setInterval(() => { if (window.__cgAuth) { clearInterval(iv); resolve(); } }, 50);
+        setTimeout(() => { clearInterval(iv); resolve(); }, 5000);
+      });
+    }
+
+    async function getToken() {
+      const u = window.__cgAuth?.auth?.currentUser;
+      return u ? u.getIdToken() : null;
+    }
+
+    async function apiFetch(url, opts = {}) {
+      const token = await getToken();
+      if (!token) throw new Error('Not authenticated');
+      const headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', ...(opts.headers || {}) };
+      const fullUrl = (window.CG_API_BASE || '') + url;
+      const res = await fetch(fullUrl, { ...opts, headers });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        throw new Error(d.error || `Request failed (${res.status})`);
+      }
+      return res.json();
+    }
+
+    await waitForAuth();
+
+    onAuthStateChanged(auth, async (user) => {
+      document.getElementById('scannerLoading').style.display = 'none';
+      if (!user) { window.location.href = '/admin'; return; }
+      try {
+        const v = await apiFetch('/api/admin/verify', { method: 'POST' });
+        if (!v.is_admin) { document.getElementById('scannerDenied').style.display = 'block'; return; }
+        document.getElementById('scannerAuth').style.display = 'block';
+        document.getElementById('searchInput').focus();
+      } catch (e) {
+        document.getElementById('scannerDenied').style.display = 'block';
+      }
+    });
+
+    // Expose to global scope for inline handlers
+    window._apiFetch = apiFetch;
+
+    window.doSearch = async function() {
+      const q = document.getElementById('searchInput').value.trim();
+      const resultsDiv = document.getElementById('results');
+      if (!q) { resultsDiv.innerHTML = ''; return; }
+      resultsDiv.innerHTML = '<div class="loading-msg">Searching...</div>';
+      try {
+        const orders = await apiFetch(`/api/admin/checkin/lookup?q=${encodeURIComponent(q)}`);
+        if (!orders.length) {
+          resultsDiv.innerHTML = '<div class="no-results">No matching orders found</div>';
+          return;
+        }
+        resultsDiv.innerHTML = orders.map(o => renderOrder(o)).join('');
+      } catch (e) {
+        resultsDiv.innerHTML = `<div class="no-results">${e.message}</div>`;
+      }
+    };
+
+    function renderOrder(o) {
+      const isCheckedIn = !!o.checked_in;
+      const items = (o.items || []).map(i =>
+        `<div class="result-item-row"><span class="result-item-label">${i.tier_name}</span><span class="result-item-qty">&times; ${i.qty}</span></div>`
+      ).join('');
+      const checkinTime = o.checked_in_at ? new Date(o.checked_in_at).toLocaleString() : '';
+
+      return `<div class="result-card ${isCheckedIn ? 'checked-in' : ''}" id="order-${o.id}">
+        <div class="result-header">
+          <div>
+            <div class="result-name">${o.name || 'Guest'}</div>
+            <div class="result-email">${o.email || ''}</div>
+          </div>
+          <div style="text-align:right;">
+            <div class="result-order-num">${o.order_number || '#' + o.id}</div>
+            ${isCheckedIn
+              ? '<span class="badge badge-green">Checked In</span>'
+              : '<span class="badge badge-gold">Not Checked In</span>'}
           </div>
         </div>
-        <div class="footer-col">
-          <h4>Event</h4>
-          <a href="/">Home</a>
-          <a href="/#schedule">Schedule</a>
-          <a href="/sponsors">Sponsors</a>
-          <a href="/tickets">Tickets</a>
-        </div>
-        <div class="footer-col">
-          <h4>Support</h4>
-          <a href="/#faq">FAQ</a>
-          <a href="mailto:production@Diablocanna.co">Contact</a>
-          <a href="/tos">Terms &amp; Conditions</a>
-        </div>
-        <div class="footer-col">
-          <h4>Legal</h4>
-          <a href="/privacy">Privacy Policy</a>
-          <a href="/delete-data">Delete Data</a>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <span>&copy; 2026 CannaGrudge. All rights reserved.</span>
-        <div>
-          <a href="/privacy">Privacy</a> &nbsp;&middot;&nbsp; <a href="/tos">Terms</a>
-        </div>
-      </div>
-    </div>
-  </footer>
+        <div class="result-items">${items || '<span style="color:rgba(255,255,255,.4);">No items</span>'}</div>
+        ${isCheckedIn
+          ? `<div class="checkin-time">Checked in: ${checkinTime}</div>
+             <button class="btn-undo" onclick="undoCheckin(${o.id})">Undo Check-In</button>`
+          : `<button class="btn-checkin" onclick="doCheckin(${o.id})">Check In</button>`}
+      </div>`;
+    }
+    window.renderOrder = renderOrder;
 
-  <dialog id="loginModal" style="border:none; border-radius:16px; padding:0; width: 92vw; max-width:420px;">
-    <div class="card" style="border:none;">
-      <h2 class="display" style="margin-bottom:8px;">Sign in</h2>
-      <p class="muted" style="margin:0 0 12px;">Fast login to save your tickets.</p>
-      <div style="display:grid; gap:10px; margin-bottom:12px;">
-        <button class="button button--primary" style="background:#000; color:#fff;">Continue with Apple</button>
-        <button class="button button--primary" style="background:#0F9D58; color:#fff;">Continue with Google</button>
-        <button class="button button--ghost">Continue with Email</button>
-      </div>
-      <div style="display:flex; justify-content:flex-end; gap:8px;">
-        <button class="button button--ghost" data-close-modal>Close</button>
-      </div>
-    </div>
-  </dialog>
+    window.doCheckin = async function(id) {
+      const btn = document.querySelector(`#order-${id} .btn-checkin`);
+      if (btn) { btn.disabled = true; btn.textContent = 'Checking in...'; }
+      try {
+        const res = await apiFetch(`/api/admin/checkin/${id}`, { method: 'POST' });
+        // Re-search to refresh
+        doSearch();
+      } catch (e) {
+        alert(e.message);
+        if (btn) { btn.disabled = false; btn.textContent = 'Check In'; }
+      }
+    };
 
-  <script src="app.js"></script>
+    window.undoCheckin = async function(id) {
+      if (!confirm('Undo this check-in?')) return;
+      try {
+        await apiFetch(`/api/admin/checkin/${id}/undo`, { method: 'POST' });
+        doSearch();
+      } catch (e) {
+        alert(e.message);
+      }
+    };
+
+    // Enter key triggers search
+    document.getElementById('searchInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter') doSearch();
+    });
+  </script>
 </body></html>

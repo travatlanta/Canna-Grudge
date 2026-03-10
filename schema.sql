@@ -50,16 +50,21 @@ CREATE TABLE IF NOT EXISTS promo_codes (
 
 CREATE TABLE IF NOT EXISTS orders (
     id SERIAL PRIMARY KEY,
+    order_number TEXT DEFAULT 'LEGACY',
     email TEXT,
     name TEXT,
+    subtotal INTEGER DEFAULT 0,
+    total_amount INTEGER DEFAULT 0,
     total_cents INTEGER DEFAULT 0,
     discount_cents INTEGER DEFAULT 0,
     promo_code TEXT,
-    status TEXT DEFAULT 'completed',
+    status TEXT DEFAULT 'pending',
     square_payment_id TEXT,
     receipt_url TEXT,
     billing_address TEXT,
     notes TEXT DEFAULT '',
+    checked_in BOOLEAN DEFAULT FALSE,
+    checked_in_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -67,8 +72,11 @@ CREATE TABLE IF NOT EXISTS order_items (
     id SERIAL PRIMARY KEY,
     order_id INTEGER REFERENCES orders(id) ON DELETE CASCADE,
     ticket_tier_id INTEGER,
+    product_id INTEGER,
     tier_name TEXT,
     qty INTEGER DEFAULT 1,
+    quantity INTEGER DEFAULT 1,
+    unit_price INTEGER DEFAULT 0,
     unit_price_cents INTEGER DEFAULT 0
 );
 
@@ -123,3 +131,24 @@ CREATE TABLE IF NOT EXISTS invoices (
     attachment_path TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+CREATE TABLE IF NOT EXISTS page_views (
+    id SERIAL PRIMARY KEY,
+    session_id TEXT NOT NULL,
+    page TEXT NOT NULL,
+    referrer TEXT DEFAULT '',
+    utm_source TEXT DEFAULT '',
+    utm_medium TEXT DEFAULT '',
+    utm_campaign TEXT DEFAULT '',
+    device_type TEXT DEFAULT '',
+    browser TEXT DEFAULT '',
+    os TEXT DEFAULT '',
+    country TEXT DEFAULT '',
+    screen_width INTEGER DEFAULT 0,
+    duration_ms INTEGER DEFAULT 0,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_page_views_created ON page_views(created_at);
+CREATE INDEX IF NOT EXISTS idx_page_views_session ON page_views(session_id);
+CREATE INDEX IF NOT EXISTS idx_page_views_page ON page_views(page);

@@ -41,16 +41,29 @@
 
     .admin-sidebar-nav {
       flex: 1;
-      padding: 12px 0;
+      padding: 8px 0;
       overflow-y: auto;
     }
+
+    .nav-group { margin-bottom: 4px; }
+    .nav-group-label {
+      padding: 16px 20px 6px;
+      font-family: var(--cg-font-display);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--cg-text-muted);
+      opacity: .6;
+    }
+    .nav-group-label:first-child { padding-top: 8px; }
 
     .admin-nav-btn {
       width: 100%;
       display: flex;
       align-items: center;
       gap: 12px;
-      padding: 12px 20px;
+      padding: 10px 20px;
       background: transparent;
       border: none;
       color: var(--cg-text-secondary);
@@ -497,6 +510,14 @@
         flex-wrap: wrap;
       }
     }
+
+    /* ─── Analytics responsive ─── */
+    @media (max-width: 768px) {
+      #tab-analytics [style*="grid-template-columns: 1fr 1fr 1fr"] { grid-template-columns: 1fr !important; }
+      #tab-analytics [style*="grid-template-columns: 1fr 1fr"]     { grid-template-columns: 1fr !important; }
+      #tab-analytics [style*="grid-template-columns:1fr 1fr 1fr"]  { grid-template-columns: 1fr !important; }
+      #tab-analytics [style*="grid-template-columns:1fr 1fr"]      { grid-template-columns: 1fr !important; }
+    }
   </style>
 </head>
 <body class="page-padded">
@@ -518,42 +539,58 @@
           <h2>Canna<span>Grudge</span> Admin</h2>
         </div>
         <nav class="admin-sidebar-nav">
-          <button class="admin-nav-btn active" data-tab="dashboard">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-            Dashboard
-          </button>
-          <button class="admin-nav-btn" data-tab="tickets">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a3 3 0 010-6h20a3 3 0 010 6"/><path d="M2 15a3 3 0 000 6h20a3 3 0 000-6"/><path d="M2 9v6"/><path d="M22 9v6"/></svg>
-            Tickets
-          </button>
-          <button class="admin-nav-btn" data-tab="orders">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
-            Orders
-          </button>
-          <button class="admin-nav-btn" data-tab="promos">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg>
-            Promo Codes
-          </button>
-          <button class="admin-nav-btn" data-tab="sponsors">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
-            Sponsors
-          </button>
-          <button class="admin-nav-btn" data-tab="invoices">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-            Invoices
-          </button>
-          <button class="admin-nav-btn" data-tab="purchase-links">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
-            Purchase Links
-          </button>
-          <button class="admin-nav-btn" data-tab="emails">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-            Email Templates
-          </button>
-          <button class="admin-nav-btn" data-tab="admins">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-            Admins
-          </button>
+          <div class="nav-group">
+            <div class="nav-group-label">Overview</div>
+            <button class="admin-nav-btn active" data-tab="dashboard">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+              Dashboard
+            </button>
+            <button class="admin-nav-btn" data-tab="analytics">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+              Analytics
+            </button>
+          </div>
+          <div class="nav-group">
+            <div class="nav-group-label">Sales</div>
+            <button class="admin-nav-btn" data-tab="tickets">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a3 3 0 010-6h20a3 3 0 010 6"/><path d="M2 15a3 3 0 000 6h20a3 3 0 000-6"/><path d="M2 9v6"/><path d="M22 9v6"/></svg>
+              Tickets
+            </button>
+            <button class="admin-nav-btn" data-tab="orders">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+              Orders
+            </button>
+            <button class="admin-nav-btn" data-tab="promos">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg>
+              Promo Codes
+            </button>
+            <button class="admin-nav-btn" data-tab="purchase-links">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+              Purchase Links
+            </button>
+          </div>
+          <div class="nav-group">
+            <div class="nav-group-label">Partners</div>
+            <button class="admin-nav-btn" data-tab="sponsors">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+              Sponsors
+            </button>
+            <button class="admin-nav-btn" data-tab="invoices">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+              Invoices
+            </button>
+          </div>
+          <div class="nav-group">
+            <div class="nav-group-label">Settings</div>
+            <button class="admin-nav-btn" data-tab="emails">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              Email Templates
+            </button>
+            <button class="admin-nav-btn" data-tab="admins">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              Admins
+            </button>
+          </div>
         </nav>
         <div class="admin-sidebar-footer">
           <a href="/">
@@ -586,6 +623,67 @@
             <div class="card stat-card"><div class="stat-value" id="statSponsors">—</div><div class="stat-label">Pending Sponsors</div></div>
           </div>
           <div class="card" id="tierStatsCard" style="margin-top:16px;"></div>
+        </div>
+
+        <!-- ─── Analytics Tab ─── -->
+        <div id="tab-analytics" class="tab-content">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:24px;">
+            <div></div>
+            <div style="display:flex;gap:8px;">
+              <button class="btn btn-ghost btn-sm an-range active" data-days="7">7d</button>
+              <button class="btn btn-ghost btn-sm an-range" data-days="14">14d</button>
+              <button class="btn btn-ghost btn-sm an-range" data-days="30">30d</button>
+              <button class="btn btn-ghost btn-sm an-range" data-days="90">90d</button>
+            </div>
+          </div>
+          <div class="stats-grid" id="anStatsGrid">
+            <div class="card stat-card"><div class="stat-value" id="anViews">—</div><div class="stat-label">Page Views</div></div>
+            <div class="card stat-card"><div class="stat-value" id="anSessions">—</div><div class="stat-label">Unique Visitors</div></div>
+            <div class="card stat-card"><div class="stat-value" id="anBounce">—</div><div class="stat-label">Bounce Rate</div></div>
+            <div class="card stat-card"><div class="stat-value" id="anDuration">—</div><div class="stat-label">Avg. Duration</div></div>
+          </div>
+
+          <div class="card" style="margin-bottom:20px;padding:20px;">
+            <h3 style="font-size:15px;font-weight:800;margin-bottom:16px;">Traffic Over Time</h3>
+            <div id="anChart" style="width:100%;height:220px;position:relative;"></div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+            <div class="card" style="padding:20px;">
+              <h3 style="font-size:15px;font-weight:800;margin-bottom:16px;">Top Pages</h3>
+              <div id="anPages"></div>
+            </div>
+            <div class="card" style="padding:20px;">
+              <h3 style="font-size:15px;font-weight:800;margin-bottom:16px;">Traffic Sources</h3>
+              <div id="anReferrers"></div>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+            <div class="card" style="padding:20px;">
+              <h3 style="font-size:15px;font-weight:800;margin-bottom:16px;">UTM Campaigns</h3>
+              <div id="anUtm"></div>
+            </div>
+            <div class="card" style="padding:20px;">
+              <h3 style="font-size:15px;font-weight:800;margin-bottom:16px;">Activity by Hour</h3>
+              <div id="anHourly" style="height:120px;display:flex;align-items:flex-end;gap:2px;"></div>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
+            <div class="card" style="padding:20px;">
+              <h3 style="font-size:15px;font-weight:800;margin-bottom:16px;">Devices</h3>
+              <div id="anDevices"></div>
+            </div>
+            <div class="card" style="padding:20px;">
+              <h3 style="font-size:15px;font-weight:800;margin-bottom:16px;">Browsers</h3>
+              <div id="anBrowsers"></div>
+            </div>
+            <div class="card" style="padding:20px;">
+              <h3 style="font-size:15px;font-weight:800;margin-bottom:16px;">Operating Systems</h3>
+              <div id="anOS"></div>
+            </div>
+          </div>
         </div>
 
         <div id="tab-tickets" class="tab-content">
@@ -959,7 +1057,7 @@
     });
 
     const tabs = document.querySelectorAll('.admin-nav-btn[data-tab]');
-    const tabTitles = { dashboard: 'Dashboard', tickets: 'Tickets', orders: 'Orders', promos: 'Promo Codes', sponsors: 'Sponsors', invoices: 'Invoices', 'purchase-links': 'Purchase Links', emails: 'Email Templates', admins: 'Admins' };
+    const tabTitles = { dashboard: 'Dashboard', analytics: 'Analytics', tickets: 'Tickets', orders: 'Orders', promos: 'Promo Codes', sponsors: 'Sponsors', invoices: 'Invoices', 'purchase-links': 'Purchase Links', emails: 'Email Templates', admins: 'Admins' };
 
     tabs.forEach(btn => {
       btn.addEventListener('click', () => {
@@ -1018,6 +1116,7 @@
     async function loadTab(tab) {
       try {
         if (tab === 'dashboard') await loadDashboard();
+        else if (tab === 'analytics') await loadAnalytics();
         else if (tab === 'tickets') await loadTickets();
         else if (tab === 'orders') await loadOrders();
         else if (tab === 'promos') await loadPromos();
@@ -1046,6 +1145,78 @@
       } else {
         $('tierStatsCard').innerHTML = '<p style="color:var(--cg-text-muted);font-size:14px;">No active ticket tiers</p>';
       }
+    }
+
+    /* ── Analytics ─────────────────────────────────────────── */
+    let anDays = 7;
+    document.querySelectorAll('.an-range').forEach(b => b.addEventListener('click', () => {
+      document.querySelectorAll('.an-range').forEach(x => x.classList.remove('active'));
+      b.classList.add('active');
+      anDays = +b.dataset.days;
+      loadAnalytics();
+    }));
+
+    async function loadAnalytics() {
+      const d = await apiFetch(`/api/admin/analytics?days=${anDays}`);
+      if (!d) return;
+      $('anViews').textContent = (d.total_views ?? 0).toLocaleString();
+      $('anSessions').textContent = (d.unique_sessions ?? 0).toLocaleString();
+      $('anBounce').textContent = (d.bounce_rate != null ? d.bounce_rate.toFixed(1) : '0') + '%';
+      const dur = d.avg_duration ?? 0;
+      $('anDuration').textContent = dur >= 60 ? Math.round(dur / 60) + 'm ' + Math.round(dur % 60) + 's' : Math.round(dur) + 's';
+
+      /* ── bar chart ── */
+      const chart = $('anChart');
+      const daily = d.daily_views || [];
+      if (!daily.length) { chart.innerHTML = '<p style="color:var(--cg-text-muted);text-align:center;padding:40px 0;">No data yet</p>'; }
+      else {
+        const maxV = Math.max(...daily.map(r => r.views), 1);
+        chart.innerHTML = `<div style="display:flex;align-items:flex-end;gap:4px;height:100%;padding-bottom:28px;position:relative;">` +
+          daily.map(r => {
+            const h = Math.max(r.views / maxV * 100, 2);
+            const lbl = r.date.slice(5);
+            return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;min-width:0;">
+              <span style="font-size:10px;color:var(--cg-text-muted);margin-bottom:2px;">${r.views}</span>
+              <div style="width:100%;max-width:40px;height:${h}%;background:var(--cg-gold);border-radius:4px 4px 0 0;min-height:2px;"></div>
+              <span style="font-size:9px;color:var(--cg-text-muted);margin-top:4px;white-space:nowrap;">${lbl}</span>
+            </div>`;
+          }).join('') + `</div>`;
+      }
+
+      /* ── helper: rank table ── */
+      function rankTable(rows, labelKey, valKey) {
+        if (!rows || !rows.length) return '<p style="color:var(--cg-text-muted);font-size:13px;">No data</p>';
+        const mx = Math.max(...rows.map(r => r[valKey]), 1);
+        return rows.map(r => {
+          const pct = (r[valKey] / mx * 100).toFixed(1);
+          return `<div style="margin-bottom:10px;"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:3px;"><span style="color:var(--cg-text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:70%;">${r[labelKey] || '(direct)'}</span><span style="color:var(--cg-text-muted);flex-shrink:0;">${r[valKey]}</span></div><div style="height:4px;background:var(--cg-surface-3);border-radius:2px;overflow:hidden;"><div style="height:100%;width:${pct}%;background:var(--cg-gold);border-radius:2px;"></div></div></div>`;
+        }).join('');
+      }
+      $('anPages').innerHTML = rankTable(d.top_pages, 'page', 'views');
+      $('anReferrers').innerHTML = rankTable(d.top_referrers, 'referrer', 'views');
+      $('anUtm').innerHTML = rankTable(d.utm_sources, 'source', 'views');
+
+      /* ── hourly heatmap ── */
+      const hourly = d.hourly_heatmap || [];
+      const mxH = Math.max(...hourly.map(r => r.views), 1);
+      $('anHourly').innerHTML = hourly.map(r => {
+        const h = Math.max(r.views / mxH * 100, 4);
+        const op = Math.max(r.views / mxH, 0.15);
+        return `<div title="${r.hour}:00 — ${r.views} views" style="flex:1;height:${h}%;background:var(--cg-gold);opacity:${op.toFixed(2)};border-radius:2px 2px 0 0;min-width:0;"></div>`;
+      }).join('');
+
+      /* ── pie-style breakdown ── */
+      function breakdown(rows, labelKey, valKey) {
+        if (!rows || !rows.length) return '<p style="color:var(--cg-text-muted);font-size:13px;">No data</p>';
+        const total = rows.reduce((s, r) => s + r[valKey], 0) || 1;
+        return rows.map(r => {
+          const pct = (r[valKey] / total * 100).toFixed(1);
+          return `<div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;margin-bottom:8px;"><span style="color:var(--cg-text);">${r[labelKey] || 'Unknown'}</span><span style="color:var(--cg-text-muted);">${pct}%</span></div>`;
+        }).join('');
+      }
+      $('anDevices').innerHTML = breakdown(d.devices, 'device_type', 'count');
+      $('anBrowsers').innerHTML = breakdown(d.browsers, 'browser', 'count');
+      $('anOS').innerHTML = breakdown(d.os_list, 'os', 'count');
     }
 
     let ticketTiers = [];

@@ -8,6 +8,99 @@
   <style>
     .dash-grid { display:grid; grid-template-columns:1fr 2fr; gap:24px; }
     @media (max-width:768px) { .dash-grid { grid-template-columns:1fr; } }
+
+    /* Order cards */
+    .order-card {
+      border: 1px solid var(--cg-border);
+      border-radius: 12px;
+      margin-bottom: 10px;
+      overflow: hidden;
+      transition: border-color .2s;
+    }
+    .order-card:hover { border-color: rgba(200,168,78,.25); }
+    .order-summary {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 16px;
+      cursor: pointer;
+      user-select: none;
+      gap: 12px;
+    }
+    .order-summary:hover { background: rgba(255,255,255,.02); }
+    .order-id { font-weight: 700; font-size: 14px; }
+    .order-date { font-size: 12px; color: var(--cg-text-muted); margin-top: 2px; }
+    .order-total { font-weight: 800; color: var(--cg-gold); white-space: nowrap; }
+    .order-chevron {
+      transition: transform .2s;
+      color: var(--cg-text-muted);
+      flex-shrink: 0;
+    }
+    .order-card.open .order-chevron { transform: rotate(180deg); }
+    .order-detail {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height .3s ease;
+    }
+    .order-card.open .order-detail { max-height: 600px; }
+    .order-detail-inner {
+      padding: 0 16px 16px;
+      border-top: 1px solid var(--cg-border);
+    }
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      font-size: 14px;
+    }
+    .detail-row + .detail-row { border-top: 1px solid rgba(255,255,255,.04); }
+    .detail-label { color: var(--cg-text-secondary); }
+    .detail-value { font-weight: 600; text-align: right; }
+    .line-items { margin: 12px 0; padding: 12px; background: rgba(255,255,255,.02); border-radius: 8px; }
+    .line-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+      font-size: 14px;
+    }
+    .line-item-name { color: var(--cg-text); }
+    .line-item-price { color: var(--cg-text-muted); }
+    .receipt-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--cg-gold);
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+      margin-top: 8px;
+    }
+    .receipt-link:hover { text-decoration: underline; }
+    .badge-sm {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .03em;
+    }
+    .badge-green { background: rgba(39,174,96,.15); color: #27ae60; }
+    .badge-yellow { background: rgba(200,168,78,.15); color: var(--cg-gold); }
+    .badge-red { background: rgba(231,76,60,.15); color: #e74c3c; }
+
+    /* Ticket summary cards */
+    .ticket-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      font-size: 14px;
+    }
+    .ticket-row + .ticket-row { border-top: 1px solid rgba(255,255,255,.04); }
+    .ticket-name { font-weight: 600; }
+    .ticket-qty { color: var(--cg-text-muted); margin-left: 6px; }
+    .no-data { color: var(--cg-text-muted); font-size: 14px; padding: 12px 0; }
   </style>
 </head>
 <body class="page-padded">
@@ -39,13 +132,13 @@
       <div>
         <div class="card" style="padding:24px;">
           <h3>My Tickets</h3>
-          <div id="ticketsList">No tickets purchased yet.</div>
+          <div id="ticketsList"><p class="no-data">Loading tickets...</p></div>
           <a href="/tickets" class="btn btn-primary btn-sm" style="margin-top:16px;">Browse Tickets</a>
         </div>
 
         <div class="card" style="margin-top:24px;padding:24px;">
           <h3>Order History</h3>
-          <div id="orderHistory">No orders yet.</div>
+          <div id="orderHistory"><p class="no-data">Loading orders...</p></div>
         </div>
       </div>
 
@@ -100,6 +193,74 @@ const profileImageEl = document.getElementById('profileImage');
 const changePhotoBtn = document.getElementById('changePhoto');
 const profileUpload = document.getElementById('profileUpload');
 
+function fmtMoney(cents) { return '$' + (cents / 100).toFixed(2); }
+function fmtDate(iso) { return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); }
+function statusBadge(s) {
+  if (s === 'completed') return '<span class="badge-sm badge-green">Completed</span>';
+  if (s === 'pending') return '<span class="badge-sm badge-yellow">Pending</span>';
+  return '<span class="badge-sm badge-red">' + (s || 'unknown') + '</span>';
+}
+
+async function fetchMyOrders(token) {
+  const url = (window.CG_API_BASE || '') + '/api/my/orders';
+  const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
+  if (!res.ok) return [];
+  return res.json();
+}
+
+function renderTickets(orders) {
+  const el = document.getElementById('ticketsList');
+  const completed = orders.filter(o => o.status === 'completed');
+  if (!completed.length) { el.innerHTML = '<p class="no-data">No tickets purchased yet.</p>'; return; }
+  const ticketMap = {};
+  completed.forEach(o => (o.items || []).forEach(i => {
+    const key = i.tier_name || 'Ticket';
+    if (!ticketMap[key]) ticketMap[key] = { qty: 0, unit: i.unit_price_cents || 0 };
+    ticketMap[key].qty += i.qty || 1;
+  }));
+  el.innerHTML = Object.entries(ticketMap).map(([name, t]) =>
+    `<div class="ticket-row"><span><span class="ticket-name">${name}</span><span class="ticket-qty">&times; ${t.qty}</span></span><span class="text-gold">${fmtMoney(t.unit * t.qty)}</span></div>`
+  ).join('');
+}
+
+function renderOrders(orders) {
+  const el = document.getElementById('orderHistory');
+  if (!orders.length) { el.innerHTML = '<p class="no-data">No orders yet.</p>'; return; }
+  el.innerHTML = orders.map(o => {
+    const num = o.order_number && o.order_number !== 'LEGACY' ? o.order_number : '#' + o.id;
+    const items = (o.items || []).map(i =>
+      `<div class="line-item"><span class="line-item-name">${i.tier_name || 'Item'} &times; ${i.qty || 1}</span><span class="line-item-price">${fmtMoney((i.unit_price_cents || 0) * (i.qty || 1))}</span></div>`
+    ).join('');
+    const subtotal = (o.items || []).reduce((s, i) => s + (i.unit_price_cents || 0) * (i.qty || 1), 0);
+    const discount = o.discount_cents || 0;
+
+    return `<div class="order-card" id="ocard-${o.id}">
+      <div class="order-summary" onclick="document.getElementById('ocard-${o.id}').classList.toggle('open')">
+        <div>
+          <div class="order-id">${num}</div>
+          <div class="order-date">${o.created_at ? fmtDate(o.created_at) : ''}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="order-total">${fmtMoney(o.total_cents || 0)}</span>
+          ${statusBadge(o.status)}
+          <svg class="order-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+      </div>
+      <div class="order-detail">
+        <div class="order-detail-inner">
+          <div class="line-items">${items || '<span class="no-data">No line items</span>'}</div>
+          ${subtotal !== (o.total_cents || 0) || discount > 0 ? `
+            <div class="detail-row"><span class="detail-label">Subtotal</span><span class="detail-value">${fmtMoney(subtotal)}</span></div>` : ''}
+          ${discount > 0 ? `<div class="detail-row"><span class="detail-label">Discount${o.promo_code ? ' (' + o.promo_code + ')' : ''}</span><span class="detail-value" style="color:#27ae60;">-${fmtMoney(discount)}</span></div>` : ''}
+          <div class="detail-row"><span class="detail-label">Total Charged</span><span class="detail-value" style="color:var(--cg-gold);font-weight:800;">${fmtMoney(o.total_cents || 0)}</span></div>
+          <div class="detail-row"><span class="detail-label">Payment</span><span class="detail-value" style="font-size:12px;opacity:.6;">${o.square_payment_id || '—'}</span></div>
+          ${o.receipt_url ? `<a href="${o.receipt_url}" target="_blank" rel="noopener" class="receipt-link"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>View Receipt</a>` : ''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
     location.href = '/login?return=' + encodeURIComponent(location.pathname + location.search + location.hash);
@@ -121,18 +282,16 @@ onAuthStateChanged(auth, async (user) => {
     document.getElementById('profileInitials').style.display = 'none';
   }
 
-  const lastOrder = localStorage.getItem('cg_last_order');
-  if (lastOrder) {
-    try {
-      const order = JSON.parse(lastOrder);
-      const ticketsList = document.getElementById('ticketsList');
-      ticketsList.innerHTML = order.items.map(item =>
-        `<div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--cg-border);"><span>${item.name} x${item.qty}</span><span class="text-gold">$${(item.price*item.qty/100).toFixed(2)}</span></div>`
-      ).join('');
-
-      const historyEl = document.getElementById('orderHistory');
-      historyEl.innerHTML = `<div style="padding:12px 0;"><div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span>Order #${order.paymentId?.slice(-8) || 'N/A'}</span><span class="text-gold">$${(order.total/100).toFixed(2)}</span></div><div class="text-muted" style="font-size:13px;">${new Date(order.date).toLocaleDateString()}</div></div>`;
-    } catch(e) {}
+  // Fetch real orders from server
+  try {
+    const token = await user.getIdToken();
+    const orders = await fetchMyOrders(token);
+    renderTickets(orders);
+    renderOrders(orders);
+  } catch (e) {
+    console.error('Failed to load orders:', e);
+    document.getElementById('ticketsList').innerHTML = '<p class="no-data">No tickets purchased yet.</p>';
+    document.getElementById('orderHistory').innerHTML = '<p class="no-data">No orders yet.</p>';
   }
 });
 

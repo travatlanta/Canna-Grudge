@@ -158,29 +158,26 @@ except Exception as e:
 def run_migrations():
     """Add any missing columns to existing tables."""
     migrations = [
+        # --- orders: ensure every column the app writes to exists ---
+        "ALTER TABLE orders ADD COLUMN IF NOT EXISTS order_number TEXT DEFAULT 'LEGACY'",
         "ALTER TABLE orders ADD COLUMN IF NOT EXISTS email TEXT",
         "ALTER TABLE orders ADD COLUMN IF NOT EXISTS name TEXT",
+        "ALTER TABLE orders ADD COLUMN IF NOT EXISTS subtotal INTEGER DEFAULT 0",
+        "ALTER TABLE orders ADD COLUMN IF NOT EXISTS total_amount INTEGER DEFAULT 0",
+        "ALTER TABLE orders ADD COLUMN IF NOT EXISTS total_cents INTEGER DEFAULT 0",
         "ALTER TABLE orders ADD COLUMN IF NOT EXISTS discount_cents INTEGER DEFAULT 0",
         "ALTER TABLE orders ADD COLUMN IF NOT EXISTS promo_code TEXT",
+        "ALTER TABLE orders ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'pending'",
         "ALTER TABLE orders ADD COLUMN IF NOT EXISTS square_payment_id TEXT",
         "ALTER TABLE orders ADD COLUMN IF NOT EXISTS receipt_url TEXT",
         "ALTER TABLE orders ADD COLUMN IF NOT EXISTS billing_address TEXT",
         "ALTER TABLE orders ADD COLUMN IF NOT EXISTS notes TEXT DEFAULT ''",
-        # Convert status from ENUM to TEXT if needed
-        "ALTER TABLE orders ALTER COLUMN status TYPE TEXT USING status::TEXT",
-        # Set defaults on all NOT NULL numeric columns so INSERTs without them don't fail
-        "ALTER TABLE orders ALTER COLUMN subtotal SET DEFAULT 0",
-        "ALTER TABLE orders ALTER COLUMN total_amount SET DEFAULT 0",
-        "ALTER TABLE orders ALTER COLUMN order_number SET DEFAULT 'LEGACY'",
-        # Drop NOT NULL on every non-PK column in order_items so no column surprises
-        "ALTER TABLE order_items ALTER COLUMN product_id DROP NOT NULL",
-        "ALTER TABLE order_items ALTER COLUMN quantity DROP NOT NULL",
-        "ALTER TABLE order_items ALTER COLUMN unit_price DROP NOT NULL",
-        "ALTER TABLE order_items ALTER COLUMN unit_price_cents DROP NOT NULL",
-        "ALTER TABLE order_items ALTER COLUMN tier_name DROP NOT NULL",
-        "ALTER TABLE order_items ALTER COLUMN qty DROP NOT NULL",
-        "ALTER TABLE order_items ALTER COLUMN ticket_tier_id DROP NOT NULL",
-        "ALTER TABLE order_items ALTER COLUMN order_id DROP NOT NULL",
+        "ALTER TABLE orders ADD COLUMN IF NOT EXISTS checked_in BOOLEAN DEFAULT FALSE",
+        "ALTER TABLE orders ADD COLUMN IF NOT EXISTS checked_in_at TIMESTAMPTZ",
+        # --- order_items: ensure every column the app writes to exists ---
+        "ALTER TABLE order_items ADD COLUMN IF NOT EXISTS product_id INTEGER",
+        "ALTER TABLE order_items ADD COLUMN IF NOT EXISTS quantity INTEGER",
+        "ALTER TABLE order_items ADD COLUMN IF NOT EXISTS unit_price INTEGER",
     ]
     for sql in migrations:
         try:
@@ -573,6 +570,39 @@ def create_payment():
     })
 
 
+# ──────── User Order Lookup (authenticated) ────────
+
+@app.route('/api/my/orders', methods=['GET'])
+def my_orders():
+    """Return orders for the currently authenticated user (by email)."""
+    auth_header = request.headers.get('Authorization', '')
+    if not auth_header.startswith('Bearer '):
+        return jsonify({'error': 'Unauthorized'}), 401
+    token = auth_header.split('Bearer ')[1]
+    try:
+        decoded = fb_auth.verify_id_token(token)
+    except Exception:
+        return jsonify({'error': 'Invalid token'}), 401
+    email = (decoded.get('email') or '').strip().lower()
+    if not email:
+        return jsonify([])
+    orders = query_db(
+        '''SELECT id, order_number, email, name, total_cents, discount_cents, promo_code,
+                  status, square_payment_id, receipt_url, created_at
+           FROM orders WHERE LOWER(email) = %s ORDER BY created_at DESC''',
+        (email,)
+    )
+    for o in orders:
+        o['items'] = query_db(
+            '''SELECT tier_name, qty, unit_price_cents FROM order_items
+               WHERE order_id = %s ORDER BY id''',
+            (o['id'],)
+        )
+        if o.get('created_at'):
+            o['created_at'] = o['created_at'].isoformat()
+    return jsonify(orders)
+
+
 @app.route('/api/admin/verify', methods=['POST'])
 def admin_verify():
     auth_header = request.headers.get('Authorization', '')
@@ -724,6 +754,67 @@ def admin_resend_order_confirmation(oid):
     if not sent:
         return jsonify({'error': 'Failed to send confirmation email'}), 500
     return jsonify({'success': True, 'message': f'Confirmation email resent to {order.get("email")}'})
+
+
+# ──────── Check-In / Scanner ────────
+
+@app.route('/api/admin/checkin/lookup', methods=['GET'])
+@verify_admin
+def admin_checkin_lookup():
+    """Look up an order by order_number, email, or name for check-in."""
+    q = (request.args.get('q') or '').strip()
+    if not q:
+        return jsonify({'error': 'Search query required'}), 400
+    orders = query_db(
+        '''SELECT o.id, o.order_number, o.email, o.name, o.total_cents, o.status,
+                  o.checked_in, o.checked_in_at, o.created_at
+           FROM orders o
+           WHERE o.status = 'completed'
+             AND (UPPER(o.order_number) = UPPER(%s)
+                  OR LOWER(o.email) = LOWER(%s)
+                  OR LOWER(o.name) LIKE LOWER(%s))
+           ORDER BY o.created_at DESC''',
+        (q, q, f'%{q}%')
+    )
+    for o in orders:
+        o['items'] = query_db(
+            'SELECT tier_name, qty FROM order_items WHERE order_id = %s ORDER BY id',
+            (o['id'],)
+        )
+        for k in ['created_at', 'checked_in_at']:
+            if o.get(k):
+                o[k] = o[k].isoformat()
+    return jsonify(orders)
+
+
+@app.route('/api/admin/checkin/<int:oid>', methods=['POST'])
+@verify_admin
+def admin_checkin(oid):
+    """Mark an order as checked in."""
+    order = query_db('SELECT * FROM orders WHERE id = %s', (oid,), one=True)
+    if not order:
+        return jsonify({'error': 'Order not found'}), 404
+    if order['status'] != 'completed':
+        return jsonify({'error': 'Only completed orders can be checked in'}), 400
+    if order.get('checked_in'):
+        ts = order['checked_in_at'].isoformat() if order.get('checked_in_at') else 'unknown time'
+        return jsonify({'error': f'Already checked in at {ts}'}), 409
+    execute_db(
+        'UPDATE orders SET checked_in = TRUE, checked_in_at = NOW() WHERE id = %s',
+        (oid,)
+    )
+    return jsonify({'success': True, 'message': f'{order.get("name", "Guest")} checked in!'})
+
+
+@app.route('/api/admin/checkin/<int:oid>/undo', methods=['POST'])
+@verify_admin
+def admin_checkin_undo(oid):
+    """Undo a check-in."""
+    execute_db(
+        'UPDATE orders SET checked_in = FALSE, checked_in_at = NULL WHERE id = %s',
+        (oid,)
+    )
+    return jsonify({'success': True, 'message': 'Check-in undone'})
 
 
 @app.route('/api/admin/promos', methods=['GET'])
@@ -1135,3 +1226,140 @@ def admin_test_email_template(tid):
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=False)
+
+
+# ─── Analytics ───────────────────────────────────────────────
+
+@app.route('/api/track', methods=['POST'])
+def track_pageview():
+    """Lightweight, public endpoint for recording page views."""
+    d = request.get_json(silent=True) or {}
+    session_id = (d.get('sid') or '')[:64]
+    page = (d.get('page') or '')[:200]
+    if not session_id or not page:
+        return jsonify({'ok': True})  # silent drop
+    referrer = (d.get('ref') or '')[:500]
+    utm_source = (d.get('us') or '')[:100]
+    utm_medium = (d.get('um') or '')[:100]
+    utm_campaign = (d.get('uc') or '')[:100]
+    device_type = (d.get('dt') or '')[:20]
+    browser = (d.get('br') or '')[:50]
+    os_name = (d.get('os') or '')[:50]
+    screen_w = min(int(d.get('sw') or 0), 9999)
+    duration = min(int(d.get('dur') or 0), 3600000)
+    try:
+        execute_db(
+            '''INSERT INTO page_views (session_id, page, referrer, utm_source, utm_medium, utm_campaign,
+               device_type, browser, os, screen_width, duration_ms)
+               VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)''',
+            (session_id, page, referrer, utm_source, utm_medium, utm_campaign,
+             device_type, browser, os_name, screen_w, duration)
+        )
+    except Exception:
+        pass
+    return jsonify({'ok': True})
+
+
+@app.route('/api/admin/analytics', methods=['GET'])
+@verify_admin
+def admin_analytics():
+    """Return aggregated analytics data for the admin dashboard."""
+    days = min(int(request.args.get('days', 30)), 365)
+    since = f"NOW() - INTERVAL '{days} days'"
+
+    # Total views & unique sessions
+    totals = query_db(f'''
+        SELECT COUNT(*) as views, COUNT(DISTINCT session_id) as sessions
+        FROM page_views WHERE created_at >= {since}
+    ''', one=True)
+
+    # Views per day
+    daily = query_db(f'''
+        SELECT DATE(created_at) as day, COUNT(*) as views, COUNT(DISTINCT session_id) as sessions
+        FROM page_views WHERE created_at >= {since}
+        GROUP BY DATE(created_at) ORDER BY day
+    ''')
+    for r in daily:
+        r['day'] = r['day'].isoformat() if hasattr(r['day'], 'isoformat') else str(r['day'])
+
+    # Top pages
+    pages = query_db(f'''
+        SELECT page, COUNT(*) as views, COUNT(DISTINCT session_id) as sessions
+        FROM page_views WHERE created_at >= {since}
+        GROUP BY page ORDER BY views DESC LIMIT 20
+    ''')
+
+    # Top referrers (exclude empty and self)
+    referrers = query_db(f'''
+        SELECT referrer, COUNT(*) as views, COUNT(DISTINCT session_id) as sessions
+        FROM page_views WHERE created_at >= {since} AND referrer != '' AND referrer NOT LIKE '%%cannagrudge%%'
+        GROUP BY referrer ORDER BY views DESC LIMIT 20
+    ''')
+
+    # UTM sources
+    utm_sources = query_db(f'''
+        SELECT utm_source, utm_medium, utm_campaign, COUNT(*) as views, COUNT(DISTINCT session_id) as sessions
+        FROM page_views WHERE created_at >= {since} AND utm_source != ''
+        GROUP BY utm_source, utm_medium, utm_campaign ORDER BY views DESC LIMIT 20
+    ''')
+
+    # Device types
+    devices = query_db(f'''
+        SELECT device_type, COUNT(*) as views
+        FROM page_views WHERE created_at >= {since} AND device_type != ''
+        GROUP BY device_type ORDER BY views DESC
+    ''')
+
+    # Browsers
+    browsers = query_db(f'''
+        SELECT browser, COUNT(*) as views
+        FROM page_views WHERE created_at >= {since} AND browser != ''
+        GROUP BY browser ORDER BY views DESC LIMIT 10
+    ''')
+
+    # OS
+    operating_systems = query_db(f'''
+        SELECT os, COUNT(*) as views
+        FROM page_views WHERE created_at >= {since} AND os != ''
+        GROUP BY os ORDER BY views DESC LIMIT 10
+    ''')
+
+    # Hourly heatmap (hour of day)
+    hourly = query_db(f'''
+        SELECT EXTRACT(HOUR FROM created_at)::int as hour, COUNT(*) as views
+        FROM page_views WHERE created_at >= {since}
+        GROUP BY hour ORDER BY hour
+    ''')
+
+    # Avg session duration
+    avg_duration = query_db(f'''
+        SELECT ROUND(AVG(duration_ms)) as avg_ms
+        FROM page_views WHERE created_at >= {since} AND duration_ms > 0
+    ''', one=True)
+
+    # Bounce rate (sessions with only 1 page view)
+    bounce = query_db(f'''
+        SELECT
+            COUNT(*) FILTER (WHERE pv_count = 1) as bounced,
+            COUNT(*) as total
+        FROM (
+            SELECT session_id, COUNT(*) as pv_count
+            FROM page_views WHERE created_at >= {since}
+            GROUP BY session_id
+        ) sub
+    ''', one=True)
+
+    return jsonify({
+        'total_views': totals['views'],
+        'total_sessions': totals['sessions'],
+        'daily': daily,
+        'pages': pages,
+        'referrers': referrers,
+        'utm_sources': utm_sources,
+        'devices': devices,
+        'browsers': browsers,
+        'operating_systems': operating_systems,
+        'hourly': hourly,
+        'avg_duration_ms': int(avg_duration['avg_ms'] or 0) if avg_duration else 0,
+        'bounce_rate': round(bounce['bounced'] / bounce['total'] * 100, 1) if bounce and bounce['total'] else 0,
+    })
