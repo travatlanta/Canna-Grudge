@@ -317,7 +317,27 @@ document.addEventListener('DOMContentLoaded', () => {
     var pagePath = location.pathname || '/';
     var apiBase = (window.CG_API_BASE || '') + '/api/track';
 
+    // ── Capture Firebase user info when available ──
+    var userName = '';
+    var userEmail = '';
+    try {
+      var cgAuth = window.__cgAuth;
+      if (cgAuth && cgAuth.onAuthStateChanged && cgAuth.auth) {
+        cgAuth.onAuthStateChanged(cgAuth.auth, function(u) {
+          if (u) {
+            userName = (u.displayName || '').slice(0, 100);
+            userEmail = (u.email || '').slice(0, 200);
+          } else {
+            userName = '';
+            userEmail = '';
+          }
+        });
+      }
+    } catch(e) {}
+
     function beacon(data) {
+      if (userName) data.un = userName;
+      if (userEmail) data.ue = userEmail;
       var blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
       if (navigator.sendBeacon) {
         navigator.sendBeacon(apiBase, blob);

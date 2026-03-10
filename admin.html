@@ -157,7 +157,9 @@
       z-index: 99;
       -webkit-tap-highlight-color: transparent;
     }
- .admin-sidebar {
+
+    @media (max-width: 768px) {
+      .admin-sidebar {
         transform: translateX(-100%);
         width: 280px;
         max-width: 85vw;
@@ -243,7 +245,7 @@
         font-size: 12px;
       }
       .copy-link button { width: 100%; }
-    }
+    } /* end @media 768 */
 
     @media (max-width: 480px) {
       .admin-main { padding: 12px; }
@@ -524,6 +526,7 @@
     .an-bar-row .an-bar-val { width:52px;text-align:right;font-weight:600;font-size:12px; }
     .log-row { display:grid;grid-template-columns:140px 100px 100px 1fr;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:12px;align-items:start; }
     .log-row:last-child { border-bottom:none; }
+    .log-row-err { background:rgba(231,76,60,.06);border-left:3px solid #e74c3c;padding-left:8px; }
     .log-time { color:var(--cg-text-muted);font-variant-numeric:tabular-nums; }
     .log-badge { display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.3px; }
     .log-cat { background:rgba(52,152,219,.15);color:#3498db; }
@@ -543,6 +546,7 @@
       .an-grid-2 { grid-template-columns:1fr !important; }
       .an-grid-4 { grid-template-columns:1fr !important; }
       .log-row { grid-template-columns:1fr;gap:4px; }
+      .dash-an-grid { grid-template-columns:repeat(2,1fr) !important; }
     }
     @media (max-width: 480px) {
       .an-stat-row { grid-template-columns:1fr !important; }
@@ -610,6 +614,13 @@
             </button>
           </div>
           <div class="nav-group">
+            <div class="nav-group-label">Tools</div>
+            <a class="admin-nav-btn" href="/scanner" style="text-decoration:none;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 012-2h2"/><path d="M17 3h2a2 2 0 012 2v2"/><path d="M21 17v2a2 2 0 01-2 2h-2"/><path d="M7 21H5a2 2 0 01-2-2v-2"/><line x1="7" y1="12" x2="17" y2="12"/></svg>
+              Check-In Scanner
+            </a>
+          </div>
+          <div class="nav-group">
             <div class="nav-group-label">Settings</div>
             <button class="admin-nav-btn" data-tab="emails">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
@@ -651,6 +662,23 @@
             <div class="card stat-card"><div class="stat-value" id="statTickets">—</div><div class="stat-label">Tickets Sold</div></div>
             <div class="card stat-card"><div class="stat-value" id="statSponsors">—</div><div class="stat-label">Pending Sponsors</div></div>
           </div>
+
+          <!-- Analytics summary -->
+          <div class="card" style="padding:20px;margin-bottom:20px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+              <h3 style="font-size:16px;font-weight:800;margin:0;">Site Activity <span style="font-size:11px;font-weight:600;color:var(--cg-text-muted);">(7 days)</span></h3>
+              <span id="dashLiveBadge" style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;background:rgba(39,174,96,.12);color:#27ae60;font-size:11px;font-weight:700;"><span style="width:6px;height:6px;border-radius:50%;background:#27ae60;animation:livePulse 1.5s infinite;"></span><span id="dashLiveCount">0</span> online now</span>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;" class="dash-an-grid">
+              <div style="text-align:center;"><div style="font-size:22px;font-weight:800;color:var(--cg-text);" id="dashViews">—</div><div style="font-size:11px;color:var(--cg-text-muted);">Page Views</div></div>
+              <div style="text-align:center;"><div style="font-size:22px;font-weight:800;color:var(--cg-text);" id="dashSessions">—</div><div style="font-size:11px;color:var(--cg-text-muted);">Visitors</div></div>
+              <div style="text-align:center;"><div style="font-size:22px;font-weight:800;color:var(--cg-text);" id="dashBounce">—</div><div style="font-size:11px;color:var(--cg-text-muted);">Bounce Rate</div></div>
+              <div style="text-align:center;"><div style="font-size:22px;font-weight:800;color:var(--cg-text);" id="dashDuration">—</div><div style="font-size:11px;color:var(--cg-text-muted);">Avg Duration</div></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--cg-text-muted);margin-bottom:14px;" id="dashTodayYesterday"></div>
+            <div id="dashTopPages"></div>
+          </div>
+
           <div class="card" id="tierStatsCard" style="margin-top:16px;"></div>
         </div>
 
@@ -748,6 +776,26 @@
           <div class="card" style="padding:20px;margin-bottom:20px;">
             <h3 class="an-section-title">Live Visitors <span style="font-size:11px;font-weight:600;color:var(--cg-text-muted);">(last 5 min)</span></h3>
             <div id="anLive"></div>
+          </div>
+
+          <!-- Error report -->
+          <div class="card" style="padding:20px;margin-bottom:20px;border:1px solid rgba(231,76,60,.2);">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
+              <h3 class="an-section-title" style="margin:0;color:#e74c3c;">Error Report <span id="errCount" style="font-size:12px;font-weight:700;background:rgba(231,76,60,.15);color:#e74c3c;padding:2px 8px;border-radius:10px;margin-left:6px;">0</span></h3>
+              <div style="display:flex;gap:6px;">
+                <button class="btn btn-ghost btn-sm err-range active" data-days="7">7d</button>
+                <button class="btn btn-ghost btn-sm err-range" data-days="14">14d</button>
+                <button class="btn btn-ghost btn-sm err-range" data-days="30">30d</button>
+              </div>
+            </div>
+            <div id="errSummary" style="margin-bottom:14px;"></div>
+            <div id="errRows" style="max-height:400px;overflow-y:auto;"></div>
+          </div>
+
+          <!-- Recent user sessions -->
+          <div class="card" style="padding:20px;margin-bottom:20px;">
+            <h3 class="an-section-title">Recent User Sessions <span style="font-size:11px;font-weight:600;color:var(--cg-text-muted);">(last 24h)</span></h3>
+            <div id="anSessions24" style="max-height:500px;overflow-y:auto;"></div>
           </div>
 
           <!-- Activity log -->
@@ -1221,6 +1269,37 @@
       $('statRevenue').textContent = fmtMoney(data.revenue);
       $('statTickets').textContent = data.tickets_sold || 0;
       $('statSponsors').textContent = data.pending_sponsors || 0;
+
+      /* ── Analytics summary ── */
+      const an = data.analytics || {};
+      $('dashViews').textContent = (an.views_7d || 0).toLocaleString();
+      $('dashSessions').textContent = (an.sessions_7d || 0).toLocaleString();
+      $('dashBounce').textContent = (an.bounce_rate != null ? an.bounce_rate.toFixed(1) : '0') + '%';
+      const dMs = an.avg_duration_ms || 0;
+      const dS = dMs / 1000;
+      $('dashDuration').textContent = dS >= 60 ? Math.round(dS / 60) + 'm ' + Math.round(dS % 60) + 's' : Math.round(dS) + 's';
+      $('dashLiveCount').textContent = an.live_now || 0;
+
+      /* today vs yesterday */
+      const t = an.today_views || 0, y = an.yesterday_views || 0;
+      const diff = t - y;
+      const arrow = diff > 0 ? '↑' : diff < 0 ? '↓' : '→';
+      const color = diff > 0 ? '#27ae60' : diff < 0 ? '#e74c3c' : 'var(--cg-text-muted)';
+      $('dashTodayYesterday').innerHTML = `Today: <strong style="color:var(--cg-text);">${t}</strong> views &nbsp;|&nbsp; Yesterday: <strong style="color:var(--cg-text);">${y}</strong> &nbsp;<span style="color:${color};font-weight:700;">${arrow} ${Math.abs(diff)}</span>`;
+
+      /* top pages mini list */
+      const pages = an.top_pages || [];
+      if (pages.length) {
+        const mx = Math.max(...pages.map(p => p.views), 1);
+        $('dashTopPages').innerHTML = '<div style="font-size:12px;font-weight:700;color:var(--cg-text-muted);margin-bottom:8px;">TOP PAGES</div>' +
+          pages.map(p => {
+            const pct = (p.views / mx * 100).toFixed(0);
+            return `<div class="an-bar-row"><span class="an-bar-label" title="${p.page}">${p.page}</span><div class="an-bar-track"><div class="an-bar-fill" style="width:${pct}%"></div></div><span class="an-bar-val">${p.views}</span></div>`;
+          }).join('');
+      } else {
+        $('dashTopPages').innerHTML = '<p style="color:var(--cg-text-muted);font-size:13px;">No page view data yet</p>';
+      }
+
       if (data.tiers && data.tiers.length) {
         $('tierStatsCard').innerHTML = '<h3 style="font-size:16px;font-weight:800;margin-bottom:16px;">Ticket Tiers</h3>' +
           data.tiers.map(t => {
@@ -1324,6 +1403,20 @@
       /* ── activity log ── */
       logPage = 1;
       loadActivityLog();
+
+      /* ── error report ── */
+      loadErrorReport();
+
+      /* ── recent sessions ── */
+      loadActiveSessions();
+    }
+
+    /* ── User identity helper ── */
+    function userLabel(name, email, sessionId) {
+      if (name) return `<span style="color:var(--cg-gold);font-weight:600;" title="${(email||'').replace(/</g,'&lt;')}">${name.replace(/</g,'&lt;')}</span>`;
+      if (email) return `<span style="color:var(--cg-accent);font-weight:600;">${email.replace(/</g,'&lt;')}</span>`;
+      if (sessionId) return `<span style="color:var(--cg-text-muted);font-weight:600;">Guest #${sessionId.slice(0,6).toUpperCase()}</span>`;
+      return '<span style="color:var(--cg-text-muted);">Unknown</span>';
     }
 
     /* ── Live visitors ── */
@@ -1339,7 +1432,8 @@
       el.innerHTML = d.visitors.map(v => {
         const pg = (v.page || '/').replace(/</g, '&lt;');
         const dev = [v.browser, v.os, v.device_type].filter(Boolean).join(' · ');
-        return `<div class="live-row"><span style="width:6px;height:6px;border-radius:50%;background:#27ae60;flex-shrink:0;"></span><strong style="min-width:120px;">${pg}</strong><span style="color:var(--cg-text-muted);font-size:12px;">${dev}</span>${v.referrer ? `<span style="color:var(--cg-text-muted);font-size:11px;margin-left:auto;">via ${v.referrer.replace(/</g,'&lt;')}</span>` : ''}</div>`;
+        const who = userLabel(v.user_name, v.user_email, v.session_id);
+        return `<div class="live-row">${who}<span style="width:6px;height:6px;border-radius:50%;background:#27ae60;flex-shrink:0;"></span><strong style="min-width:100px;">${pg}</strong><span style="color:var(--cg-text-muted);font-size:12px;">${dev}</span>${v.referrer ? `<span style="color:var(--cg-text-muted);font-size:11px;margin-left:auto;">via ${v.referrer.replace(/</g,'&lt;')}</span>` : ''}</div>`;
       }).join('');
     }
 
@@ -1371,15 +1465,16 @@
       el.innerHTML = d.rows.map(r => {
         const ts = new Date(r.created_at).toLocaleString();
         const isErr = r.category === 'error';
+        const who = userLabel(r.user_name, r.user_email, r.session_id);
         const metaStr = r.meta ? Object.entries(r.meta).map(([k,v]) => `${k}: ${String(v).replace(/</g,'&lt;')}`).join(' · ') : '';
-        return `<div class="log-row">
+        return `<div class="log-row${isErr ? ' log-row-err' : ''}">
           <span class="log-time">${ts}</span>
           <span><span class="log-badge ${isErr ? 'log-err' : 'log-cat'}">${(r.category || '').replace(/</g,'&lt;')}</span></span>
           <span><span class="log-badge log-type">${(r.event_type || '').replace(/</g,'&lt;')}</span></span>
           <div>
+            <div style="margin-bottom:3px;">${who}</div>
             <div class="log-detail">${(r.detail || r.page || '').replace(/</g,'&lt;')}</div>
             ${metaStr ? `<div class="log-meta">${metaStr}</div>` : ''}
-            ${r.user_email ? `<div class="log-meta">User: ${r.user_email.replace(/</g,'&lt;')}</div>` : ''}
             ${r.device_type || r.browser ? `<div class="log-meta">${[r.device_type, r.browser, r.os].filter(Boolean).join(' · ')}</div>` : ''}
           </div>
         </div>`;
@@ -1401,6 +1496,99 @@
     ['logCatFilter','logTypeFilter'].forEach(id => $(id).addEventListener('change', () => { logPage = 1; loadActivityLog(); }));
     let logSearchTimer;
     $('logSearch').addEventListener('input', () => { clearTimeout(logSearchTimer); logSearchTimer = setTimeout(() => { logPage = 1; loadActivityLog(); }, 400); });
+
+    /* ── Recent User Sessions (last 24h) ── */
+    async function loadActiveSessions() {
+      const sessions = await apiFetch('/api/admin/active-sessions?limit=30');
+      if (!sessions) return;
+      const el = $('anSessions24');
+      if (!sessions.length) { el.innerHTML = '<p style="color:var(--cg-text-muted);font-size:13px;padding:16px 0;">No sessions in the last 24 hours</p>'; return; }
+
+      function fmtDur(ms) {
+        if (!ms) return '0s';
+        const s = Math.round(ms / 1000);
+        if (s < 60) return s + 's';
+        return Math.floor(s / 60) + 'm ' + (s % 60) + 's';
+      }
+      function timeAgo(iso) {
+        const sec = Math.round((Date.now() - new Date(iso).getTime()) / 1000);
+        if (sec < 60) return sec + 's ago';
+        if (sec < 3600) return Math.floor(sec / 60) + 'm ago';
+        return Math.floor(sec / 3600) + 'h ago';
+      }
+
+      el.innerHTML = sessions.map(s => {
+        const dev = [s.browser, s.os, s.device_type].filter(Boolean).join(' · ');
+        const isLive = (Date.now() - new Date(s.last_seen).getTime()) < 300000;
+        const who = userLabel(s.user_name, s.user_email, s.session_id);
+        const pageList = s.pages.map(p =>
+          `<div style="display:flex;align-items:center;gap:8px;padding:3px 0;font-size:12px;"><span style="color:var(--cg-text);min-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${(p.page || '/').replace(/</g,'&lt;')}</span><span style="color:var(--cg-text-muted);">${fmtDur(p.duration_ms)}</span><span style="color:var(--cg-text-muted);font-size:11px;margin-left:auto;">${timeAgo(p.at)}</span></div>`
+        ).join('');
+        return `<div style="border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:14px;margin-bottom:10px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;">
+            ${isLive ? '<span style="width:7px;height:7px;border-radius:50%;background:#27ae60;flex-shrink:0;animation:livePulse 1.5s infinite;"></span>' : '<span style="width:7px;height:7px;border-radius:50%;background:var(--cg-text-muted);flex-shrink:0;opacity:.3;"></span>'}
+            ${who}
+            <strong style="font-size:13px;">${s.page_count} page${s.page_count !== 1 ? 's' : ''}</strong>
+            <span style="font-size:12px;color:var(--cg-text-muted);">${fmtDur(s.total_duration_ms)} total</span>
+            <span style="font-size:11px;color:var(--cg-text-muted);margin-left:auto;">${dev}</span>
+            ${s.referrer ? `<span style="font-size:11px;color:var(--cg-text-muted);">via ${s.referrer.replace(/</g,'&lt;')}</span>` : ''}
+            <span style="font-size:11px;color:var(--cg-text-muted);">${timeAgo(s.last_seen)}</span>
+          </div>
+          <div style="padding-left:17px;">${pageList}</div>
+        </div>`;
+      }).join('');
+    }
+
+    /* ── Error Report ── */
+    let errDays = 7;
+
+    async function loadErrorReport() {
+      try {
+        const d = await apiFetch(`/api/admin/error-report?days=${errDays}`);
+        $('errCount').textContent = d.total_errors;
+
+        // Summary badges
+        if (!d.summary.length) {
+          $('errSummary').innerHTML = '<span style="color:var(--cg-text-muted);font-size:13px;">No errors in period</span>';
+        } else {
+          $('errSummary').innerHTML = d.summary.map(s =>
+            `<span style="display:inline-block;background:rgba(231,76,60,.12);color:#e74c3c;padding:4px 10px;border-radius:8px;font-size:12px;margin:3px 4px 3px 0;"><strong>${(s.event_type || 'Unknown').replace(/</g,'&lt;')}</strong> × ${s.cnt} <span style="color:var(--cg-text-muted);margin-left:4px;">(last ${timeAgo(s.last_seen)})</span></span>`
+          ).join('');
+        }
+
+        // Error rows
+        if (!d.rows.length) {
+          $('errRows').innerHTML = '<div style="text-align:center;color:var(--cg-text-muted);padding:24px;">No errors</div>';
+        } else {
+          $('errRows').innerHTML = d.rows.map(r => {
+            const who = userLabel(r.user_name, r.user_email, r.session_id);
+            const meta = r.meta ? JSON.stringify(r.meta) : '';
+            const dev = [r.browser, r.os, r.device_type].filter(Boolean).join(' · ');
+            return `<div style="border:1px solid rgba(231,76,60,.15);border-radius:8px;padding:10px 12px;margin-bottom:8px;background:rgba(231,76,60,.04);">
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px;">
+                <span style="font-size:11px;color:var(--cg-text-muted);">${timeAgo(r.created_at)}</span>
+                ${who}
+                <span style="font-size:11px;color:#e74c3c;font-weight:600;">${(r.event_type || '').replace(/</g,'&lt;')}</span>
+                ${dev ? `<span style="font-size:11px;color:var(--cg-text-muted);margin-left:auto;">${dev}</span>` : ''}
+              </div>
+              ${r.page ? `<div style="font-size:12px;color:var(--cg-text-muted);margin-bottom:2px;">Page: ${r.page.replace(/</g,'&lt;')}</div>` : ''}
+              ${meta ? `<div style="font-size:11px;color:var(--cg-text-muted);word-break:break-all;max-height:60px;overflow-y:auto;">${meta.replace(/</g,'&lt;')}</div>` : ''}
+            </div>`;
+          }).join('');
+        }
+      } catch (e) {
+        $('errRows').innerHTML = `<div style="color:#e74c3c;padding:12px;">Failed to load error report</div>`;
+      }
+    }
+
+    document.querySelectorAll('.err-range').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.err-range').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        errDays = parseInt(btn.dataset.days);
+        loadErrorReport();
+      });
+    });
 
     let ticketTiers = [];
 

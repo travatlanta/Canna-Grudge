@@ -146,6 +146,8 @@ CREATE TABLE IF NOT EXISTS page_views (
     country TEXT DEFAULT '',
     screen_width INTEGER DEFAULT 0,
     duration_ms INTEGER DEFAULT 0,
+    user_name TEXT DEFAULT '',
+    user_email TEXT DEFAULT '',
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -162,6 +164,7 @@ CREATE TABLE IF NOT EXISTS activity_log (
     detail TEXT DEFAULT '',
     meta JSONB DEFAULT '{}',
     user_email TEXT DEFAULT '',
+    user_name TEXT DEFAULT '',
     ip_addr TEXT DEFAULT '',
     device_type TEXT DEFAULT '',
     browser TEXT DEFAULT '',
