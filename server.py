@@ -1058,6 +1058,32 @@ def view_invoice(token):
     return jsonify(inv)
 
 
+@app.route('/api/admin/users', methods=['GET'])
+@verify_admin
+def admin_get_users():
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 50, type=int)
+    q = request.args.get('q', '').strip()
+    per_page = min(per_page, 200)
+    where = ''
+    params = []
+    if q:
+        where = "WHERE LOWER(name) LIKE %s OR LOWER(email) LIKE %s OR firebase_uid ILIKE %s"
+        like = f'%{q.lower()}%'
+        params = [like, like, like]
+    total = query_db(f'SELECT COUNT(*) AS cnt FROM users {where}', params, one=True)
+    total = total['cnt'] if total else 0
+    offset = (page - 1) * per_page
+    rows = query_db(
+        f'SELECT id, firebase_uid, email, name, is_admin, created_at FROM users {where} ORDER BY created_at DESC LIMIT %s OFFSET %s',
+        params + [per_page, offset]
+    )
+    for r in rows:
+        if r.get('created_at'):
+            r['created_at'] = r['created_at'].isoformat()
+    return jsonify({'users': rows, 'total': total, 'page': page, 'per_page': per_page})
+
+
 @app.route('/api/admin/admins', methods=['GET'])
 @verify_admin
 def admin_get_admins():
