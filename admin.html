@@ -511,12 +511,41 @@
       }
     }
 
-    /* ─── Analytics responsive ─── */
+    /* ─── Analytics grid + responsive ─── */
+    .an-section-title { font-size:15px;font-weight:800;margin-bottom:14px; }
+    .an-grid-2 { display:grid;grid-template-columns:1fr 1fr;gap:16px; }
+    .an-grid-4 {}
+    .an-stat-row {}
+    @keyframes livePulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+    .an-bar-row { display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:13px; }
+    .an-bar-row .an-bar-label { width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0;color:var(--cg-text-muted); }
+    .an-bar-row .an-bar-track { flex:1;height:8px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden; }
+    .an-bar-row .an-bar-fill { height:100%;border-radius:4px;background:var(--cg-accent);transition:width .4s; }
+    .an-bar-row .an-bar-val { width:52px;text-align:right;font-weight:600;font-size:12px; }
+    .log-row { display:grid;grid-template-columns:140px 100px 100px 1fr;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:12px;align-items:start; }
+    .log-row:last-child { border-bottom:none; }
+    .log-time { color:var(--cg-text-muted);font-variant-numeric:tabular-nums; }
+    .log-badge { display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.3px; }
+    .log-cat { background:rgba(52,152,219,.15);color:#3498db; }
+    .log-type { background:rgba(155,89,182,.15);color:#9b59b6; }
+    .log-err { background:rgba(231,76,60,.15);color:#e74c3c; }
+    .log-detail { word-break:break-word; }
+    .log-meta { color:var(--cg-text-muted);font-size:11px;margin-top:2px; }
+    .live-row { display:flex;align-items:center;gap:14px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:13px; }
+    .live-row:last-child { border-bottom:none; }
+
+    @media (max-width: 1100px) {
+      .an-stat-row { grid-template-columns:repeat(3,1fr) !important; }
+      .an-grid-4 { grid-template-columns:repeat(2,1fr) !important; }
+    }
     @media (max-width: 768px) {
-      #tab-analytics [style*="grid-template-columns: 1fr 1fr 1fr"] { grid-template-columns: 1fr !important; }
-      #tab-analytics [style*="grid-template-columns: 1fr 1fr"]     { grid-template-columns: 1fr !important; }
-      #tab-analytics [style*="grid-template-columns:1fr 1fr 1fr"]  { grid-template-columns: 1fr !important; }
-      #tab-analytics [style*="grid-template-columns:1fr 1fr"]      { grid-template-columns: 1fr !important; }
+      .an-stat-row { grid-template-columns:repeat(2,1fr) !important; }
+      .an-grid-2 { grid-template-columns:1fr !important; }
+      .an-grid-4 { grid-template-columns:1fr !important; }
+      .log-row { grid-template-columns:1fr;gap:4px; }
+    }
+    @media (max-width: 480px) {
+      .an-stat-row { grid-template-columns:1fr !important; }
     }
   </style>
 </head>
@@ -627,62 +656,116 @@
 
         <!-- ─── Analytics Tab ─── -->
         <div id="tab-analytics" class="tab-content">
-          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:24px;">
-            <div></div>
-            <div style="display:flex;gap:8px;">
+          <!-- Range selector + Live badge -->
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span id="anLiveBadge" style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;background:rgba(39,174,96,.12);color:#27ae60;font-size:11px;font-weight:700;">
+                <span style="width:6px;height:6px;border-radius:50%;background:#27ae60;animation:livePulse 1.5s infinite;"></span>
+                <span id="anLiveCount">0</span> live
+              </span>
+            </div>
+            <div style="display:flex;gap:6px;">
               <button class="btn btn-ghost btn-sm an-range active" data-days="7">7d</button>
               <button class="btn btn-ghost btn-sm an-range" data-days="14">14d</button>
               <button class="btn btn-ghost btn-sm an-range" data-days="30">30d</button>
               <button class="btn btn-ghost btn-sm an-range" data-days="90">90d</button>
             </div>
           </div>
-          <div class="stats-grid" id="anStatsGrid">
+
+          <!-- Top stat cards -->
+          <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:20px;" class="an-stat-row">
             <div class="card stat-card"><div class="stat-value" id="anViews">—</div><div class="stat-label">Page Views</div></div>
             <div class="card stat-card"><div class="stat-value" id="anSessions">—</div><div class="stat-label">Unique Visitors</div></div>
             <div class="card stat-card"><div class="stat-value" id="anBounce">—</div><div class="stat-label">Bounce Rate</div></div>
             <div class="card stat-card"><div class="stat-value" id="anDuration">—</div><div class="stat-label">Avg. Duration</div></div>
+            <div class="card stat-card"><div class="stat-value" id="anPPS">—</div><div class="stat-label">Pages / Session</div></div>
+            <div class="card stat-card"><div class="stat-value" id="anNewRet">—</div><div class="stat-label">New / Returning</div></div>
           </div>
 
+          <!-- Traffic chart -->
           <div class="card" style="margin-bottom:20px;padding:20px;">
-            <h3 style="font-size:15px;font-weight:800;margin-bottom:16px;">Traffic Over Time</h3>
+            <h3 class="an-section-title">Traffic Over Time</h3>
             <div id="anChart" style="width:100%;height:220px;position:relative;"></div>
           </div>
 
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+          <!-- Top pages + referrers -->
+          <div class="an-grid-2" style="margin-bottom:20px;">
             <div class="card" style="padding:20px;">
-              <h3 style="font-size:15px;font-weight:800;margin-bottom:16px;">Top Pages</h3>
+              <h3 class="an-section-title">Top Pages</h3>
               <div id="anPages"></div>
             </div>
             <div class="card" style="padding:20px;">
-              <h3 style="font-size:15px;font-weight:800;margin-bottom:16px;">Traffic Sources</h3>
+              <h3 class="an-section-title">Traffic Sources</h3>
               <div id="anReferrers"></div>
             </div>
           </div>
 
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+          <!-- Entry / Exit pages -->
+          <div class="an-grid-2" style="margin-bottom:20px;">
             <div class="card" style="padding:20px;">
-              <h3 style="font-size:15px;font-weight:800;margin-bottom:16px;">UTM Campaigns</h3>
-              <div id="anUtm"></div>
+              <h3 class="an-section-title">Entry Pages</h3>
+              <div id="anEntry"></div>
             </div>
             <div class="card" style="padding:20px;">
-              <h3 style="font-size:15px;font-weight:800;margin-bottom:16px;">Activity by Hour</h3>
-              <div id="anHourly" style="height:120px;display:flex;align-items:flex-end;gap:2px;"></div>
+              <h3 class="an-section-title">Exit Pages</h3>
+              <div id="anExit"></div>
             </div>
           </div>
 
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
+          <!-- UTM + Hourly heatmap -->
+          <div class="an-grid-2" style="margin-bottom:20px;">
             <div class="card" style="padding:20px;">
-              <h3 style="font-size:15px;font-weight:800;margin-bottom:16px;">Devices</h3>
+              <h3 class="an-section-title">UTM Campaigns</h3>
+              <div id="anUtm"></div>
+            </div>
+            <div class="card" style="padding:20px;">
+              <h3 class="an-section-title">Activity by Hour</h3>
+              <div id="anHourly" style="height:140px;display:flex;align-items:flex-end;gap:2px;padding-bottom:18px;position:relative;"></div>
+            </div>
+          </div>
+
+          <!-- Device / Browser / OS / Screen -->
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;" class="an-grid-4">
+            <div class="card" style="padding:20px;">
+              <h3 class="an-section-title">Devices</h3>
               <div id="anDevices"></div>
             </div>
             <div class="card" style="padding:20px;">
-              <h3 style="font-size:15px;font-weight:800;margin-bottom:16px;">Browsers</h3>
+              <h3 class="an-section-title">Browsers</h3>
               <div id="anBrowsers"></div>
             </div>
             <div class="card" style="padding:20px;">
-              <h3 style="font-size:15px;font-weight:800;margin-bottom:16px;">Operating Systems</h3>
+              <h3 class="an-section-title">Operating Systems</h3>
               <div id="anOS"></div>
             </div>
+            <div class="card" style="padding:20px;">
+              <h3 class="an-section-title">Screen Sizes</h3>
+              <div id="anScreens"></div>
+            </div>
+          </div>
+
+          <!-- Live visitors -->
+          <div class="card" style="padding:20px;margin-bottom:20px;">
+            <h3 class="an-section-title">Live Visitors <span style="font-size:11px;font-weight:600;color:var(--cg-text-muted);">(last 5 min)</span></h3>
+            <div id="anLive"></div>
+          </div>
+
+          <!-- Activity log -->
+          <div class="card" style="padding:20px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
+              <h3 class="an-section-title" style="margin:0;">Activity Log</h3>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <select id="logCatFilter" style="padding:6px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.1);background:var(--cg-surface-2);color:#fff;font-size:12px;">
+                  <option value="">All Categories</option>
+                </select>
+                <select id="logTypeFilter" style="padding:6px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.1);background:var(--cg-surface-2);color:#fff;font-size:12px;">
+                  <option value="">All Events</option>
+                </select>
+                <input type="text" id="logSearch" placeholder="Search..." style="padding:6px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.1);background:var(--cg-surface-2);color:#fff;font-size:12px;width:160px;">
+              </div>
+            </div>
+            <div id="anLog" style="max-height:500px;overflow-y:auto;"></div>
+            <div id="anLogPager" style="display:flex;justify-content:center;gap:8px;margin-top:12px;"></div>
           </div>
         </div>
 
@@ -1114,6 +1197,8 @@
     });
 
     async function loadTab(tab) {
+      /* stop live-visitor polling when leaving analytics */
+      if (tab !== 'analytics' && anLiveTimer) { clearInterval(anLiveTimer); anLiveTimer = null; }
       try {
         if (tab === 'dashboard') await loadDashboard();
         else if (tab === 'analytics') await loadAnalytics();
@@ -1149,6 +1234,8 @@
 
     /* ── Analytics ─────────────────────────────────────────── */
     let anDays = 7;
+    let anLiveTimer = null;
+    let logPage = 1;
     document.querySelectorAll('.an-range').forEach(b => b.addEventListener('click', () => {
       document.querySelectorAll('.an-range').forEach(x => x.classList.remove('active'));
       b.classList.add('active');
@@ -1159,15 +1246,20 @@
     async function loadAnalytics() {
       const d = await apiFetch(`/api/admin/analytics?days=${anDays}`);
       if (!d) return;
+
+      /* ── stat cards ── */
       $('anViews').textContent = (d.total_views ?? 0).toLocaleString();
       $('anSessions').textContent = (d.unique_sessions ?? 0).toLocaleString();
       $('anBounce').textContent = (d.bounce_rate != null ? d.bounce_rate.toFixed(1) : '0') + '%';
-      const dur = d.avg_duration ?? 0;
-      $('anDuration').textContent = dur >= 60 ? Math.round(dur / 60) + 'm ' + Math.round(dur % 60) + 's' : Math.round(dur) + 's';
+      const durMs = d.avg_duration_ms ?? 0;
+      const durS = durMs / 1000;
+      $('anDuration').textContent = durS >= 60 ? Math.round(durS / 60) + 'm ' + Math.round(durS % 60) + 's' : Math.round(durS) + 's';
+      $('anPPS').textContent = (d.pages_per_session ?? 0).toFixed(1);
+      $('anNewRet').textContent = `${d.new_sessions ?? 0} / ${d.returning_sessions ?? 0}`;
 
-      /* ── bar chart ── */
+      /* ── traffic chart ── */
       const chart = $('anChart');
-      const daily = d.daily_views || [];
+      const daily = d.daily || [];
       if (!daily.length) { chart.innerHTML = '<p style="color:var(--cg-text-muted);text-align:center;padding:40px 0;">No data yet</p>'; }
       else {
         const maxV = Math.max(...daily.map(r => r.views), 1);
@@ -1183,41 +1275,132 @@
           }).join('') + `</div>`;
       }
 
-      /* ── helper: rank table ── */
-      function rankTable(rows, labelKey, valKey) {
+      /* ── bar row helper ── */
+      function barRows(rows, labelKey, valKey, limit) {
         if (!rows || !rows.length) return '<p style="color:var(--cg-text-muted);font-size:13px;">No data</p>';
-        const mx = Math.max(...rows.map(r => r[valKey]), 1);
-        return rows.map(r => {
+        const show = limit ? rows.slice(0, limit) : rows;
+        const mx = Math.max(...show.map(r => r[valKey]), 1);
+        return show.map(r => {
           const pct = (r[valKey] / mx * 100).toFixed(1);
-          return `<div style="margin-bottom:10px;"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:3px;"><span style="color:var(--cg-text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:70%;">${r[labelKey] || '(direct)'}</span><span style="color:var(--cg-text-muted);flex-shrink:0;">${r[valKey]}</span></div><div style="height:4px;background:var(--cg-surface-3);border-radius:2px;overflow:hidden;"><div style="height:100%;width:${pct}%;background:var(--cg-gold);border-radius:2px;"></div></div></div>`;
+          const label = (r[labelKey] || '(direct)').replace(/</g, '&lt;');
+          return `<div class="an-bar-row"><span class="an-bar-label" title="${label}">${label}</span><div class="an-bar-track"><div class="an-bar-fill" style="width:${pct}%"></div></div><span class="an-bar-val">${r[valKey]}</span></div>`;
         }).join('');
       }
-      $('anPages').innerHTML = rankTable(d.top_pages, 'page', 'views');
-      $('anReferrers').innerHTML = rankTable(d.top_referrers, 'referrer', 'views');
-      $('anUtm').innerHTML = rankTable(d.utm_sources, 'source', 'views');
+
+      $('anPages').innerHTML = barRows(d.pages, 'page', 'views', 10);
+      $('anReferrers').innerHTML = barRows(d.referrers, 'referrer', 'views', 10);
+      $('anEntry').innerHTML = barRows(d.entry_pages, 'page', 'count', 8);
+      $('anExit').innerHTML = barRows(d.exit_pages, 'page', 'count', 8);
+      $('anUtm').innerHTML = barRows(d.utm_sources, 'source', 'views', 8);
 
       /* ── hourly heatmap ── */
-      const hourly = d.hourly_heatmap || [];
+      const hourly = d.hourly || [];
       const mxH = Math.max(...hourly.map(r => r.views), 1);
       $('anHourly').innerHTML = hourly.map(r => {
         const h = Math.max(r.views / mxH * 100, 4);
         const op = Math.max(r.views / mxH, 0.15);
-        return `<div title="${r.hour}:00 — ${r.views} views" style="flex:1;height:${h}%;background:var(--cg-gold);opacity:${op.toFixed(2)};border-radius:2px 2px 0 0;min-width:0;"></div>`;
+        return `<div title="${String(r.hour).padStart(2,'0')}:00 — ${r.views} views" style="flex:1;height:${h}%;background:var(--cg-gold);opacity:${op.toFixed(2)};border-radius:2px 2px 0 0;min-width:0;position:relative;"><span style="position:absolute;bottom:-16px;left:50%;transform:translateX(-50%);font-size:8px;color:var(--cg-text-muted);white-space:nowrap;">${r.hour % 6 === 0 ? String(r.hour).padStart(2,'0') : ''}</span></div>`;
       }).join('');
 
-      /* ── pie-style breakdown ── */
+      /* ── pie-style breakdown helper ── */
       function breakdown(rows, labelKey, valKey) {
         if (!rows || !rows.length) return '<p style="color:var(--cg-text-muted);font-size:13px;">No data</p>';
         const total = rows.reduce((s, r) => s + r[valKey], 0) || 1;
         return rows.map(r => {
           const pct = (r[valKey] / total * 100).toFixed(1);
-          return `<div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;margin-bottom:8px;"><span style="color:var(--cg-text);">${r[labelKey] || 'Unknown'}</span><span style="color:var(--cg-text-muted);">${pct}%</span></div>`;
+          return `<div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;margin-bottom:8px;"><span style="color:var(--cg-text);">${(r[labelKey] || 'Unknown').replace(/</g, '&lt;')}</span><span style="color:var(--cg-text-muted);">${pct}% <small>(${r[valKey]})</small></span></div>`;
         }).join('');
       }
       $('anDevices').innerHTML = breakdown(d.devices, 'device_type', 'count');
       $('anBrowsers').innerHTML = breakdown(d.browsers, 'browser', 'count');
       $('anOS').innerHTML = breakdown(d.os_list, 'os', 'count');
+      $('anScreens').innerHTML = breakdown(d.screens, 'bucket', 'count');
+
+      /* ── live visitors ── */
+      loadLiveVisitors();
+      if (anLiveTimer) clearInterval(anLiveTimer);
+      anLiveTimer = setInterval(loadLiveVisitors, 30000);
+
+      /* ── activity log ── */
+      logPage = 1;
+      loadActivityLog();
     }
+
+    /* ── Live visitors ── */
+    async function loadLiveVisitors() {
+      const d = await apiFetch('/api/admin/live-visitors');
+      if (!d) return;
+      $('anLiveCount').textContent = d.count;
+      const el = $('anLive');
+      if (!d.visitors || !d.visitors.length) {
+        el.innerHTML = '<p style="color:var(--cg-text-muted);font-size:13px;padding:16px 0;">No active visitors right now</p>';
+        return;
+      }
+      el.innerHTML = d.visitors.map(v => {
+        const pg = (v.page || '/').replace(/</g, '&lt;');
+        const dev = [v.browser, v.os, v.device_type].filter(Boolean).join(' · ');
+        return `<div class="live-row"><span style="width:6px;height:6px;border-radius:50%;background:#27ae60;flex-shrink:0;"></span><strong style="min-width:120px;">${pg}</strong><span style="color:var(--cg-text-muted);font-size:12px;">${dev}</span>${v.referrer ? `<span style="color:var(--cg-text-muted);font-size:11px;margin-left:auto;">via ${v.referrer.replace(/</g,'&lt;')}</span>` : ''}</div>`;
+      }).join('');
+    }
+
+    /* ── Activity log ── */
+    let logFiltersLoaded = false;
+    async function loadActivityLog() {
+      const cat = $('logCatFilter').value;
+      const evt = $('logTypeFilter').value;
+      const q = $('logSearch').value.trim();
+      let url = `/api/admin/activity-log?page=${logPage}&per_page=50`;
+      if (cat) url += `&category=${encodeURIComponent(cat)}`;
+      if (evt) url += `&event_type=${encodeURIComponent(evt)}`;
+      if (q) url += `&q=${encodeURIComponent(q)}`;
+      const d = await apiFetch(url);
+      if (!d) return;
+
+      /* populate filters once */
+      if (!logFiltersLoaded && d.categories) {
+        const cs = $('logCatFilter');
+        d.categories.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; cs.appendChild(o); });
+        const es = $('logTypeFilter');
+        d.event_types.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; es.appendChild(o); });
+        logFiltersLoaded = true;
+      }
+
+      const el = $('anLog');
+      if (!d.rows || !d.rows.length) { el.innerHTML = '<p style="color:var(--cg-text-muted);font-size:13px;text-align:center;padding:24px 0;">No activity recorded yet</p>'; $('anLogPager').innerHTML = ''; return; }
+
+      el.innerHTML = d.rows.map(r => {
+        const ts = new Date(r.created_at).toLocaleString();
+        const isErr = r.category === 'error';
+        const metaStr = r.meta ? Object.entries(r.meta).map(([k,v]) => `${k}: ${String(v).replace(/</g,'&lt;')}`).join(' · ') : '';
+        return `<div class="log-row">
+          <span class="log-time">${ts}</span>
+          <span><span class="log-badge ${isErr ? 'log-err' : 'log-cat'}">${(r.category || '').replace(/</g,'&lt;')}</span></span>
+          <span><span class="log-badge log-type">${(r.event_type || '').replace(/</g,'&lt;')}</span></span>
+          <div>
+            <div class="log-detail">${(r.detail || r.page || '').replace(/</g,'&lt;')}</div>
+            ${metaStr ? `<div class="log-meta">${metaStr}</div>` : ''}
+            ${r.user_email ? `<div class="log-meta">User: ${r.user_email.replace(/</g,'&lt;')}</div>` : ''}
+            ${r.device_type || r.browser ? `<div class="log-meta">${[r.device_type, r.browser, r.os].filter(Boolean).join(' · ')}</div>` : ''}
+          </div>
+        </div>`;
+      }).join('');
+
+      /* pager */
+      const totalPages = Math.ceil(d.total / d.per_page);
+      let pagerHtml = '';
+      if (totalPages > 1) {
+        if (logPage > 1) pagerHtml += `<button class="btn btn-ghost btn-sm" onclick="logGo(${logPage - 1})">← Prev</button>`;
+        pagerHtml += `<span style="font-size:12px;color:var(--cg-text-muted);padding:0 8px;">Page ${logPage} of ${totalPages}</span>`;
+        if (logPage < totalPages) pagerHtml += `<button class="btn btn-ghost btn-sm" onclick="logGo(${logPage + 1})">Next →</button>`;
+      }
+      $('anLogPager').innerHTML = pagerHtml;
+    }
+    window.logGo = function(p) { logPage = p; loadActivityLog(); };
+
+    /* log filter listeners */
+    ['logCatFilter','logTypeFilter'].forEach(id => $(id).addEventListener('change', () => { logPage = 1; loadActivityLog(); }));
+    let logSearchTimer;
+    $('logSearch').addEventListener('input', () => { clearTimeout(logSearchTimer); logSearchTimer = setTimeout(() => { logPage = 1; loadActivityLog(); }, 400); });
 
     let ticketTiers = [];
 

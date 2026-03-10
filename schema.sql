@@ -152,3 +152,23 @@ CREATE TABLE IF NOT EXISTS page_views (
 CREATE INDEX IF NOT EXISTS idx_page_views_created ON page_views(created_at);
 CREATE INDEX IF NOT EXISTS idx_page_views_session ON page_views(session_id);
 CREATE INDEX IF NOT EXISTS idx_page_views_page ON page_views(page);
+
+CREATE TABLE IF NOT EXISTS activity_log (
+    id SERIAL PRIMARY KEY,
+    session_id TEXT DEFAULT '',
+    event_type TEXT NOT NULL,
+    category TEXT DEFAULT 'general',
+    page TEXT DEFAULT '',
+    detail TEXT DEFAULT '',
+    meta JSONB DEFAULT '{}',
+    user_email TEXT DEFAULT '',
+    ip_addr TEXT DEFAULT '',
+    device_type TEXT DEFAULT '',
+    browser TEXT DEFAULT '',
+    os TEXT DEFAULT '',
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_activity_log_created ON activity_log(created_at);
+CREATE INDEX IF NOT EXISTS idx_activity_log_event ON activity_log(event_type);
+CREATE INDEX IF NOT EXISTS idx_activity_log_category ON activity_log(category);

@@ -532,6 +532,9 @@ def create_payment():
         if not result.is_success():
             print(f'[SQUARE ERROR] {result.errors}')
             execute_db("UPDATE orders SET status='failed' WHERE id=%s", (order['id'],))
+            _log_activity('payment_failed', 'purchase', '/checkout',
+                          f'Payment failed for {buyer_name} ({email}) — ${charge_amount/100:.2f}',
+                          {'order_id': order['id'], 'errors': str(result.errors)})
             return jsonify({'success': False, 'errors': result.errors}), 400
         payment = result.body.get('payment', {})
         payment_id = payment.get('id', '')
@@ -547,6 +550,12 @@ def create_payment():
     )
     order['square_payment_id'] = payment_id
     order['receipt_url'] = receipt_url
+
+    items_summary = ', '.join(f"{li['qty']}x {li['tier_name']}" for li in order_line_items)
+    _log_activity('purchase_completed', 'purchase', '/checkout',
+                  f'{buyer_name} ({email}) purchased {items_summary} — ${charge_amount/100:.2f}',
+                  {'order_id': order['id'], 'payment_id': payment_id, 'total_cents': charge_amount},
+                  user_email=email)
 
     if email:
         send_purchase_confirmation_email(
@@ -803,6 +812,9 @@ def admin_checkin(oid):
         'UPDATE orders SET checked_in = TRUE, checked_in_at = NOW() WHERE id = %s',
         (oid,)
     )
+    _log_activity('checkin', 'event', '/scanner',
+                  f'{order.get("name", "Guest")} ({order.get("email", "")}) checked in — Order #{oid}',
+                  {'order_id': oid}, user_email=order.get('email', ''))
     return jsonify({'success': True, 'message': f'{order.get("name", "Guest")} checked in!'})
 
 
@@ -1228,59 +1240,113 @@ if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=False)
 
 
-# ─── Analytics ───────────────────────────────────────────────
+# ─── Analytics & Activity Log ────────────────────────────────
+
+def _log_activity(event_type, category='general', page='', detail='', meta=None,
+                  user_email='', session_id='', ip_addr='', device_type='', browser='', os_name=''):
+    """Insert a row into the activity_log table."""
+    import json as _json
+    try:
+        execute_db(
+            '''INSERT INTO activity_log
+               (session_id, event_type, category, page, detail, meta, user_email, ip_addr, device_type, browser, os)
+               VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)''',
+            (session_id[:64], event_type[:50], category[:30], page[:200], detail[:1000],
+             _json.dumps(meta or {}), user_email[:200], ip_addr[:45], device_type[:20], browser[:50], os_name[:50])
+        )
+    except Exception as e:
+        print(f"[ACTIVITY LOG] {e}")
+
 
 @app.route('/api/track', methods=['POST'])
 def track_pageview():
-    """Lightweight, public endpoint for recording page views."""
+    """Lightweight, public endpoint for recording page views + events."""
     d = request.get_json(silent=True) or {}
     session_id = (d.get('sid') or '')[:64]
     page = (d.get('page') or '')[:200]
+    event = (d.get('event') or '')[:50]  # optional event type
+
+    # Detect IP for logging (never stored in page_views)
+    ip = request.headers.get('X-Forwarded-For', request.remote_addr or '').split(',')[0].strip()
+
+    device_type = (d.get('dt') or '')[:20]
+    browser = (d.get('br') or '')[:50]
+    os_name = (d.get('os') or '')[:50]
+
+    # ── Activity log events (clicks, errors, conversions) ──
+    if event:
+        _log_activity(
+            event_type=event,
+            category=(d.get('cat') or 'interaction')[:30],
+            page=page,
+            detail=(d.get('detail') or '')[:1000],
+            meta=d.get('meta') if isinstance(d.get('meta'), dict) else {},
+            session_id=session_id,
+            ip_addr=ip,
+            device_type=device_type,
+            browser=browser,
+            os_name=os_name,
+        )
+        return jsonify({'ok': True})
+
+    # ── Page view tracking ──
     if not session_id or not page:
-        return jsonify({'ok': True})  # silent drop
+        return jsonify({'ok': True})
+
     referrer = (d.get('ref') or '')[:500]
     utm_source = (d.get('us') or '')[:100]
     utm_medium = (d.get('um') or '')[:100]
     utm_campaign = (d.get('uc') or '')[:100]
-    device_type = (d.get('dt') or '')[:20]
-    browser = (d.get('br') or '')[:50]
-    os_name = (d.get('os') or '')[:50]
     screen_w = min(int(d.get('sw') or 0), 9999)
     duration = min(int(d.get('dur') or 0), 3600000)
+    is_update = d.get('update')  # if True, UPDATE existing row instead of INSERT
+
     try:
-        execute_db(
-            '''INSERT INTO page_views (session_id, page, referrer, utm_source, utm_medium, utm_campaign,
-               device_type, browser, os, screen_width, duration_ms)
-               VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)''',
-            (session_id, page, referrer, utm_source, utm_medium, utm_campaign,
-             device_type, browser, os_name, screen_w, duration)
-        )
-    except Exception:
-        pass
+        if is_update:
+            # Update duration on an existing row for this session+page
+            execute_db(
+                '''UPDATE page_views SET duration_ms = %s
+                   WHERE id = (SELECT id FROM page_views WHERE session_id = %s AND page = %s ORDER BY created_at DESC LIMIT 1)''',
+                (duration, session_id, page)
+            )
+        else:
+            execute_db(
+                '''INSERT INTO page_views (session_id, page, referrer, utm_source, utm_medium, utm_campaign,
+                   device_type, browser, os, screen_width, duration_ms)
+                   VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)''',
+                (session_id, page, referrer, utm_source, utm_medium, utm_campaign,
+                 device_type, browser, os_name, screen_w, duration)
+            )
+            # Also log as activity
+            _log_activity('pageview', 'navigation', page, f'Viewed {page}',
+                          {'referrer': referrer, 'utm_source': utm_source, 'screen_width': screen_w},
+                          session_id=session_id, ip_addr=ip, device_type=device_type, browser=browser, os_name=os_name)
+    except Exception as e:
+        print(f"[TRACK] {e}")
     return jsonify({'ok': True})
 
 
 @app.route('/api/admin/analytics', methods=['GET'])
 @verify_admin
 def admin_analytics():
-    """Return aggregated analytics data for the admin dashboard."""
+    """Return comprehensive analytics data for the admin dashboard."""
     days = min(int(request.args.get('days', 30)), 365)
     since = f"NOW() - INTERVAL '{days} days'"
 
     # Total views & unique sessions
     totals = query_db(f'''
-        SELECT COUNT(*) as views, COUNT(DISTINCT session_id) as sessions
+        SELECT COUNT(*) as total_views, COUNT(DISTINCT session_id) as unique_sessions
         FROM page_views WHERE created_at >= {since}
-    ''', one=True)
+    ''', one=True) or {}
 
     # Views per day
     daily = query_db(f'''
-        SELECT DATE(created_at) as day, COUNT(*) as views, COUNT(DISTINCT session_id) as sessions
+        SELECT DATE(created_at) as date, COUNT(*) as views, COUNT(DISTINCT session_id) as sessions
         FROM page_views WHERE created_at >= {since}
-        GROUP BY DATE(created_at) ORDER BY day
+        GROUP BY DATE(created_at) ORDER BY date
     ''')
     for r in daily:
-        r['day'] = r['day'].isoformat() if hasattr(r['day'], 'isoformat') else str(r['day'])
+        r['date'] = r['date'].isoformat() if hasattr(r['date'], 'isoformat') else str(r['date'])
 
     # Top pages
     pages = query_db(f'''
@@ -1297,31 +1363,47 @@ def admin_analytics():
     ''')
 
     # UTM sources
-    utm_sources = query_db(f'''
-        SELECT utm_source, utm_medium, utm_campaign, COUNT(*) as views, COUNT(DISTINCT session_id) as sessions
+    utm = query_db(f'''
+        SELECT utm_source as source, utm_medium as medium, utm_campaign as campaign,
+               COUNT(*) as views, COUNT(DISTINCT session_id) as sessions
         FROM page_views WHERE created_at >= {since} AND utm_source != ''
         GROUP BY utm_source, utm_medium, utm_campaign ORDER BY views DESC LIMIT 20
     ''')
 
     # Device types
     devices = query_db(f'''
-        SELECT device_type, COUNT(*) as views
+        SELECT device_type, COUNT(*) as count
         FROM page_views WHERE created_at >= {since} AND device_type != ''
-        GROUP BY device_type ORDER BY views DESC
+        GROUP BY device_type ORDER BY count DESC
     ''')
 
     # Browsers
     browsers = query_db(f'''
-        SELECT browser, COUNT(*) as views
+        SELECT browser, COUNT(*) as count
         FROM page_views WHERE created_at >= {since} AND browser != ''
-        GROUP BY browser ORDER BY views DESC LIMIT 10
+        GROUP BY browser ORDER BY count DESC LIMIT 10
     ''')
 
     # OS
-    operating_systems = query_db(f'''
-        SELECT os, COUNT(*) as views
+    os_list = query_db(f'''
+        SELECT os, COUNT(*) as count
         FROM page_views WHERE created_at >= {since} AND os != ''
-        GROUP BY os ORDER BY views DESC LIMIT 10
+        GROUP BY os ORDER BY count DESC LIMIT 10
+    ''')
+
+    # Screen widths (bucketed)
+    screens = query_db(f'''
+        SELECT
+          CASE
+            WHEN screen_width < 576 THEN 'XS (<576)'
+            WHEN screen_width < 768 THEN 'SM (576-767)'
+            WHEN screen_width < 992 THEN 'MD (768-991)'
+            WHEN screen_width < 1200 THEN 'LG (992-1199)'
+            ELSE 'XL (1200+)'
+          END as bucket,
+          COUNT(*) as count
+        FROM page_views WHERE created_at >= {since} AND screen_width > 0
+        GROUP BY bucket ORDER BY count DESC
     ''')
 
     # Hourly heatmap (hour of day)
@@ -1330,9 +1412,12 @@ def admin_analytics():
         FROM page_views WHERE created_at >= {since}
         GROUP BY hour ORDER BY hour
     ''')
+    # Fill missing hours
+    hour_map = {r['hour']: r['views'] for r in hourly}
+    hourly_full = [{'hour': h, 'views': hour_map.get(h, 0)} for h in range(24)]
 
     # Avg session duration
-    avg_duration = query_db(f'''
+    avg_dur = query_db(f'''
         SELECT ROUND(AVG(duration_ms)) as avg_ms
         FROM page_views WHERE created_at >= {since} AND duration_ms > 0
     ''', one=True)
@@ -1347,19 +1432,141 @@ def admin_analytics():
             FROM page_views WHERE created_at >= {since}
             GROUP BY session_id
         ) sub
-    ''', one=True)
+    ''', one=True) or {}
+
+    # Pages per session (avg)
+    pps = query_db(f'''
+        SELECT ROUND(AVG(pv_count)::numeric, 1) as avg_pps FROM (
+            SELECT session_id, COUNT(*) as pv_count
+            FROM page_views WHERE created_at >= {since}
+            GROUP BY session_id
+        ) sub
+    ''', one=True) or {}
+
+    # New vs returning sessions (sessions seen before the time range)
+    new_ret = query_db(f'''
+        SELECT
+            COUNT(*) FILTER (WHERE first_seen >= {since}) as new_sessions,
+            COUNT(*) FILTER (WHERE first_seen < {since}) as returning_sessions
+        FROM (
+            SELECT session_id, MIN(created_at) as first_seen
+            FROM page_views GROUP BY session_id
+        ) sub
+        WHERE session_id IN (SELECT DISTINCT session_id FROM page_views WHERE created_at >= {since})
+    ''', one=True) or {}
+
+    # Top entry pages (first page of each session)
+    entry_pages = query_db(f'''
+        SELECT page, COUNT(*) as count FROM (
+            SELECT DISTINCT ON (session_id) session_id, page
+            FROM page_views WHERE created_at >= {since}
+            ORDER BY session_id, created_at ASC
+        ) sub GROUP BY page ORDER BY count DESC LIMIT 10
+    ''')
+
+    # Top exit pages (last page of each session with duration > 0)
+    exit_pages = query_db(f'''
+        SELECT page, COUNT(*) as count FROM (
+            SELECT DISTINCT ON (session_id) session_id, page
+            FROM page_views WHERE created_at >= {since}
+            ORDER BY session_id, created_at DESC
+        ) sub GROUP BY page ORDER BY count DESC LIMIT 10
+    ''')
 
     return jsonify({
-        'total_views': totals['views'],
-        'total_sessions': totals['sessions'],
+        'total_views': totals.get('total_views', 0),
+        'unique_sessions': totals.get('unique_sessions', 0),
+        'bounce_rate': round(bounce['bounced'] / bounce['total'] * 100, 1) if bounce.get('total') else 0,
+        'avg_duration_ms': int(avg_dur['avg_ms'] or 0) if avg_dur and avg_dur.get('avg_ms') else 0,
+        'pages_per_session': float(pps.get('avg_pps') or 0),
+        'new_sessions': new_ret.get('new_sessions', 0),
+        'returning_sessions': new_ret.get('returning_sessions', 0),
         'daily': daily,
         'pages': pages,
         'referrers': referrers,
-        'utm_sources': utm_sources,
+        'utm_sources': utm,
         'devices': devices,
         'browsers': browsers,
-        'operating_systems': operating_systems,
-        'hourly': hourly,
-        'avg_duration_ms': int(avg_duration['avg_ms'] or 0) if avg_duration else 0,
-        'bounce_rate': round(bounce['bounced'] / bounce['total'] * 100, 1) if bounce and bounce['total'] else 0,
+        'os_list': os_list,
+        'screens': screens,
+        'hourly': hourly_full,
+        'entry_pages': entry_pages,
+        'exit_pages': exit_pages,
     })
+
+
+@app.route('/api/admin/activity-log', methods=['GET'])
+@verify_admin
+def admin_activity_log():
+    """Return paginated activity log with filters."""
+    page_num = max(int(request.args.get('page', 1)), 1)
+    per_page = min(int(request.args.get('per_page', 50)), 200)
+    offset = (page_num - 1) * per_page
+    category = (request.args.get('category') or '').strip()
+    event_type = (request.args.get('event_type') or '').strip()
+    search = (request.args.get('q') or '').strip()
+
+    where_clauses = []
+    params = []
+    if category:
+        where_clauses.append('category = %s')
+        params.append(category)
+    if event_type:
+        where_clauses.append('event_type = %s')
+        params.append(event_type)
+    if search:
+        where_clauses.append("(detail ILIKE %s OR page ILIKE %s OR user_email ILIKE %s OR event_type ILIKE %s)")
+        params.extend([f'%{search}%'] * 4)
+
+    where = 'WHERE ' + ' AND '.join(where_clauses) if where_clauses else ''
+
+    total = query_db(
+        f'SELECT COUNT(*) as cnt FROM activity_log {where}', params, one=True
+    )
+
+    rows = query_db(
+        f'''SELECT id, session_id, event_type, category, page, detail, meta,
+                   user_email, ip_addr, device_type, browser, os, created_at
+            FROM activity_log {where}
+            ORDER BY created_at DESC LIMIT %s OFFSET %s''',
+        params + [per_page, offset]
+    )
+    for r in rows:
+        if r.get('created_at'):
+            r['created_at'] = r['created_at'].isoformat()
+        if isinstance(r.get('meta'), str):
+            import json as _json
+            try:
+                r['meta'] = _json.loads(r['meta'])
+            except Exception:
+                pass
+
+    # Get distinct categories and event types for filter dropdowns
+    categories = query_db('SELECT DISTINCT category FROM activity_log ORDER BY category')
+    event_types = query_db('SELECT DISTINCT event_type FROM activity_log ORDER BY event_type')
+
+    return jsonify({
+        'rows': rows,
+        'total': total['cnt'] if total else 0,
+        'page': page_num,
+        'per_page': per_page,
+        'categories': [c['category'] for c in categories],
+        'event_types': [e['event_type'] for e in event_types],
+    })
+
+
+@app.route('/api/admin/live-visitors', methods=['GET'])
+@verify_admin
+def admin_live_visitors():
+    """Return sessions active in the last 5 minutes."""
+    rows = query_db('''
+        SELECT DISTINCT ON (session_id)
+            session_id, page, device_type, browser, os, referrer, created_at
+        FROM page_views
+        WHERE created_at >= NOW() - INTERVAL '5 minutes'
+        ORDER BY session_id, created_at DESC
+    ''')
+    for r in rows:
+        if r.get('created_at'):
+            r['created_at'] = r['created_at'].isoformat()
+    return jsonify(rows)

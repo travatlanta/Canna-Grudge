@@ -301,9 +301,9 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('[data-animate]').forEach(el => el.classList.add('visible'));
   }
 
-  // ─── Lightweight Analytics Tracker ───────────────────────
+  // ─── Comprehensive Analytics Tracker ──────────────────────
   (function(){
-    if (location.pathname.startsWith('/admin')) return; // don't track admins
+    if (location.pathname.startsWith('/admin') || location.pathname.startsWith('/scanner')) return;
     var sid = sessionStorage.getItem('cg_sid');
     if (!sid) { sid = Math.random().toString(36).slice(2) + Date.now().toString(36); sessionStorage.setItem('cg_sid', sid); }
     var params = new URLSearchParams(location.search);
@@ -315,24 +315,83 @@ document.addEventListener('DOMContentLoaded', () => {
     var os = /Windows/.test(ua) ? 'Windows' : /Mac OS/.test(ua) ? 'macOS' : /Android/.test(ua) ? 'Android' : /iPhone|iPad/.test(ua) ? 'iOS' : /Linux/.test(ua) ? 'Linux' : 'Other';
     var startTime = Date.now();
     var pagePath = location.pathname || '/';
+    var apiBase = (window.CG_API_BASE || '') + '/api/track';
 
-    function sendView(dur) {
-      var data = { sid: sid, page: pagePath, ref: document.referrer || '',
-        us: params.get('utm_source') || '', um: params.get('utm_medium') || '', uc: params.get('utm_campaign') || '',
-        dt: dt, br: br, os: os, sw: screen.width, dur: dur || 0 };
+    function beacon(data) {
+      var blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
       if (navigator.sendBeacon) {
-        navigator.sendBeacon((window.CG_API_BASE || '') + '/api/track', JSON.stringify(data));
+        navigator.sendBeacon(apiBase, blob);
       } else {
-        fetch((window.CG_API_BASE || '') + '/api/track', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data), keepalive: true });
+        fetch(apiBase, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data), keepalive: true });
       }
     }
 
-    // Send initial pageview after short delay (to filter bots)
-    setTimeout(function(){ sendView(0); }, 800);
+    // Send initial pageview after short delay (filters bots)
+    setTimeout(function(){
+      beacon({ sid: sid, page: pagePath, ref: document.referrer || '',
+        us: params.get('utm_source') || '', um: params.get('utm_medium') || '', uc: params.get('utm_campaign') || '',
+        dt: dt, br: br, os: os, sw: screen.width, dur: 0 });
+    }, 800);
 
-    // Send duration on page leave
+    // Update duration on page leave (no new row — update existing)
     document.addEventListener('visibilitychange', function() {
-      if (document.visibilityState === 'hidden') { sendView(Date.now() - startTime); }
+      if (document.visibilityState === 'hidden') {
+        beacon({ sid: sid, page: pagePath, dur: Date.now() - startTime, update: true, dt: dt, br: br, os: os });
+      }
     });
+
+    // ── Event tracking helper (exposed globally) ──
+    window.cgTrack = function(event, category, detail, meta) {
+      beacon({ sid: sid, page: pagePath, event: event, cat: category || 'interaction',
+               detail: detail || '', meta: meta || {}, dt: dt, br: br, os: os });
+    };
+
+    // ── Track outbound link clicks ──
+    document.addEventListener('click', function(e) {
+      var a = e.target.closest('a[href]');
+      if (!a) return;
+      var href = a.getAttribute('href') || '';
+      if (href.startsWith('http') && !href.includes(location.hostname)) {
+        window.cgTrack('outbound_click', 'navigation', href, { text: (a.textContent || '').trim().slice(0, 100) });
+      }
+    });
+
+    // ── Track add-to-cart clicks ──
+    document.addEventListener('click', function(e) {
+      var btn = e.target.closest('[data-add-cart], .add-to-cart, .btn-add-cart');
+      if (btn) {
+        var label = (btn.dataset.tierName || btn.textContent || '').trim().slice(0, 100);
+        window.cgTrack('add_to_cart', 'purchase', label);
+      }
+    });
+
+    // ── Track JS errors ──
+    window.addEventListener('error', function(e) {
+      window.cgTrack('js_error', 'error', (e.message || 'Unknown error') + ' at ' + (e.filename || '') + ':' + (e.lineno || 0),
+        { message: (e.message || '').slice(0, 500), file: (e.filename || '').slice(0, 200), line: e.lineno, col: e.colno });
+    });
+
+    // ── Track unhandled promise rejections ──
+    window.addEventListener('unhandledrejection', function(e) {
+      var msg = e.reason ? (e.reason.message || String(e.reason)) : 'Unhandled rejection';
+      window.cgTrack('promise_error', 'error', msg.slice(0, 500));
+    });
+
+    // ── Track scroll depth ──
+    var maxScroll = 0;
+    var scrollReported = {};
+    window.addEventListener('scroll', function() {
+      var h = document.documentElement.scrollHeight - window.innerHeight;
+      if (h <= 0) return;
+      var pct = Math.round(window.scrollY / h * 100);
+      if (pct > maxScroll) maxScroll = pct;
+      [25, 50, 75, 100].forEach(function(t) {
+        if (maxScroll >= t && !scrollReported[t]) {
+          scrollReported[t] = true;
+          window.cgTrack('scroll_depth', 'engagement', t + '% scroll on ' + pagePath, { depth: t });
+        }
+      });
+    }, { passive: true });
+
   })();
 });
