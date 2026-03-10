@@ -870,13 +870,23 @@
             </div>
             <input id="usersSearch" type="text" placeholder="Search name, email, or UID…" class="input" style="max-width:280px;font-size:13px;">
           </div>
+          <h3 style="margin-bottom:10px;">Registered Accounts</h3>
           <div class="admin-table-wrap">
             <table class="admin-table" id="usersTable">
-              <thead><tr><th>#</th><th>Name</th><th>Email</th><th>Role</th><th>Registered</th></tr></thead>
+              <thead><tr><th>#</th><th>Name</th><th>Email</th><th>Role</th><th>Orders</th><th>Registered</th></tr></thead>
               <tbody></tbody>
             </table>
           </div>
           <div id="usersPager" style="display:flex;justify-content:center;gap:8px;margin-top:14px;"></div>
+          <div id="guestSection" style="margin-top:32px;display:none;">
+            <h3 style="margin-bottom:10px;">Order Customers <span style="font-size:12px;font-weight:400;color:var(--cg-text-muted);">(no account)</span></h3>
+            <div class="admin-table-wrap">
+              <table class="admin-table" id="guestsTable">
+                <thead><tr><th>Name</th><th>Email</th><th>Orders</th><th>First Order</th><th>Last Order</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
         </div>
 
         <div id="tab-admins" class="tab-content">
@@ -2134,29 +2144,42 @@
       let url = `/api/admin/users?page=${usersPage}&per_page=50`;
       if (usersQ) url += `&q=${encodeURIComponent(usersQ)}`;
       const d = await apiFetch(url);
-      $('usersTotal').textContent = `${d.total} registered user${d.total !== 1 ? 's' : ''}`;
+      $('usersTotal').textContent = `${d.total} registered user${d.total !== 1 ? 's' : ''}${d.guests?.length ? ` + ${d.guests.length} guest customer${d.guests.length !== 1 ? 's' : ''}` : ''}`;
       const tb = $('usersTable').querySelector('tbody');
       if (!d.users?.length) {
-        tb.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--cg-text-muted);padding:32px;">No users found</td></tr>';
+        tb.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--cg-text-muted);padding:32px;">No users found</td></tr>';
         $('usersPager').innerHTML = '';
-        return;
+      } else {
+        tb.innerHTML = d.users.map((u, i) => {
+          const num = (d.page - 1) * d.per_page + i + 1;
+          const name = (u.name || '—').replace(/</g, '&lt;');
+          const email = (u.email || '—').replace(/</g, '&lt;');
+          const role = u.is_admin ? '<span style="background:rgba(218,165,32,.15);color:var(--cg-gold);padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;">Admin</span>' : '<span style="color:var(--cg-text-muted);font-size:11px;">Member</span>';
+          const orders = u.order_count ? `<span style="color:var(--cg-gold);font-weight:600;">${u.order_count}</span>` : '<span style="color:var(--cg-text-muted);">0</span>';
+          const date = u.created_at ? new Date(u.created_at).toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'}) : '—';
+          return `<tr><td>${num}</td><td>${name}</td><td>${email}</td><td>${role}</td><td>${orders}</td><td>${date}</td></tr>`;
+        }).join('');
+        const totalPg = Math.ceil(d.total / d.per_page);
+        let pg = '';
+        if (totalPg > 1) {
+          if (usersPage > 1) pg += `<button class="btn btn-sm btn-ghost" onclick="window._usersPg(${usersPage-1})">← Prev</button>`;
+          pg += `<span style="color:var(--cg-text-secondary);font-size:12px;padding:4px 8px;">${usersPage} / ${totalPg}</span>`;
+          if (usersPage < totalPg) pg += `<button class="btn btn-sm btn-ghost" onclick="window._usersPg(${usersPage+1})">Next →</button>`;
+        }
+        $('usersPager').innerHTML = pg;
       }
-      tb.innerHTML = d.users.map((u, i) => {
-        const num = (d.page - 1) * d.per_page + i + 1;
-        const name = (u.name || '—').replace(/</g, '&lt;');
-        const email = (u.email || '—').replace(/</g, '&lt;');
-        const role = u.is_admin ? '<span style="background:rgba(218,165,32,.15);color:var(--cg-gold);padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;">Admin</span>' : '<span style="color:var(--cg-text-muted);font-size:11px;">Member</span>';
-        const date = u.created_at ? new Date(u.created_at).toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'}) : '—';
-        return `<tr><td>${num}</td><td>${name}</td><td>${email}</td><td>${role}</td><td>${date}</td></tr>`;
-      }).join('');
-      const totalPg = Math.ceil(d.total / d.per_page);
-      let pg = '';
-      if (totalPg > 1) {
-        if (usersPage > 1) pg += `<button class="btn btn-sm btn-ghost" onclick="window._usersPg(${usersPage-1})">← Prev</button>`;
-        pg += `<span style="color:var(--cg-text-secondary);font-size:12px;padding:4px 8px;">${usersPage} / ${totalPg}</span>`;
-        if (usersPage < totalPg) pg += `<button class="btn btn-sm btn-ghost" onclick="window._usersPg(${usersPage+1})">Next →</button>`;
-      }
-      $('usersPager').innerHTML = pg;
+      // Guest customers (ordered but no account)
+      const gs = $('guestSection'); const gtb = $('guestsTable').querySelector('tbody');
+      if (d.guests?.length) {
+        gs.style.display = 'block';
+        gtb.innerHTML = d.guests.map(g => {
+          const name = (g.name || '—').replace(/</g, '&lt;');
+          const email = (g.email || '—').replace(/</g, '&lt;');
+          const first = g.first_order ? new Date(g.first_order).toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'}) : '—';
+          const last = g.last_order ? new Date(g.last_order).toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'}) : '—';
+          return `<tr><td>${name}</td><td>${email}</td><td style="color:var(--cg-gold);font-weight:600;">${g.order_count}</td><td>${first}</td><td>${last}</td></tr>`;
+        }).join('');
+      } else { gs.style.display = 'none'; gtb.innerHTML = ''; }
     }
 
     async function loadAdmins() {

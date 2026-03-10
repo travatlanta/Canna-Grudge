@@ -612,6 +612,48 @@ def my_orders():
     return jsonify(orders)
 
 
+@app.route('/api/auth/sync', methods=['POST'])
+def auth_sync():
+    auth_header = request.headers.get('Authorization', '')
+    if not auth_header.startswith('Bearer '):
+        return jsonify({'error': 'Unauthorized'}), 401
+    token = auth_header.split('Bearer ')[1]
+    try:
+        decoded = fb_auth.verify_id_token(token)
+        uid = decoded['uid']
+        email = decoded.get('email', '')
+        name = decoded.get('name', '') or ''
+        user = query_db('SELECT * FROM users WHERE firebase_uid = %s', (uid,), one=True)
+        if user:
+            updates = []
+            params = []
+            if email and email != user.get('email'):
+                updates.append('email = %s')
+                params.append(email)
+            if name and name != user.get('name'):
+                updates.append('name = %s')
+                params.append(name)
+            if updates:
+                params.append(user['id'])
+                execute_db(f"UPDATE users SET {', '.join(updates)} WHERE id = %s", params)
+        else:
+            user = execute_db(
+                'INSERT INTO users (firebase_uid, email, name) VALUES (%s, %s, %s) RETURNING *',
+                (uid, email, name)
+            )
+            if email:
+                try:
+                    send_email(email, 'welcome_email', {
+                        'user_name': name or email.split('@')[0],
+                        'user_email': email,
+                    })
+                except Exception:
+                    pass
+        return jsonify({'ok': True})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 401
+
+
 @app.route('/api/admin/verify', methods=['POST'])
 def admin_verify():
     auth_header = request.headers.get('Authorization', '')
@@ -1081,7 +1123,29 @@ def admin_get_users():
     for r in rows:
         if r.get('created_at'):
             r['created_at'] = r['created_at'].isoformat()
-    return jsonify({'users': rows, 'total': total, 'page': page, 'per_page': per_page})
+        oc = query_db('SELECT COUNT(*) as cnt FROM orders WHERE LOWER(email) = LOWER(%s)', (r['email'],), one=True) if r.get('email') else None
+        r['order_count'] = oc['cnt'] if oc else 0
+    # Also find unique order emails not in users table
+    guest_q = ''
+    guest_params = []
+    if q:
+        guest_q = "AND (LOWER(o.name) LIKE %s OR LOWER(o.email) LIKE %s)"
+        guest_params = [like, like]
+    guests = query_db(
+        f"""SELECT o.email, o.name, COUNT(*) as order_count, MIN(o.created_at) as first_order, MAX(o.created_at) as last_order
+            FROM orders o
+            WHERE o.email IS NOT NULL AND o.email != ''
+              AND NOT EXISTS (SELECT 1 FROM users u WHERE LOWER(u.email) = LOWER(o.email))
+              {guest_q}
+            GROUP BY LOWER(o.email), o.email, o.name
+            ORDER BY MAX(o.created_at) DESC""",
+        guest_params
+    )
+    for g in guests:
+        for k in ['first_order', 'last_order']:
+            if g.get(k):
+                g[k] = g[k].isoformat()
+    return jsonify({'users': rows, 'total': total, 'page': page, 'per_page': per_page, 'guests': guests or []})
 
 
 @app.route('/api/admin/admins', methods=['GET'])

@@ -327,6 +327,16 @@ document.addEventListener('DOMContentLoaded', () => {
           if (u) {
             userName = (u.displayName || '').slice(0, 100);
             userEmail = (u.email || '').slice(0, 200);
+            // Sync user to backend DB
+            try {
+              u.getIdToken().then(function(token) {
+                fetch((window.CG_API_BASE || '') + '/api/auth/sync', {
+                  method: 'POST',
+                  headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+                  body: '{}'
+                }).catch(function(){});
+              }).catch(function(){});
+            } catch(e) {}
           } else {
             userName = '';
             userEmail = '';
