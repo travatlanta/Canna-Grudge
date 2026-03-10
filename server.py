@@ -654,6 +654,44 @@ def auth_sync():
         return jsonify({'error': str(e)}), 401
 
 
+@app.route('/api/admin/import-firebase-users', methods=['POST'])
+@verify_admin
+def import_firebase_users():
+    imported = 0
+    updated = 0
+    skipped = 0
+    page = fb_auth.list_users()
+    while page:
+        for fb_user in page.users:
+            uid = fb_user.uid
+            email = fb_user.email or ''
+            name = fb_user.display_name or ''
+            existing = query_db('SELECT id, email, name FROM users WHERE firebase_uid = %s', (uid,), one=True)
+            if existing:
+                updates = []
+                params = []
+                if email and email != existing.get('email'):
+                    updates.append('email = %s')
+                    params.append(email)
+                if name and name != existing.get('name'):
+                    updates.append('name = %s')
+                    params.append(name)
+                if updates:
+                    params.append(existing['id'])
+                    execute_db(f"UPDATE users SET {', '.join(updates)} WHERE id = %s", params)
+                    updated += 1
+                else:
+                    skipped += 1
+            else:
+                execute_db(
+                    'INSERT INTO users (firebase_uid, email, name) VALUES (%s, %s, %s)',
+                    (uid, email, name)
+                )
+                imported += 1
+        page = page.get_next_page()
+    return jsonify({'imported': imported, 'updated': updated, 'skipped': skipped, 'total': imported + updated + skipped})
+
+
 @app.route('/api/admin/verify', methods=['POST'])
 def admin_verify():
     auth_header = request.headers.get('Authorization', '')

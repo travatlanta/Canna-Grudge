@@ -867,6 +867,8 @@
           <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
             <div style="display:flex;align-items:center;gap:12px;">
               <span id="usersTotal" style="font-size:14px;color:var(--cg-text-secondary);"></span>
+              <button class="btn btn-primary btn-sm" id="importFbBtn" onclick="importFirebaseUsers()" style="font-size:11px;">⬇ Import Firebase Users</button>
+              <span id="importResult" style="font-size:12px;color:var(--cg-text-muted);"></span>
             </div>
             <input id="usersSearch" type="text" placeholder="Search name, email, or UID…" class="input" style="max-width:280px;font-size:13px;">
           </div>
@@ -2139,6 +2141,21 @@
       usersSearchTimer = setTimeout(() => { usersQ = this.value; usersPage = 1; loadUsers(); }, 400);
     });
     window._usersPg = function(pg) { usersPage = pg; loadUsers(); };
+
+    window.importFirebaseUsers = importFirebaseUsers;
+    async function importFirebaseUsers() {
+      const btn = $('importFbBtn');
+      const res = $('importResult');
+      btn.disabled = true; btn.textContent = 'Importing…'; res.textContent = '';
+      try {
+        const d = await apiFetch('/api/admin/import-firebase-users', { method: 'POST' });
+        res.style.color = 'var(--cg-green)';
+        res.textContent = `Done! ${d.imported} imported, ${d.updated} updated, ${d.skipped} unchanged (${d.total} total in Firebase)`;
+        loadUsers();
+      } catch (e) {
+        res.style.color = 'var(--cg-red)'; res.textContent = 'Error: ' + e.message;
+      } finally { btn.disabled = false; btn.textContent = '⬇ Import Firebase Users'; }
+    }
 
     async function loadUsers() {
       let url = `/api/admin/users?page=${usersPage}&per_page=50`;
