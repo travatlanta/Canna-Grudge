@@ -111,8 +111,8 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.07);
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.10);
       border-radius: 12px;
       padding: 10px 14px;
       transition: background 0.3s ease, border-color 0.3s ease;
@@ -121,7 +121,7 @@
       max-width: 100%;
       max-height: 100%;
       object-fit: contain;
-      filter: brightness(0.85) grayscale(0.2);
+      filter: brightness(1) grayscale(0.1);
       transition: filter 0.3s ease;
     }
     .marquee-logo:hover {
@@ -129,7 +129,7 @@
       border-color: rgba(212,175,55,0.25);
     }
     .marquee-logo:hover img {
-      filter: brightness(1) grayscale(0);
+      filter: brightness(1.05) grayscale(0);
     }
 
     /* Full logo grid */
@@ -166,6 +166,9 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      background: rgba(255,255,255,0.06);
+      border-radius: 10px;
+      padding: 10px;
     }
     .brand-logo-card img {
       max-width: 100%;
@@ -173,11 +176,11 @@
       width: auto;
       height: auto;
       object-fit: contain;
-      filter: brightness(0.9) saturate(0.9);
+      filter: brightness(1) saturate(1);
       transition: filter 0.3s ease, transform 0.3s ease;
     }
     .brand-logo-card:hover img {
-      filter: brightness(1.08) saturate(1.15);
+      filter: brightness(1.1) saturate(1.15);
       transform: scale(1.06);
     }
     .brand-logo-name {
