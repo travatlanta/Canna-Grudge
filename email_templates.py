@@ -411,5 +411,44 @@ DEFAULT_TEMPLATES = [
 </table>
 </body>
 </html>"""
+    },
+    {
+        "slug": "admin_invite",
+        "name": "Admin Invite",
+        "subject": "You were invited to be a CannaGrudge admin",
+        "description": "Sent when an existing admin invites someone to admin access.",
+        "html_body": """<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CannaGrudge Admin Invite</title>
+</head>
+<body style="margin:0;padding:0;background-color:#0a0a0a;font-family:'Inter',Arial,Helvetica,sans-serif;color:#ffffff;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#0a0a0a;">
+<tr>
+<td align="center" style="padding:20px 10px;">
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;background-color:#111111;border:1px solid rgba(255,255,255,0.06);border-radius:12px;overflow:hidden;">
+<tr>
+<td align="center" style="padding:36px 32px 20px;border-bottom:2px solid #d4a843;">
+<h1 style="margin:0;font-family:'Outfit',Arial,Helvetica,sans-serif;font-size:30px;font-weight:900;color:#d4a843;">CannaGrudge</h1>
+<p style="margin:8px 0 0;font-size:12px;color:#a1a1aa;letter-spacing:0.08em;text-transform:uppercase;">Admin Access Invite</p>
+</td>
+</tr>
+<tr>
+<td style="padding:28px 32px;">
+<p style="margin:0 0 14px;font-size:16px;line-height:1.6;color:#d4d4d8;">{{invited_by}} invited <strong>{{invitee_email}}</strong> to join the CannaGrudge admin dashboard.</p>
+<p style="margin:0 0 18px;font-size:14px;line-height:1.6;color:#a1a1aa;">This invite expires on {{expires_at}}.</p>
+<p style="margin:0 0 20px;font-size:14px;line-height:1.6;color:#a1a1aa;">Sign in with this same email address to accept admin access:</p>
+<p style="margin:0 0 20px;text-align:center;"><a href="{{invite_url}}" style="display:inline-block;padding:12px 24px;background:#d4a843;color:#111111;text-decoration:none;font-weight:700;border-radius:8px;">Open Admin Login</a></p>
+<p style="margin:0;font-size:12px;color:#71717a;word-break:break-all;">If the button does not work, open: {{invite_url}}</p>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+</table>
+</body>
+</html>"""
     }
 ]

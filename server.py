@@ -2,6 +2,8 @@ import os
 import json
 import uuid
 import secrets
+import re
+import time
 import psycopg2
 import psycopg2.extras
 from datetime import datetime, timedelta, timezone
@@ -40,6 +42,7 @@ if not firebase_admin._apps:
 
 resend.api_key = os.environ.get('RESEND_API_KEY', '')
 RESEND_FROM_EMAIL = os.environ.get('RESEND_FROM_EMAIL', 'CannaGrudge <onboarding@resend.dev>')
+EMAIL_RETRY_ATTEMPTS = max(1, int(os.environ.get('EMAIL_RETRY_ATTEMPTS', '3')))
 
 def get_db():
     conn = psycopg2.connect(DATABASE_URL)
@@ -210,29 +213,89 @@ def _lazy_seed():
 def before_req():
     _lazy_seed()
 
-def send_email(to_email, template_slug, variables=None):
+def _email_config_status():
+    api_key_set = bool((resend.api_key or '').strip())
+    from_email_set = bool((RESEND_FROM_EMAIL or '').strip())
+    using_default_sender = (RESEND_FROM_EMAIL or '').strip().lower() == 'cannagrudge <onboarding@resend.dev>'
+    return {
+        'api_key_set': api_key_set,
+        'from_email_set': from_email_set,
+        'using_default_sender': using_default_sender,
+    }
+
+def _render_email_template(template_slug, variables=None):
     variables = variables or {}
     tmpl = query_db('SELECT * FROM email_templates WHERE slug = %s', (template_slug,), one=True)
     if not tmpl:
-        print(f"[EMAIL] Template '{template_slug}' not found")
-        return None
+        return None, None, [f"template:{template_slug}"]
     subject = tmpl['subject']
     html = tmpl['html_body']
     for key, val in variables.items():
         subject = subject.replace('{{' + key + '}}', str(val))
         html = html.replace('{{' + key + '}}', str(val))
+    unresolved = sorted(set(re.findall(r'\{\{[^{}]+\}\}', subject + '\n' + html)))
+    return subject, html, unresolved
+
+def send_email_with_result(to_email, template_slug, variables=None, subject_prefix=''):
+    to_email = (to_email or '').strip().lower()
+    if not to_email:
+        return {'ok': False, 'error': 'Missing recipient email', 'template_slug': template_slug}
+
+    cfg = _email_config_status()
+    if not cfg['api_key_set']:
+        return {'ok': False, 'error': 'RESEND_API_KEY is not configured', 'template_slug': template_slug, 'to': to_email}
+    if not cfg['from_email_set']:
+        return {'ok': False, 'error': 'RESEND_FROM_EMAIL is not configured', 'template_slug': template_slug, 'to': to_email}
+
+    subject, html, unresolved = _render_email_template(template_slug, variables)
+    if not subject or not html:
+        return {'ok': False, 'error': f"Template '{template_slug}' not found", 'template_slug': template_slug, 'to': to_email}
+    if unresolved:
+        # Unresolved placeholders are a warning, not a hard failure.
+        print(f"[EMAIL WARNING] Unresolved placeholders for {template_slug}: {', '.join(unresolved)}")
+
+    last_error = None
+    for attempt in range(1, EMAIL_RETRY_ATTEMPTS + 1):
+        try:
+            provider_response = resend.Emails.send({
+                'from': RESEND_FROM_EMAIL,
+                'to': [to_email],
+                'subject': f"{subject_prefix}{subject}",
+                'html': html,
+            })
+            print(f"[EMAIL] Sent '{template_slug}' to {to_email} (attempt {attempt}/{EMAIL_RETRY_ATTEMPTS})")
+            return {
+                'ok': True,
+                'template_slug': template_slug,
+                'to': to_email,
+                'attempts': attempt,
+                'provider_response': provider_response,
+                'unresolved_placeholders': unresolved,
+            }
+        except Exception as e:
+            last_error = str(e)
+            print(f"[EMAIL ERROR] '{template_slug}' to {to_email} attempt {attempt}/{EMAIL_RETRY_ATTEMPTS}: {last_error}")
+            if attempt < EMAIL_RETRY_ATTEMPTS:
+                time.sleep(0.6 * attempt)
+
+    return {
+        'ok': False,
+        'error': last_error or 'Unknown email error',
+        'template_slug': template_slug,
+        'to': to_email,
+        'attempts': EMAIL_RETRY_ATTEMPTS,
+        'unresolved_placeholders': unresolved,
+    }
+
+def send_email(to_email, template_slug, variables=None):
+    result = send_email_with_result(to_email, template_slug, variables)
+    if result.get('ok'):
+        return result.get('provider_response')
     try:
-        r = resend.Emails.send({
-            'from': RESEND_FROM_EMAIL,
-            'to': [to_email],
-            'subject': subject,
-            'html': html,
-        })
-        print(f"[EMAIL] Sent '{template_slug}' to {to_email}")
-        return r
-    except Exception as e:
-        print(f"[EMAIL ERROR] {e}")
-        return None
+        print(f"[EMAIL ERROR] {result.get('error', 'unknown')} ({template_slug} -> {to_email})")
+    except Exception:
+        pass
+    return None
 
 def _as_cents(value, default=0):
     try:
@@ -1048,16 +1111,17 @@ def admin_update_invoice(iid):
 @verify_admin
 def admin_send_invoice(iid):
     inv = execute_db('UPDATE invoices SET status=%s WHERE id=%s RETURNING *', ('sent', iid))
+    email_status = None
     if inv and inv.get('recipient_email'):
         base_url = request.host_url.rstrip('/')
-        send_email(inv['recipient_email'], 'invoice_notification', {
+        email_status = send_email_with_result(inv['recipient_email'], 'invoice_notification', {
             'recipient_name': inv.get('recipient_name', ''),
             'amount': f'${inv["amount_cents"] / 100:.2f}',
             'description': inv.get('description', ''),
             'due_date': inv['due_date'].strftime('%B %d, %Y') if hasattr(inv.get('due_date'), 'strftime') else str(inv.get('due_date', '')),
             'invoice_url': f'{base_url}/invoice?token={inv["view_token"]}',
         })
-    return jsonify(inv)
+    return jsonify({'invoice': inv, 'email': email_status})
 
 @app.route('/api/admin/invoices/<int:iid>/upload', methods=['POST'])
 @verify_admin
@@ -1207,13 +1271,49 @@ def admin_invite_admin():
     email = (d.get('email') or '').strip().lower()
     if not email:
         return jsonify({'error': 'Email required'}), 400
+
+    existing_user = query_db('SELECT id FROM users WHERE LOWER(email) = LOWER(%s) AND is_admin = TRUE', (email,), one=True)
+    if existing_user:
+        return jsonify({'error': 'That user is already an admin'}), 400
+
+    # Keep one active invite per email so resend replaces stale pending/expired rows.
+    execute_db('DELETE FROM admin_invites WHERE LOWER(email) = LOWER(%s) AND used_at IS NULL', (email,))
+
     token = secrets.token_urlsafe(32)
     expires = datetime.now(timezone.utc) + timedelta(days=7)
     invite = execute_db(
         'INSERT INTO admin_invites (email, token, expires_at, created_by) VALUES (%s, %s, %s, %s) RETURNING *',
         (email, token, expires, request.admin_user['id'])
     )
-    return jsonify(invite), 201
+
+    # Ensure newly added templates are present even on long-running workers.
+    try:
+        seed_email_templates()
+    except Exception as e:
+        print(f"[EMAIL SEED] {e}")
+
+    base_url = request.host_url.rstrip('/')
+    invite_url = f'{base_url}/login.html'
+    email_result = send_email_with_result(email, 'admin_invite', {
+        'invitee_email': email,
+        'invite_url': invite_url,
+        'expires_at': expires.strftime('%Y-%m-%d %H:%M UTC'),
+        'invited_by': request.admin_user.get('name') or request.admin_user.get('email') or 'An admin',
+    })
+    email_sent = bool(email_result and email_result.get('ok'))
+
+    response = dict(invite)
+    if response.get('created_at'):
+        response['created_at'] = response['created_at'].isoformat()
+    if response.get('expires_at'):
+        response['expires_at'] = response['expires_at'].isoformat()
+    response['invite_url'] = invite_url
+    response['email_sent'] = email_sent
+    if not email_sent:
+        response['warning'] = email_result.get('error') or 'Invite created, but email was not sent.'
+        response['email'] = email_result
+
+    return jsonify(response), 201
 
 @app.route('/api/admin/invites/<int:iid>/delete', methods=['POST'])
 @verify_admin
@@ -1409,22 +1509,69 @@ def admin_test_email_template(tid):
         'recipient_name': 'Jane Smith', 'amount': '$500.00',
         'description': 'Sponsorship Package', 'due_date': 'March 15, 2026',
         'invoice_url': '#',
+        'invitee_email': test_email, 'invite_url': '#',
+        'expires_at': 'March 18, 2026 17:00 UTC', 'invited_by': request.admin_user.get('email', 'admin@cannagrudge.com'),
     }
-    subject = tmpl['subject']
-    html = tmpl['html_body']
-    for key, val in sample_vars.items():
-        subject = subject.replace('{{' + key + '}}', str(val))
-        html = html.replace('{{' + key + '}}', str(val))
-    try:
-        resend.Emails.send({
-            'from': RESEND_FROM_EMAIL,
-            'to': [test_email],
-            'subject': '[TEST] ' + subject,
-            'html': html,
-        })
-        return jsonify({'success': True, 'message': f'Test email sent to {test_email}'})
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    result = send_email_with_result(test_email, tmpl['slug'], sample_vars, subject_prefix='[TEST] ')
+    if not result.get('ok'):
+        return jsonify({'error': result.get('error', 'Failed to send test email'), 'email': result}), 500
+    return jsonify({'success': True, 'message': f'Test email sent to {test_email}', 'email': result})
+
+@app.route('/api/admin/email/test-all', methods=['POST'])
+@verify_admin
+def admin_test_all_emails():
+    data = request.get_json(silent=True) or {}
+    test_email = (data.get('email') or request.admin_user.get('email') or '').strip().lower()
+    if not test_email:
+        return jsonify({'error': 'No test email provided'}), 400
+
+    templates = query_db('SELECT slug FROM email_templates ORDER BY id') or []
+    sample_vars = {
+        'buyer_name': 'John Doe', 'order_id': '12345',
+        'order_items': '<tr><td style="padding:10px 12px;border-bottom:1px solid #2a2a2a;color:#ffffff;">VIP Ringside</td><td style="padding:10px 12px;border-bottom:1px solid #2a2a2a;color:#ffffff;text-align:center;">2</td><td style="padding:10px 12px;border-bottom:1px solid #2a2a2a;color:#d4a843;text-align:right;">$240.00</td></tr>',
+        'subtotal': '$240.00', 'discount': '$0.00', 'total': '$240.00',
+        'receipt_url': '#', 'payment_id': 'TEST-abc123',
+        'user_name': 'John Doe', 'user_email': test_email,
+        'status': 'confirmed',
+        'recipient_name': 'Jane Smith', 'amount': '$500.00',
+        'description': 'Sponsorship Package', 'due_date': 'March 15, 2026',
+        'invoice_url': '#',
+        'invitee_email': test_email, 'invite_url': '#',
+        'expires_at': 'March 18, 2026 17:00 UTC', 'invited_by': request.admin_user.get('email', 'admin@cannagrudge.com'),
+    }
+
+    results = []
+    for t in templates:
+        slug = t.get('slug')
+        if not slug:
+            continue
+        r = send_email_with_result(test_email, slug, sample_vars, subject_prefix='[TEST] ')
+        results.append({'slug': slug, 'ok': bool(r.get('ok')), 'error': r.get('error'), 'attempts': r.get('attempts')})
+
+    failed = [r for r in results if not r['ok']]
+    return jsonify({
+        'ok': len(failed) == 0,
+        'test_email': test_email,
+        'total': len(results),
+        'failed': len(failed),
+        'results': results,
+    }), (200 if len(failed) == 0 else 500)
+
+@app.route('/api/admin/email/health', methods=['GET'])
+@verify_admin
+def admin_email_health():
+    expected_templates = ['purchase_confirmation', 'welcome_email', 'order_status_update', 'invoice_notification', 'admin_invite']
+    rows = query_db('SELECT slug FROM email_templates') or []
+    available = {r.get('slug') for r in rows if r.get('slug')}
+    missing = [slug for slug in expected_templates if slug not in available]
+    cfg = _email_config_status()
+    return jsonify({
+        'ok': cfg['api_key_set'] and cfg['from_email_set'] and not missing,
+        'config': cfg,
+        'retry_attempts': EMAIL_RETRY_ATTEMPTS,
+        'expected_templates': expected_templates,
+        'missing_templates': missing,
+    })
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=False)
