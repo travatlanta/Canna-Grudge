@@ -1215,6 +1215,17 @@ def admin_invite_admin():
     )
     return jsonify(invite), 201
 
+@app.route('/api/admin/invites/<int:iid>/delete', methods=['POST'])
+@verify_admin
+def admin_delete_invite(iid):
+    invite = query_db('SELECT id, used_at FROM admin_invites WHERE id = %s', (iid,), one=True)
+    if not invite:
+        return jsonify({'error': 'Invite not found'}), 404
+    if invite.get('used_at'):
+        return jsonify({'error': 'Invite has already been used'}), 400
+    execute_db('DELETE FROM admin_invites WHERE id = %s AND used_at IS NULL', (iid,))
+    return jsonify({'deleted': True})
+
 @app.route('/api/admin/admins/<int:uid>/remove', methods=['POST'])
 @verify_admin
 def admin_remove_admin(uid):
