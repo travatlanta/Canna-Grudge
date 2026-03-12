@@ -10,7 +10,9 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔥</text></svg>">
   <link rel="apple-touch-icon" href="assets/event-poster.png">
   <link rel="stylesheet" href="theme.css">
-  <script type="text/javascript" src="https://web.squarecdn.com/v1/square.js"></script>
+  <style>
+    #paypal-button-container { min-height: 46px; }
+  </style>
 </head>
 <body class="page-padded">
 
@@ -35,30 +37,6 @@
             <input type="text" class="input" id="nameInput" placeholder="Your full name">
           </div>
           <div class="form-group">
-            <label class="label" for="billingAddress1">Billing Address</label>
-            <input type="text" class="input" id="billingAddress1" placeholder="Street address">
-          </div>
-          <div class="form-group">
-            <label class="label" for="billingAddress2">Address Line 2 (optional)</label>
-            <input type="text" class="input" id="billingAddress2" placeholder="Apt, suite, etc.">
-          </div>
-          <div class="form-group">
-            <label class="label" for="billingCity">City</label>
-            <input type="text" class="input" id="billingCity" placeholder="City">
-          </div>
-          <div class="form-group">
-            <label class="label" for="billingState">State</label>
-            <input type="text" class="input" id="billingState" placeholder="AZ">
-          </div>
-          <div class="form-group">
-            <label class="label" for="billingPostalCode">ZIP / Postal Code</label>
-            <input type="text" class="input" id="billingPostalCode" placeholder="85340">
-          </div>
-          <div class="form-group">
-            <label class="label" for="billingCountry">Country (2-letter code)</label>
-            <input type="text" class="input" id="billingCountry" value="US" maxlength="2" placeholder="US">
-          </div>
-          <div class="form-group">
             <label class="label" for="promoInput">Promo Code (optional)</label>
             <div class="promo-row">
               <input type="text" class="input" id="promoInput" placeholder="Enter promo code">
@@ -66,8 +44,7 @@
             </div>
             <div id="promoStatus"></div>
           </div>
-          <div id="card-container"></div>
-          <button class="btn btn-primary btn-block btn-lg" id="payBtn" disabled>Pay Now</button>
+          <div id="paypal-button-container"></div>
           <div class="payment-error" id="paymentError"></div>
           <div class="payment-processing" id="paymentProcessing">Processing your payment...</div>
         </div>
@@ -253,113 +230,101 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('applyPromo').click();
   }
 
+  // PayPal initialization
   try {
-    if (typeof window.Square === 'undefined') {
-      document.getElementById('paymentError').textContent = 'Payment system is loading. Please refresh the page.';
-      document.getElementById('paymentError').style.display = 'block';
-      console.error('Square SDK not loaded');
-      return;
-    }
-
-    const configRes = await fetch(window.CG_API_BASE + '/api/square-config');
-    if (!configRes.ok) {
-      throw new Error('Failed to fetch configuration');
-    }
-    const config = await configRes.json();
-
-    if (!config.applicationId || !config.locationId) {
-      document.getElementById('paymentError').textContent = 'Payment system not configured properly.';
-      document.getElementById('paymentError').style.display = 'block';
-      console.error('Square config missing:', config);
-      return;
-    }
-
-    const payments = window.Square.payments(config.applicationId, config.locationId);
-    const card = await payments.card();
-    await card.attach('#card-container');
-
-    document.getElementById('payBtn').disabled = false;
-
-    document.getElementById('payBtn').addEventListener('click', async (e) => {
-      e.preventDefault();
-      const email = document.getElementById('emailInput').value.trim();
-      const name = document.getElementById('nameInput').value.trim();
-      const billingAddress = {
-        addressLine1: document.getElementById('billingAddress1').value.trim(),
-        addressLine2: document.getElementById('billingAddress2').value.trim(),
-        city: document.getElementById('billingCity').value.trim(),
-        state: document.getElementById('billingState').value.trim().toUpperCase(),
-        postalCode: document.getElementById('billingPostalCode').value.trim(),
-        country: document.getElementById('billingCountry').value.trim().toUpperCase() || 'US'
-      };
-
-      if (!email || !name) {
-        document.getElementById('paymentError').textContent = 'Please fill in all fields.';
-        document.getElementById('paymentError').style.display = 'block';
-        return;
-      }
-
-      if (!billingAddress.addressLine1 || !billingAddress.city || !billingAddress.state || !billingAddress.postalCode || !billingAddress.country) {
-        document.getElementById('paymentError').textContent = 'Please enter a complete billing address.';
-        document.getElementById('paymentError').style.display = 'block';
-        return;
-      }
-
-      document.getElementById('payBtn').disabled = true;
-      document.getElementById('payBtn').textContent = 'Processing...';
-      document.getElementById('paymentError').style.display = 'none';
-
-      try {
-        const result = await card.tokenize();
-        if (result.status !== 'OK') {
-          throw new Error(result.errors?.[0]?.message || 'Card verification failed');
+    const ppCfgRes = await fetch(window.CG_API_BASE + '/api/paypal-config');
+    const ppCfg = await ppCfgRes.json();
+    if (ppCfg.clientId) {
+      await new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = 'https://www.paypal.com/sdk/js?client-id=' + ppCfg.clientId + '&currency=USD';
+        s.onload = resolve;
+        s.onerror = reject;
+        document.head.appendChild(s);
+      });
+      paypal.Buttons({
+        style: { color: 'gold', shape: 'rect', label: 'pay', height: 45 },
+        async createOrder() {
+          const email = document.getElementById('emailInput').value.trim();
+          const name = document.getElementById('nameInput').value.trim();
+          if (!email || !name) {
+            document.getElementById('paymentError').textContent = 'Please fill in your email and name before using PayPal.';
+            document.getElementById('paymentError').style.display = 'block';
+            throw new Error('Missing fields');
+          }
+          document.getElementById('paymentError').style.display = 'none';
+          const res = await fetch(window.CG_API_BASE + '/api/create-paypal-order', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              items: cart.map(item => ({ id: item.id, name: item.name, price: item.price, qty: item.qty, tierId: item.tierId })),
+              email,
+              name,
+              promoCode: appliedPromoCode || ''
+            })
+          });
+          const ppData = await res.json();
+          if (ppData.free) {
+            localStorage.setItem('cg_last_order', JSON.stringify({
+              items: cart, total: originalTotal, discount: appliedDiscount,
+              email, name, paymentId: 'FREE', orderId: ppData.orderId,
+              promoCode: appliedPromoCode || '', date: new Date().toISOString()
+            }));
+            localStorage.removeItem('cg_cart');
+            location.href = '/confirmation';
+            throw new Error('redirect');
+          }
+          if (ppData.error) throw new Error(ppData.error);
+          sessionStorage.setItem('cg_pp_internal_order', ppData.internalOrderId);
+          return ppData.paypalOrderId;
+        },
+        async onApprove(ppApproveData) {
+          const internalId = sessionStorage.getItem('cg_pp_internal_order');
+          document.getElementById('paymentProcessing').style.display = 'block';
+          document.getElementById('paymentError').style.display = 'none';
+          try {
+            const capRes = await fetch(window.CG_API_BASE + '/api/capture-paypal-order', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ paypalOrderId: ppApproveData.orderID, internalOrderId: internalId })
+            });
+            const capData = await capRes.json();
+            document.getElementById('paymentProcessing').style.display = 'none';
+            if (capData.success) {
+              localStorage.setItem('cg_last_order', JSON.stringify({
+                items: cart, total: originalTotal, discount: appliedDiscount,
+                email: document.getElementById('emailInput').value.trim(),
+                name: document.getElementById('nameInput').value.trim(),
+                paymentId: capData.payment.id,
+                orderId: capData.order_id,
+                promoCode: appliedPromoCode || '',
+                date: new Date().toISOString()
+              }));
+              localStorage.removeItem('cg_cart');
+              location.href = '/confirmation';
+            } else {
+              throw new Error(capData.error || 'Payment capture failed.');
+            }
+          } catch (capErr) {
+            document.getElementById('paymentProcessing').style.display = 'none';
+            document.getElementById('paymentError').textContent = capErr.message || 'Payment failed. Please try again.';
+            document.getElementById('paymentError').style.display = 'block';
+          }
+        },
+        onError(ppErr) {
+          document.getElementById('paymentProcessing').style.display = 'none';
+          document.getElementById('paymentError').textContent = 'PayPal encountered an error. Please try again or pay by card.';
+          document.getElementById('paymentError').style.display = 'block';
+          console.error('PayPal error:', ppErr);
         }
-
-        const payRes = await fetch(window.CG_API_BASE + '/api/create-payment', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            sourceId: result.token,
-            items: cart.map(function(item) { return { id: item.id, name: item.name, price: item.price, qty: item.qty, tierId: item.tierId }; }),
-            email: email,
-            name: name,
-            promoCode: appliedPromoCode || '',
-            billingAddress: billingAddress
-          })
-        });
-
-        const payData = await payRes.json();
-
-        if (payData.success) {
-          localStorage.setItem('cg_last_order', JSON.stringify({
-            items: cart,
-            total: originalTotal,
-            discount: payData.discount || 0,
-            email: email,
-            name: name,
-            billingAddress: billingAddress,
-            paymentId: payData.payment.id,
-            orderId: payData.order_id,
-            promoCode: appliedPromoCode || '',
-            receiptUrl: payData.payment.receipt_url || '',
-            date: new Date().toISOString()
-          }));
-          localStorage.removeItem('cg_cart');
-          location.href = '/confirmation';
-        } else {
-          throw new Error(payData.errors?.[0]?.detail || 'Payment failed');
-        }
-      } catch (err) {
-        document.getElementById('paymentError').textContent = err.message || 'Payment failed. Please try again.';
-        document.getElementById('paymentError').style.display = 'block';
-        document.getElementById('payBtn').disabled = false;
-        document.getElementById('payBtn').textContent = 'Pay Now';
-      }
-    });
-  } catch (err) {
-    console.error('Payment form initialization error:', err);
-    document.getElementById('paymentError').textContent = 'Could not load payment form: ' + (err.message || 'Please try again.');
-    document.getElementById('paymentError').style.display = 'block';
+      }).render('#paypal-button-container');
+    }
+  } catch (ppInitErr) {
+    if (ppInitErr.message !== 'redirect' && ppInitErr.message !== 'Missing fields') {
+      console.warn('PayPal could not be initialized:', ppInitErr);
+      document.getElementById('paymentError').textContent = 'Could not load PayPal. Please refresh the page.';
+      document.getElementById('paymentError').style.display = 'block';
+    }
   }
 });
   </script>

@@ -2,8 +2,6 @@ import os
 import json
 import uuid
 import secrets
-import re
-import time
 import psycopg2
 import psycopg2.extras
 from datetime import datetime, timedelta, timezone
@@ -28,9 +26,19 @@ ALLOWED_EXTENSIONS = {'pdf', 'doc', 'docx', 'png', 'jpg', 'jpeg'}
 MAX_FILE_SIZE = 10 * 1024 * 1024
 
 DATABASE_URL = os.environ.get('DATABASE_URL', '')
-SQUARE_ACCESS_TOKEN = os.environ.get('SQUARE_ACCESS_TOKEN', '').strip()
-SQUARE_LOCATION_ID = os.environ.get('SQUARE_LOCATION_ID', '').strip()
-SQUARE_ENVIRONMENT = os.environ.get('SQUARE_ENVIRONMENT', 'production').strip()
+PAYPAL_CLIENT_ID = os.environ.get('PAYPAL_CLIENT_ID', '').strip()
+PAYPAL_CLIENT_SECRET = os.environ.get('PAYPAL_CLIENT_SECRET', '').strip()
+PAYPAL_BASE_URL = 'https://api-m.paypal.com'
+
+def _get_paypal_token():
+    import requests as _req
+    r = _req.post(
+        f'{PAYPAL_BASE_URL}/v1/oauth2/token',
+        auth=(PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET),
+        data={'grant_type': 'client_credentials'}
+    )
+    r.raise_for_status()
+    return r.json()['access_token']
 
 if not firebase_admin._apps:
     sa_key = os.environ.get('FIREBASE_SERVICE_ACCOUNT_KEY', '').lstrip('\ufeff').strip()
@@ -42,7 +50,6 @@ if not firebase_admin._apps:
 
 resend.api_key = os.environ.get('RESEND_API_KEY', '')
 RESEND_FROM_EMAIL = os.environ.get('RESEND_FROM_EMAIL', 'CannaGrudge <onboarding@resend.dev>')
-EMAIL_RETRY_ATTEMPTS = max(1, int(os.environ.get('EMAIL_RETRY_ATTEMPTS', '3')))
 
 def get_db():
     conn = psycopg2.connect(DATABASE_URL)
@@ -213,89 +220,29 @@ def _lazy_seed():
 def before_req():
     _lazy_seed()
 
-def _email_config_status():
-    api_key_set = bool((resend.api_key or '').strip())
-    from_email_set = bool((RESEND_FROM_EMAIL or '').strip())
-    using_default_sender = (RESEND_FROM_EMAIL or '').strip().lower() == 'cannagrudge <onboarding@resend.dev>'
-    return {
-        'api_key_set': api_key_set,
-        'from_email_set': from_email_set,
-        'using_default_sender': using_default_sender,
-    }
-
-def _render_email_template(template_slug, variables=None):
+def send_email(to_email, template_slug, variables=None):
     variables = variables or {}
     tmpl = query_db('SELECT * FROM email_templates WHERE slug = %s', (template_slug,), one=True)
     if not tmpl:
-        return None, None, [f"template:{template_slug}"]
+        print(f"[EMAIL] Template '{template_slug}' not found")
+        return None
     subject = tmpl['subject']
     html = tmpl['html_body']
     for key, val in variables.items():
         subject = subject.replace('{{' + key + '}}', str(val))
         html = html.replace('{{' + key + '}}', str(val))
-    unresolved = sorted(set(re.findall(r'\{\{[^{}]+\}\}', subject + '\n' + html)))
-    return subject, html, unresolved
-
-def send_email_with_result(to_email, template_slug, variables=None, subject_prefix=''):
-    to_email = (to_email or '').strip().lower()
-    if not to_email:
-        return {'ok': False, 'error': 'Missing recipient email', 'template_slug': template_slug}
-
-    cfg = _email_config_status()
-    if not cfg['api_key_set']:
-        return {'ok': False, 'error': 'RESEND_API_KEY is not configured', 'template_slug': template_slug, 'to': to_email}
-    if not cfg['from_email_set']:
-        return {'ok': False, 'error': 'RESEND_FROM_EMAIL is not configured', 'template_slug': template_slug, 'to': to_email}
-
-    subject, html, unresolved = _render_email_template(template_slug, variables)
-    if not subject or not html:
-        return {'ok': False, 'error': f"Template '{template_slug}' not found", 'template_slug': template_slug, 'to': to_email}
-    if unresolved:
-        # Unresolved placeholders are a warning, not a hard failure.
-        print(f"[EMAIL WARNING] Unresolved placeholders for {template_slug}: {', '.join(unresolved)}")
-
-    last_error = None
-    for attempt in range(1, EMAIL_RETRY_ATTEMPTS + 1):
-        try:
-            provider_response = resend.Emails.send({
-                'from': RESEND_FROM_EMAIL,
-                'to': [to_email],
-                'subject': f"{subject_prefix}{subject}",
-                'html': html,
-            })
-            print(f"[EMAIL] Sent '{template_slug}' to {to_email} (attempt {attempt}/{EMAIL_RETRY_ATTEMPTS})")
-            return {
-                'ok': True,
-                'template_slug': template_slug,
-                'to': to_email,
-                'attempts': attempt,
-                'provider_response': provider_response,
-                'unresolved_placeholders': unresolved,
-            }
-        except Exception as e:
-            last_error = str(e)
-            print(f"[EMAIL ERROR] '{template_slug}' to {to_email} attempt {attempt}/{EMAIL_RETRY_ATTEMPTS}: {last_error}")
-            if attempt < EMAIL_RETRY_ATTEMPTS:
-                time.sleep(0.6 * attempt)
-
-    return {
-        'ok': False,
-        'error': last_error or 'Unknown email error',
-        'template_slug': template_slug,
-        'to': to_email,
-        'attempts': EMAIL_RETRY_ATTEMPTS,
-        'unresolved_placeholders': unresolved,
-    }
-
-def send_email(to_email, template_slug, variables=None):
-    result = send_email_with_result(to_email, template_slug, variables)
-    if result.get('ok'):
-        return result.get('provider_response')
     try:
-        print(f"[EMAIL ERROR] {result.get('error', 'unknown')} ({template_slug} -> {to_email})")
-    except Exception:
-        pass
-    return None
+        r = resend.Emails.send({
+            'from': RESEND_FROM_EMAIL,
+            'to': [to_email],
+            'subject': subject,
+            'html': html,
+        })
+        print(f"[EMAIL] Sent '{template_slug}' to {to_email}")
+        return r
+    except Exception as e:
+        print(f"[EMAIL ERROR] {e}")
+        return None
 
 def _as_cents(value, default=0):
     try:
@@ -377,28 +324,6 @@ def page_not_found(e):
 def internal_error(e):
     return send_from_directory(_ROOT, 'error.html'), 500
 
-@app.route('/api/square-config', methods=['GET'])
-def square_config():
-    app_id = os.environ.get('SQUARE_APPLICATION_ID', '').strip()
-    loc_id = os.environ.get('SQUARE_LOCATION_ID', '').strip()
-    return jsonify({'applicationId': app_id, 'locationId': loc_id})
-
-@app.route('/api/payment-status', methods=['GET'])
-def payment_status():
-    app_id = os.environ.get('SQUARE_APPLICATION_ID', '').strip()
-    loc_id = os.environ.get('SQUARE_LOCATION_ID', '').strip()
-    token = os.environ.get('SQUARE_ACCESS_TOKEN', '').strip()
-    return jsonify({
-        'square_app_id_set': bool(app_id),
-        'square_app_id_prefix': app_id[:12] + '...' if app_id else 'NOT SET',
-        'square_location_id_set': bool(loc_id),
-        'square_location_id': loc_id if loc_id else 'NOT SET',
-        'square_token_set': bool(token),
-        'square_token_prefix': token[:12] + '...' if token else 'NOT SET',
-        'square_environment': SQUARE_ENVIRONMENT,
-        'all_configured': bool(app_id and loc_id and token)
-    })
-
 @app.route('/api/init-db', methods=['POST'])
 def init_db():
     secret = os.environ.get('BOOTSTRAP_SECRET', '')
@@ -470,22 +395,35 @@ def validate_promo():
 
 @app.route('/api/create-payment', methods=['POST'])
 def create_payment():
-    from square.client import Client
+    return jsonify({'error': 'Card payments are unavailable. Please use PayPal.'}), 503
+
+
+# ──────── PayPal Checkout ────────
+
+@app.route('/api/paypal-config', methods=['GET'])
+def paypal_config():
+    return jsonify({'clientId': PAYPAL_CLIENT_ID})
+
+
+@app.route('/api/create-paypal-order', methods=['POST'])
+def create_paypal_order_route():
+    import requests as _req
     data = request.get_json()
-    if not data or 'sourceId' not in data:
-        return jsonify({'error': 'Missing payment source'}), 400
+    if not data:
+        return jsonify({'error': 'Invalid request'}), 400
 
     cart_items = data.get('items', [])
     email = (data.get('email') or '').strip().lower()
     buyer_name = data.get('name', '')
     promo_code = (data.get('promoCode') or '').strip().upper()
 
-    # Map frontend item IDs to database names for tier lookup
+    if not email or not buyer_name:
+        return jsonify({'error': 'Email and name are required'}), 400
+
     item_id_to_tier_name = {
         'regular-entry': 'Regular Entry',
         'early-entry-addon': 'Early Entry Add-On',
     }
-
     fallback_catalog = {
         'regular-entry': {'name': 'Regular Entry', 'price_cents': 4000},
         'early-entry-addon': {'name': 'Early Entry Add-On', 'price_cents': 2000},
@@ -499,51 +437,29 @@ def create_payment():
         tier_id = item.get('tierId')
         item_id = item.get('id', '')
         tier = None
-        
-        # First try by tier_id if provided
         if tier_id:
             tier = query_db('SELECT * FROM ticket_tiers WHERE id = %s AND active = TRUE', (tier_id,), one=True)
-        
-        # Then try by item_id as database ID (only if it looks like an integer)
         if not tier and item_id and str(item_id).isdigit():
             tier = query_db('SELECT * FROM ticket_tiers WHERE id = %s AND active = TRUE', (item_id,), one=True)
-        
-        # Finally try by matching tier name from item_id
         if not tier and item_id in item_id_to_tier_name:
-            tier_name_lookup = item_id_to_tier_name[item_id]
-            tier = query_db('SELECT * FROM ticket_tiers WHERE name = %s AND active = TRUE', (tier_name_lookup,), one=True)
-        
+            tier = query_db('SELECT * FROM ticket_tiers WHERE name = %s AND active = TRUE', (item_id_to_tier_name[item_id],), one=True)
         fallback = fallback_catalog.get(item_id)
         if not tier and not fallback:
-            return jsonify({'error': f'Invalid ticket tier'}), 400
-
+            return jsonify({'error': 'Invalid ticket tier'}), 400
         if tier:
-            price = tier['price_cents']
-            tier_name = tier['name']
-            tier_pk = tier['id']
+            price, tier_name, tier_pk = tier['price_cents'], tier['name'], tier['id']
         else:
-            price = fallback['price_cents']
-            tier_name = fallback['name']
-            tier_pk = None
-
+            price, tier_name, tier_pk = fallback['price_cents'], fallback['name'], None
         qty = max(1, min(int(item.get('qty', 1)), 50))
         if tier and tier['capacity'] > 0 and tier['sold'] + qty > tier['capacity']:
             return jsonify({'error': f'{tier["name"]} is sold out or insufficient capacity'}), 400
-
         if item_id == 'regular-entry':
             regular_qty += qty
         elif item_id == 'early-entry-addon':
             early_addon_qty += qty
-
-        line_total = price * qty
-        total += line_total
-        order_line_items.append({
-            'tier_id': tier_pk,
-            'product_id': int(item_id) if str(item_id).isdigit() else None,
-            'tier_name': tier_name,
-            'qty': qty,
-            'unit_price': price
-        })
+        total += price * qty
+        order_line_items.append({'tier_id': tier_pk, 'product_id': int(item_id) if str(item_id).isdigit() else None,
+                                  'tier_name': tier_name, 'qty': qty, 'unit_price': price})
 
     if early_addon_qty > regular_qty:
         return jsonify({'error': 'Early Entry add-ons must match the number of Regular Entry tickets.'}), 400
@@ -552,19 +468,11 @@ def create_payment():
     if promo_code:
         promo = query_db('SELECT * FROM promo_codes WHERE UPPER(code) = %s AND active = TRUE', (promo_code,), one=True)
         if promo:
-            if promo['discount_type'] == 'percent':
-                discount = int(total * promo['discount_amount'] / 100)
-            else:
-                discount = promo['discount_amount']
-            if discount > total:
-                discount = total
+            discount = int(total * promo['discount_amount'] / 100) if promo['discount_type'] == 'percent' else promo['discount_amount']
+            discount = min(discount, total)
             execute_db('UPDATE promo_codes SET uses = uses + 1 WHERE id = %s', (promo['id'],))
 
-    charge_amount = total - discount
-    if charge_amount < 0:
-        charge_amount = 0
-
-    # Write order to DB FIRST (pending) — so a DB failure never charges the card
+    charge_amount = max(0, total - discount)
     order_number = 'CG-' + str(uuid.uuid4())[:8].upper()
     order = execute_db(
         '''INSERT INTO orders (order_number, email, name, subtotal, total_amount, total_cents, discount_cents, promo_code, status, square_payment_id, receipt_url)
@@ -579,66 +487,92 @@ def create_payment():
         if li['tier_id']:
             execute_db('UPDATE ticket_tiers SET sold = sold + %s WHERE id = %s', (li['qty'], li['tier_id']))
 
-    # Now charge Square
-    if charge_amount > 0:
-        client = Client(access_token=SQUARE_ACCESS_TOKEN, environment=SQUARE_ENVIRONMENT)
-        body = {
-            'source_id': data['sourceId'],
-            'idempotency_key': str(uuid.uuid4()),
-            'amount_money': {'amount': charge_amount, 'currency': 'USD'},
-            'location_id': SQUARE_LOCATION_ID,
-            'note': f'CannaGrudge Tickets - {buyer_name}',
-        }
+    if charge_amount == 0:
+        free_id = 'FREE-' + str(uuid.uuid4())[:8]
+        execute_db("UPDATE orders SET status='completed', square_payment_id=%s WHERE id=%s", (free_id, order['id']))
         if email:
-            body['buyer_email_address'] = email
-        result = client.payments.create_payment(body=body)
-        if not result.is_success():
-            print(f'[SQUARE ERROR] {result.errors}')
-            execute_db("UPDATE orders SET status='failed' WHERE id=%s", (order['id'],))
-            _log_activity('payment_failed', 'purchase', '/checkout',
-                          f'Payment failed for {buyer_name} ({email}) — ${charge_amount/100:.2f}',
-                          {'order_id': order['id'], 'errors': str(result.errors)})
-            return jsonify({'success': False, 'errors': result.errors}), 400
-        payment = result.body.get('payment', {})
-        payment_id = payment.get('id', '')
-        receipt_url = payment.get('receipt_url', '')
-    else:
-        payment_id = 'FREE-' + str(uuid.uuid4())[:8]
-        receipt_url = ''
+            send_purchase_confirmation_email(order, order_line_items, subtotal_cents=total, discount_cents=discount, total_cents=0)
+        return jsonify({'free': True, 'orderId': order['id'], 'orderNumber': order_number})
 
-    # Mark order completed now that payment succeeded
-    execute_db(
-        "UPDATE orders SET status='completed', square_payment_id=%s, receipt_url=%s WHERE id=%s",
-        (payment_id, receipt_url, order['id'])
-    )
-    order['square_payment_id'] = payment_id
-    order['receipt_url'] = receipt_url
+    try:
+        token = _get_paypal_token()
+        pp_resp = _req.post(
+            f'{PAYPAL_BASE_URL}/v2/checkout/orders',
+            headers={'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'},
+            json={
+                'intent': 'CAPTURE',
+                'purchase_units': [{
+                    'reference_id': str(order['id']),
+                    'description': f'CannaGrudge Tickets - {buyer_name}',
+                    'amount': {'currency_code': 'USD', 'value': f'{charge_amount / 100:.2f}'}
+                }]
+            }
+        )
+        pp_resp.raise_for_status()
+        pp_order = pp_resp.json()
+    except Exception:
+        execute_db("UPDATE orders SET status='failed' WHERE id=%s", (order['id'],))
+        return jsonify({'error': 'Failed to create PayPal order. Please try again.'}), 500
 
+    execute_db('UPDATE orders SET square_payment_id=%s WHERE id=%s', (pp_order['id'], order['id']))
+    return jsonify({'paypalOrderId': pp_order['id'], 'internalOrderId': order['id']})
+
+
+@app.route('/api/capture-paypal-order', methods=['POST'])
+def capture_paypal_order_route():
+    import requests as _req
+    data = request.get_json() or {}
+    paypal_order_id = data.get('paypalOrderId')
+    internal_order_id = data.get('internalOrderId')
+    if not paypal_order_id or not internal_order_id:
+        return jsonify({'error': 'Missing order IDs'}), 400
+
+    order = query_db('SELECT * FROM orders WHERE id = %s', (internal_order_id,), one=True)
+    if not order:
+        return jsonify({'error': 'Order not found'}), 404
+    if order['status'] == 'completed':
+        return jsonify({'success': True, 'payment': {'id': order['square_payment_id'], 'status': 'COMPLETED', 'amount': order['total_amount']}, 'order_id': order['id']})
+
+    try:
+        token = _get_paypal_token()
+        cap_resp = _req.post(
+            f'{PAYPAL_BASE_URL}/v2/checkout/orders/{paypal_order_id}/capture',
+            headers={'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'}
+        )
+        cap_resp.raise_for_status()
+        cap_data = cap_resp.json()
+    except Exception:
+        execute_db("UPDATE orders SET status='failed' WHERE id=%s", (internal_order_id,))
+        return jsonify({'error': 'PayPal capture failed. Please try again.'}), 400
+
+    if cap_data.get('status') != 'COMPLETED':
+        execute_db("UPDATE orders SET status='failed' WHERE id=%s", (internal_order_id,))
+        return jsonify({'error': 'Payment not completed by PayPal.'}), 400
+
+    capture_id = cap_data['purchase_units'][0]['payments']['captures'][0]['id']
+    execute_db("UPDATE orders SET status='completed', square_payment_id=%s WHERE id=%s", (capture_id, internal_order_id))
+
+    raw_items = query_db('SELECT * FROM order_items WHERE order_id = %s', (internal_order_id,)) or []
+    order_line_items = [{'tier_name': oi['tier_name'], 'qty': oi['qty'], 'unit_price': oi['unit_price_cents']} for oi in raw_items]
     items_summary = ', '.join(f"{li['qty']}x {li['tier_name']}" for li in order_line_items)
     _log_activity('purchase_completed', 'purchase', '/checkout',
-                  f'{buyer_name} ({email}) purchased {items_summary} — ${charge_amount/100:.2f}',
-                  {'order_id': order['id'], 'payment_id': payment_id, 'total_cents': charge_amount},
-                  user_email=email)
+                  f'{order["name"]} ({order["email"]}) paid via PayPal - ${order["total_amount"]/100:.2f} ({items_summary})',
+                  {'order_id': internal_order_id, 'payment_id': capture_id, 'total_cents': order['total_amount']},
+                  user_email=order['email'])
 
-    if email:
+    if order['email']:
+        updated_order = query_db('SELECT * FROM orders WHERE id = %s', (internal_order_id,), one=True)
         send_purchase_confirmation_email(
-            order,
-            order_line_items,
-            subtotal_cents=total,
-            discount_cents=discount,
-            total_cents=charge_amount,
+            updated_order, order_line_items,
+            subtotal_cents=order['total_cents'],
+            discount_cents=order['discount_cents'],
+            total_cents=order['total_amount'],
         )
 
     return jsonify({
         'success': True,
-        'payment': {
-            'id': payment_id,
-            'status': 'COMPLETED',
-            'amount': charge_amount,
-            'receipt_url': receipt_url
-        },
-        'order_id': order['id'],
-        'discount': discount
+        'payment': {'id': capture_id, 'status': 'COMPLETED', 'amount': order['total_amount']},
+        'order_id': internal_order_id
     })
 
 
@@ -1111,17 +1045,16 @@ def admin_update_invoice(iid):
 @verify_admin
 def admin_send_invoice(iid):
     inv = execute_db('UPDATE invoices SET status=%s WHERE id=%s RETURNING *', ('sent', iid))
-    email_status = None
     if inv and inv.get('recipient_email'):
         base_url = request.host_url.rstrip('/')
-        email_status = send_email_with_result(inv['recipient_email'], 'invoice_notification', {
+        send_email(inv['recipient_email'], 'invoice_notification', {
             'recipient_name': inv.get('recipient_name', ''),
             'amount': f'${inv["amount_cents"] / 100:.2f}',
             'description': inv.get('description', ''),
             'due_date': inv['due_date'].strftime('%B %d, %Y') if hasattr(inv.get('due_date'), 'strftime') else str(inv.get('due_date', '')),
             'invoice_url': f'{base_url}/invoice?token={inv["view_token"]}',
         })
-    return jsonify({'invoice': inv, 'email': email_status})
+    return jsonify(inv)
 
 @app.route('/api/admin/invoices/<int:iid>/upload', methods=['POST'])
 @verify_admin
@@ -1271,60 +1204,13 @@ def admin_invite_admin():
     email = (d.get('email') or '').strip().lower()
     if not email:
         return jsonify({'error': 'Email required'}), 400
-
-    existing_user = query_db('SELECT id FROM users WHERE LOWER(email) = LOWER(%s) AND is_admin = TRUE', (email,), one=True)
-    if existing_user:
-        return jsonify({'error': 'That user is already an admin'}), 400
-
-    # Keep one active invite per email so resend replaces stale pending/expired rows.
-    execute_db('DELETE FROM admin_invites WHERE LOWER(email) = LOWER(%s) AND used_at IS NULL', (email,))
-
     token = secrets.token_urlsafe(32)
     expires = datetime.now(timezone.utc) + timedelta(days=7)
     invite = execute_db(
         'INSERT INTO admin_invites (email, token, expires_at, created_by) VALUES (%s, %s, %s, %s) RETURNING *',
         (email, token, expires, request.admin_user['id'])
     )
-
-    # Ensure newly added templates are present even on long-running workers.
-    try:
-        seed_email_templates()
-    except Exception as e:
-        print(f"[EMAIL SEED] {e}")
-
-    base_url = request.host_url.rstrip('/')
-    invite_url = f'{base_url}/login.html'
-    email_result = send_email_with_result(email, 'admin_invite', {
-        'invitee_email': email,
-        'invite_url': invite_url,
-        'expires_at': expires.strftime('%Y-%m-%d %H:%M UTC'),
-        'invited_by': request.admin_user.get('name') or request.admin_user.get('email') or 'An admin',
-    })
-    email_sent = bool(email_result and email_result.get('ok'))
-
-    response = dict(invite)
-    if response.get('created_at'):
-        response['created_at'] = response['created_at'].isoformat()
-    if response.get('expires_at'):
-        response['expires_at'] = response['expires_at'].isoformat()
-    response['invite_url'] = invite_url
-    response['email_sent'] = email_sent
-    if not email_sent:
-        response['warning'] = email_result.get('error') or 'Invite created, but email was not sent.'
-        response['email'] = email_result
-
-    return jsonify(response), 201
-
-@app.route('/api/admin/invites/<int:iid>/delete', methods=['POST'])
-@verify_admin
-def admin_delete_invite(iid):
-    invite = query_db('SELECT id, used_at FROM admin_invites WHERE id = %s', (iid,), one=True)
-    if not invite:
-        return jsonify({'error': 'Invite not found'}), 404
-    if invite.get('used_at'):
-        return jsonify({'error': 'Invite has already been used'}), 400
-    execute_db('DELETE FROM admin_invites WHERE id = %s AND used_at IS NULL', (iid,))
-    return jsonify({'deleted': True})
+    return jsonify(invite), 201
 
 @app.route('/api/admin/admins/<int:uid>/remove', methods=['POST'])
 @verify_admin
@@ -1509,69 +1395,22 @@ def admin_test_email_template(tid):
         'recipient_name': 'Jane Smith', 'amount': '$500.00',
         'description': 'Sponsorship Package', 'due_date': 'March 15, 2026',
         'invoice_url': '#',
-        'invitee_email': test_email, 'invite_url': '#',
-        'expires_at': 'March 18, 2026 17:00 UTC', 'invited_by': request.admin_user.get('email', 'admin@cannagrudge.com'),
     }
-    result = send_email_with_result(test_email, tmpl['slug'], sample_vars, subject_prefix='[TEST] ')
-    if not result.get('ok'):
-        return jsonify({'error': result.get('error', 'Failed to send test email'), 'email': result}), 500
-    return jsonify({'success': True, 'message': f'Test email sent to {test_email}', 'email': result})
-
-@app.route('/api/admin/email/test-all', methods=['POST'])
-@verify_admin
-def admin_test_all_emails():
-    data = request.get_json(silent=True) or {}
-    test_email = (data.get('email') or request.admin_user.get('email') or '').strip().lower()
-    if not test_email:
-        return jsonify({'error': 'No test email provided'}), 400
-
-    templates = query_db('SELECT slug FROM email_templates ORDER BY id') or []
-    sample_vars = {
-        'buyer_name': 'John Doe', 'order_id': '12345',
-        'order_items': '<tr><td style="padding:10px 12px;border-bottom:1px solid #2a2a2a;color:#ffffff;">VIP Ringside</td><td style="padding:10px 12px;border-bottom:1px solid #2a2a2a;color:#ffffff;text-align:center;">2</td><td style="padding:10px 12px;border-bottom:1px solid #2a2a2a;color:#d4a843;text-align:right;">$240.00</td></tr>',
-        'subtotal': '$240.00', 'discount': '$0.00', 'total': '$240.00',
-        'receipt_url': '#', 'payment_id': 'TEST-abc123',
-        'user_name': 'John Doe', 'user_email': test_email,
-        'status': 'confirmed',
-        'recipient_name': 'Jane Smith', 'amount': '$500.00',
-        'description': 'Sponsorship Package', 'due_date': 'March 15, 2026',
-        'invoice_url': '#',
-        'invitee_email': test_email, 'invite_url': '#',
-        'expires_at': 'March 18, 2026 17:00 UTC', 'invited_by': request.admin_user.get('email', 'admin@cannagrudge.com'),
-    }
-
-    results = []
-    for t in templates:
-        slug = t.get('slug')
-        if not slug:
-            continue
-        r = send_email_with_result(test_email, slug, sample_vars, subject_prefix='[TEST] ')
-        results.append({'slug': slug, 'ok': bool(r.get('ok')), 'error': r.get('error'), 'attempts': r.get('attempts')})
-
-    failed = [r for r in results if not r['ok']]
-    return jsonify({
-        'ok': len(failed) == 0,
-        'test_email': test_email,
-        'total': len(results),
-        'failed': len(failed),
-        'results': results,
-    }), (200 if len(failed) == 0 else 500)
-
-@app.route('/api/admin/email/health', methods=['GET'])
-@verify_admin
-def admin_email_health():
-    expected_templates = ['purchase_confirmation', 'welcome_email', 'order_status_update', 'invoice_notification', 'admin_invite']
-    rows = query_db('SELECT slug FROM email_templates') or []
-    available = {r.get('slug') for r in rows if r.get('slug')}
-    missing = [slug for slug in expected_templates if slug not in available]
-    cfg = _email_config_status()
-    return jsonify({
-        'ok': cfg['api_key_set'] and cfg['from_email_set'] and not missing,
-        'config': cfg,
-        'retry_attempts': EMAIL_RETRY_ATTEMPTS,
-        'expected_templates': expected_templates,
-        'missing_templates': missing,
-    })
+    subject = tmpl['subject']
+    html = tmpl['html_body']
+    for key, val in sample_vars.items():
+        subject = subject.replace('{{' + key + '}}', str(val))
+        html = html.replace('{{' + key + '}}', str(val))
+    try:
+        resend.Emails.send({
+            'from': RESEND_FROM_EMAIL,
+            'to': [test_email],
+            'subject': '[TEST] ' + subject,
+            'html': html,
+        })
+        return jsonify({'success': True, 'message': f'Test email sent to {test_email}'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=False)
