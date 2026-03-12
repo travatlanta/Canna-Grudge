@@ -100,6 +100,17 @@ DEFAULT_TEMPLATES = [
 </td>
 </tr>
 </table>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:linear-gradient(135deg,#1c1508,#1a1a1a);border:2px dashed #d4a843;border-radius:12px;overflow:hidden;margin-bottom:24px;">
+<tr>
+<td style="padding:28px 24px;text-align:center;">
+<p style="margin:0 0 4px 0;font-family:'Outfit',Arial,Helvetica,sans-serif;font-size:11px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:#d4a843;">&#127915; Your Entry Ticket</p>
+<p style="margin:0 0 20px 0;font-size:12px;color:#71717a;">Show this QR code at the gate for entry</p>
+<img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&amp;data={{order_number}}&amp;bgcolor=ffffff&amp;color=000000&amp;margin=1" width="200" height="200" alt="Entry QR Code" style="display:block;margin:0 auto 18px;border-radius:4px;border:6px solid #ffffff;">
+<p style="margin:0 0 6px 0;font-family:monospace;font-size:22px;font-weight:700;color:#ffffff;letter-spacing:0.1em;">{{order_number}}</p>
+<p style="margin:0;font-size:13px;color:#a1a1aa;">{{buyer_name}} &nbsp;&bull;&nbsp; April 25, 2026 &nbsp;&bull;&nbsp; Dunn&#39;s Arena</p>
+</td>
+</tr>
+</table>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#1a1a1a;border:1px solid rgba(255,255,255,0.06);border-radius:8px;overflow:hidden;margin-bottom:24px;">
 <tr>
 <td style="padding:24px;">

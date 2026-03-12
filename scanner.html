@@ -7,7 +7,11 @@
   <title>Check-In Scanner 🔥 • CannaGrudge</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔥</text></svg>">
   <link rel="stylesheet" href="theme.css">
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <style>
+    #qr-reader { background: #000; border-radius: 12px; overflow: hidden; }
+    #qr-reader video { width: 100% !important; border-radius: 12px; display: block; }
+    #qr-reader__scan_region { border-radius: 12px; }
     :root {
       --cg-gold: #C8A84E;
       --cg-green: #27ae60;
@@ -86,6 +90,16 @@
         Admin
       </a>
       <h1 class="scanner-title">Check-In Scanner</h1>
+      <div style="margin-bottom:16px;">
+        <button id="scanToggleBtn" onclick="toggleScanner()" style="width:100%;padding:14px 20px;border-radius:12px;border:2px solid var(--cg-gold);background:transparent;color:var(--cg-gold);font-size:15px;font-weight:800;cursor:pointer;">📷 Scan QR Code</button>
+        <div id="qr-reader" style="display:none;margin-top:12px;"></div>
+        <div id="scanStatus" style="display:none;text-align:center;margin-top:6px;font-size:13px;padding:4px 0;"></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;color:rgba(255,255,255,.3);font-size:12px;">
+        <hr style="flex:1;border:none;border-top:1px solid rgba(255,255,255,.08);">
+        <span>or search manually</span>
+        <hr style="flex:1;border:none;border-top:1px solid rgba(255,255,255,.08);">
+      </div>
       <div class="search-bar">
         <input type="text" id="searchInput" placeholder="Order #, email, or name..." autocomplete="off">
         <button id="searchBtn" onclick="doSearch()">Search</button>
@@ -188,6 +202,59 @@
       </div>`;
     }
     window.renderOrder = renderOrder;
+
+    // ── QR Camera Scanner ──
+    let _qrScanner = null;
+    let _scannerActive = false;
+
+    window.toggleScanner = async function() {
+      const scanDiv = document.getElementById('qr-reader');
+      const btn = document.getElementById('scanToggleBtn');
+      const statusEl = document.getElementById('scanStatus');
+
+      if (_scannerActive) {
+        if (_qrScanner) { try { await _qrScanner.stop(); } catch(e) {} _qrScanner = null; }
+        _scannerActive = false;
+        scanDiv.style.display = 'none';
+        statusEl.style.display = 'none';
+        btn.textContent = '📷 Scan QR Code';
+        return;
+      }
+
+      _scannerActive = true;
+      scanDiv.style.display = 'block';
+      statusEl.style.display = 'block';
+      statusEl.style.color = 'rgba(255,255,255,.5)';
+      statusEl.textContent = 'Starting camera…';
+      btn.textContent = '⏹ Stop Camera';
+
+      try {
+        _qrScanner = new Html5Qrcode('qr-reader');
+        await _qrScanner.start(
+          { facingMode: 'environment' },
+          { fps: 10, qrbox: { width: 250, height: 250 } },
+          async (decoded) => {
+            if (_qrScanner) { try { await _qrScanner.stop(); } catch(e) {} _qrScanner = null; }
+            _scannerActive = false;
+            scanDiv.style.display = 'none';
+            statusEl.textContent = '✓ Scanned: ' + decoded;
+            statusEl.style.color = 'var(--cg-green)';
+            btn.textContent = '📷 Scan QR Code';
+            document.getElementById('searchInput').value = decoded.trim();
+            doSearch();
+          },
+          () => {}
+        );
+        statusEl.textContent = 'Point camera at ticket QR code';
+      } catch (err) {
+        _scannerActive = false;
+        _qrScanner = null;
+        scanDiv.style.display = 'none';
+        statusEl.textContent = 'Camera access denied — use manual search instead.';
+        statusEl.style.color = 'var(--cg-red)';
+        btn.textContent = '📷 Scan QR Code';
+      }
+    };
 
     window.doCheckin = async function(id) {
       const btn = document.querySelector(`#order-${id} .btn-checkin`);

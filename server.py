@@ -120,6 +120,11 @@ def seed_email_templates():
                 'INSERT INTO email_templates (slug, name, subject, html_body, description) VALUES (%s, %s, %s, %s, %s)',
                 (tmpl['slug'], tmpl['name'], tmpl['subject'], tmpl['html_body'], tmpl['description'])
             )
+        else:
+            execute_db(
+                'UPDATE email_templates SET html_body = %s, subject = %s, updated_at = NOW() WHERE slug = %s',
+                (tmpl['html_body'], tmpl['subject'], tmpl['slug'])
+            )
 
 try:
     pass  # email templates seeded lazily on first request
@@ -280,6 +285,7 @@ def send_purchase_confirmation_email(order, order_items, subtotal_cents=None, di
     result = send_email(email, 'purchase_confirmation', {
         'buyer_name': (order.get('name') or 'Guest').strip() or 'Guest',
         'order_id': str(order.get('id') or ''),
+        'order_number': order.get('order_number') or f"#{order.get('id') or ''}",
         'order_items': build_order_items_html(order_items),
         'subtotal': f'${subtotal / 100:.2f}',
         'discount': f'${discount / 100:.2f}',
