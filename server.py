@@ -503,7 +503,7 @@ def create_paypal_order_route():
                 'intent': 'CAPTURE',
                 'purchase_units': [{
                     'reference_id': str(order['id']),
-                    'description': f'CannaGrudge Tickets - {buyer_name}',
+                    'description': f'Fight Night Event Ticket - {buyer_name}',
                     'amount': {'currency_code': 'USD', 'value': f'{charge_amount / 100:.2f}'}
                 }]
             }

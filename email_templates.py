@@ -2,7 +2,7 @@ DEFAULT_TEMPLATES = [
     {
         "slug": "purchase_confirmation",
         "name": "Purchase Confirmation",
-        "subject": "Your CannaGrudge Tickets Are Confirmed! 🥊",
+        "subject": "Your Fight Night Tickets Are Confirmed! 🥊",
         "description": "Sent to customers after a successful ticket purchase with order details and event information.",
         "html_body": """<!DOCTYPE html>
 <html lang="en">
