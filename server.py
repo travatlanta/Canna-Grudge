@@ -831,6 +831,31 @@ def admin_get_order_detail(oid):
     order['items'] = items or []
     return jsonify(order)
 
+@app.route('/api/admin/orders/create-test', methods=['POST'])
+@verify_admin
+def admin_create_test_order():
+    """Create a completed test order for QR/scanner testing."""
+    data = request.get_json() or {}
+    admin_email = request.admin_user.get('email', '')
+    test_email = (data.get('email') or admin_email or 'test@cannagrudge.com').strip()
+    test_name  = (data.get('name')  or 'TEST TICKET').strip()
+    order_number = 'CG-TEST-' + str(uuid.uuid4())[:6].upper()
+    order = execute_db(
+        '''INSERT INTO orders (order_number, email, name, subtotal, total_amount, total_cents,
+           discount_cents, promo_code, status, square_payment_id, receipt_url)
+           VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING *''',
+        (order_number, test_email, test_name, 0, 0, 0, 0, None, 'completed', 'TEST', '')
+    )
+    execute_db(
+        '''INSERT INTO order_items (order_id, tier_name, qty, quantity, unit_price, unit_price_cents)
+           VALUES (%s, %s, %s, %s, %s, %s)''',
+        (order['id'], 'Regular Entry', 1, 1, 0, 0)
+    )
+    items = query_db('SELECT tier_name, qty, quantity, unit_price, unit_price_cents FROM order_items WHERE order_id = %s', (order['id'],))
+    send_purchase_confirmation_email(order, items or [])
+    return jsonify({'success': True, 'order_id': order['id'], 'order_number': order_number, 'email': test_email})
+
+
 @app.route('/api/admin/orders/<int:oid>/resend-confirmation', methods=['POST'])
 @verify_admin
 def admin_resend_order_confirmation(oid):
