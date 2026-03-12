@@ -3,8 +3,11 @@ import json
 import uuid
 import secrets
 import psycopg2
-from dotenv import load_dotenv
-load_dotenv()
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 import psycopg2.extras
 from datetime import datetime, timedelta, timezone
 from functools import wraps
