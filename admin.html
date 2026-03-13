@@ -12,6 +12,8 @@
   <link rel="stylesheet" href="theme.css">
   <style>
     body.page-padded { padding-top: 0; }
+    /* Hide public navbar injected by app.js */
+    #mainNav { display: none !important; }
 
     .admin-wrap { display: flex; min-height: 100vh; }
 
@@ -659,6 +661,10 @@
           <div class="admin-header-controls">
             <h1 id="pageTitle">Dashboard</h1>
           </div>
+          <a href="/" style="display:inline-flex;align-items:center;gap:6px;color:var(--cg-text-muted);font-size:13px;font-weight:600;text-decoration:none;padding:6px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.08);transition:all .15s;" onmouseover="this.style.color='var(--cg-gold)';this.style.borderColor='var(--cg-gold)';" onmouseout="this.style.color='var(--cg-text-muted)';this.style.borderColor='rgba(255,255,255,.08)';">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            Back to Site
+          </a>
         </div>
 
         <button class="admin-menu-toggle" id="adminMenuToggle" aria-label="Open admin menu"><span class="icon">☰</span><span>Admin Menu</span></button>
@@ -666,6 +672,18 @@
         <div id="globalMsg"></div>
 
         <div id="tab-dashboard" class="tab-content active">
+          <!-- Check-In Scanner quick-access -->
+          <a href="/scanner" style="display:flex;align-items:center;gap:20px;background:linear-gradient(135deg,rgba(200,168,78,.12) 0%,rgba(200,168,78,.04) 100%);border:1.5px solid rgba(200,168,78,.35);border-radius:16px;padding:20px 24px;margin-bottom:20px;text-decoration:none;transition:all .2s;" onmouseover="this.style.borderColor='var(--cg-gold)';this.style.background='linear-gradient(135deg,rgba(200,168,78,.2) 0%,rgba(200,168,78,.08) 100%)';" onmouseout="this.style.borderColor='rgba(200,168,78,.35)';this.style.background='linear-gradient(135deg,rgba(200,168,78,.12) 0%,rgba(200,168,78,.04) 100%)';">
+            <div style="width:52px;height:52px;border-radius:14px;background:rgba(200,168,78,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--cg-gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 012-2h2"/><path d="M17 3h2a2 2 0 012 2v2"/><path d="M21 17v2a2 2 0 01-2 2h-2"/><path d="M7 21H5a2 2 0 01-2-2v-2"/><line x1="7" y1="12" x2="17" y2="12"/></svg>
+            </div>
+            <div style="flex:1;">
+              <div style="font-size:17px;font-weight:900;color:var(--cg-gold);letter-spacing:-.01em;">Ticket Check-In Scanner</div>
+              <div style="font-size:13px;color:rgba(255,255,255,.5);margin-top:3px;">Scan QR codes &amp; manage the full guest list for event day check-in</div>
+            </div>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--cg-gold)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:.6;flex-shrink:0;"><polyline points="9 18 15 12 9 6"/></svg>
+          </a>
+
           <div class="stats-grid" id="statsGrid">
             <div class="card stat-card"><div class="stat-value" id="statOrders">—</div><div class="stat-label">Total Orders</div></div>
             <div class="card stat-card"><div class="stat-value" id="statRevenue">—</div><div class="stat-label">Revenue</div></div>
