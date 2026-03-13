@@ -463,6 +463,7 @@ DEFAULT_TEMPLATES = [
 <a href="{{payment_url}}" style="display:inline-block;padding:16px 40px;background:#d4a843;color:#111111;text-decoration:none;font-weight:800;font-size:16px;border-radius:10px;letter-spacing:0.01em;">Complete Purchase →</a>
 </td></tr>
 </table>
+{{addon_section}}
 <p style="margin:0 0 6px;font-size:12px;color:#52525b;">If the button doesn't work, copy this link:</p>
 <p style="margin:0;font-size:12px;color:#71717a;word-break:break-all;">{{payment_url}}</p>
 </td>

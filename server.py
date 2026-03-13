@@ -1313,29 +1313,49 @@ def admin_create_purchase_link():
     expires = datetime.now(timezone.utc) + timedelta(days=expires_days)
     customer_email = (d.get('email') or '').strip()
     customer_name = (d.get('name') or customer_email or 'there').strip()
-    link = execute_db(
-        'INSERT INTO purchase_links (token, email, tier_id, qty, promo_code, expires_at) VALUES (%s, %s, %s, %s, %s, %s) RETURNING *',
+    execute_db(
+        'INSERT INTO purchase_links (token, email, tier_id, qty, promo_code, expires_at) VALUES (%s, %s, %s, %s, %s, %s)',
         (token, customer_email, d.get('tier_id'), d.get('qty', 1), d.get('promo_code'), expires)
     )
-    payment_url = request.host_url.rstrip('/') + f'/tickets.html?invite={token}'
+    payment_url = f'/tickets.html?invite={token}'
+
+    # Optional add-on ticket (e.g. Early Entry Add-On)
+    addon_url = None
+    addon_section_html = ''
+    addon_tier_id = d.get('addon_tier_id')
+    if addon_tier_id:
+        addon_token = secrets.token_urlsafe(24)
+        addon_qty = int(d.get('addon_qty', 1))
+        execute_db(
+            'INSERT INTO purchase_links (token, email, tier_id, qty, expires_at) VALUES (%s, %s, %s, %s, %s)',
+            (addon_token, customer_email, addon_tier_id, addon_qty, expires)
+        )
+        addon_url = f'/tickets.html?invite={addon_token}'
+        full_addon_url = request.host_url.rstrip('/') + addon_url
+        addon_section_html = f'''<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top:16px;"><tr><td align="center" style="padding-bottom:8px;"><p style="margin:0 0 10px;font-size:12px;color:#a1a1aa;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;">Early Entry Add-On</p><a href="{full_addon_url}" style="display:inline-block;padding:14px 36px;background:#1a1a1a;color:#d4a843;text-decoration:none;font-weight:800;font-size:15px;border-radius:10px;border:2px solid #d4a843;letter-spacing:0.01em;">Add Early Entry →</a></td></tr></table>'''
+
     email_sent = False
     if customer_email:
         try:
             tier = query_db('SELECT name, price_cents FROM ticket_tiers WHERE id=%s', (d.get('tier_id'),), one=True)
             qty = int(d.get('qty', 1))
             total_cents = (tier['price_cents'] if tier else 0) * qty
+            if addon_tier_id:
+                addon_tier = query_db('SELECT name, price_cents FROM ticket_tiers WHERE id=%s', (addon_tier_id,), one=True)
+                total_cents += (addon_tier['price_cents'] if addon_tier else 0) * int(d.get('addon_qty', 1))
             send_email(customer_email, 'payment_link', {
                 'buyer_name': customer_name,
                 'tier_name': tier['name'] if tier else 'Ticket',
                 'qty': str(qty),
                 'total': f'${total_cents / 100:.2f}',
-                'payment_url': payment_url,
+                'payment_url': request.host_url.rstrip('/') + payment_url,
                 'expires_days': str(expires_days),
+                'addon_section': addon_section_html,
             })
             email_sent = True
         except Exception as e:
             app.logger.error(f'payment_link email failed: {e}')
-    return jsonify({'link': link, 'url': f'/tickets.html?invite={token}', 'email_sent': email_sent}), 201
+    return jsonify({'url': payment_url, 'addon_url': addon_url, 'email_sent': email_sent}), 201
 
 @app.route('/api/purchase-links/<token>', methods=['GET'])
 def get_purchase_link(token):
