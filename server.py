@@ -307,7 +307,14 @@ def add_headers(response):
 
 @app.route('/health')
 def health_check():
-    return jsonify({'status': 'ok', 'service': 'cannagrudge'}), 200
+    try:
+        query_db('SELECT 1', one=True)
+        db_ok = True
+    except Exception:
+        db_ok = False
+    status = 'ok' if db_ok else 'degraded'
+    code = 200 if db_ok else 503
+    return jsonify({'status': status, 'db': db_ok, 'service': 'cannagrudge'}), code
 
 @app.route('/')
 def index():
