@@ -424,6 +424,62 @@ DEFAULT_TEMPLATES = [
 </html>"""
     },
     {
+        "slug": "payment_link",
+        "name": "Payment Link",
+        "subject": "Your CannaGrudge Ticket Payment Link 🥊",
+        "description": "Sent by admins to customers with a direct payment link for in-person or manual ticket sales.",
+        "html_body": """<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your CannaGrudge Payment Link</title>
+</head>
+<body style="margin:0;padding:0;background-color:#0a0a0a;font-family:'Inter',Arial,Helvetica,sans-serif;color:#ffffff;-webkit-font-smoothing:antialiased;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#0a0a0a;">
+<tr>
+<td align="center" style="padding:20px 10px;">
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;background-color:#111111;border:1px solid rgba(255,255,255,0.06);border-radius:12px;overflow:hidden;">
+<tr>
+<td align="center" style="padding:40px 40px 30px 40px;border-bottom:2px solid #d4a843;">
+<h1 style="margin:0;font-family:'Outfit',Arial,Helvetica,sans-serif;font-size:32px;font-weight:900;color:#d4a843;letter-spacing:-0.02em;">CannaGrudge</h1>
+<p style="margin:8px 0 0 0;font-size:12px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#a1a1aa;">Fight Night 2026</p>
+</td>
+</tr>
+<tr>
+<td style="padding:40px;">
+<p style="margin:0 0 8px 0;font-size:14px;color:#a1a1aa;">Reserved for you</p>
+<h2 style="margin:0 0 20px 0;font-family:'Outfit',Arial,Helvetica,sans-serif;font-size:26px;font-weight:800;color:#ffffff;line-height:1.2;">Your tickets are ready, {{buyer_name}}!</h2>
+<p style="margin:0 0 28px 0;font-size:15px;line-height:1.7;color:#a1a1aa;">Tap the button below to complete your purchase. This link is reserved for you and expires in <strong style="color:#d4d4d8;">{{expires_days}} days</strong>.</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#1a1a1a;border:1px solid rgba(255,255,255,0.06);border-radius:10px;margin-bottom:28px;">
+<tr><td style="padding:16px 20px;">
+<p style="margin:0 0 4px;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#d4a843;">Order Summary</p>
+<p style="margin:4px 0 0;font-size:15px;color:#d4d4d8;">{{qty}}× {{tier_name}}</p>
+<p style="margin:4px 0 0;font-size:22px;font-weight:800;color:#ffffff;">{{total}}</p>
+</td></tr>
+</table>
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+<tr><td align="center" style="padding-bottom:28px;">
+<a href="{{payment_url}}" style="display:inline-block;padding:16px 40px;background:#d4a843;color:#111111;text-decoration:none;font-weight:800;font-size:16px;border-radius:10px;letter-spacing:0.01em;">Complete Purchase →</a>
+</td></tr>
+</table>
+<p style="margin:0 0 6px;font-size:12px;color:#52525b;">If the button doesn't work, copy this link:</p>
+<p style="margin:0;font-size:12px;color:#71717a;word-break:break-all;">{{payment_url}}</p>
+</td>
+</tr>
+<tr>
+<td style="padding:20px 40px;border-top:1px solid rgba(255,255,255,0.06);text-align:center;">
+<p style="margin:0;font-size:12px;color:#52525b;">Questions? Email <a href="mailto:production@Diablocanna.co" style="color:#d4a843;text-decoration:none;">production@Diablocanna.co</a></p>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+</table>
+</body>
+</html>"""
+    },
+    {
         "slug": "admin_invite",
         "name": "Admin Invite",
         "subject": "You were invited to be a CannaGrudge admin",

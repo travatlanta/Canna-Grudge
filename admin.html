@@ -852,8 +852,7 @@
 
         <div id="tab-orders" class="tab-content">
           <div style="margin-bottom:12px;">
-            <button class="btn btn-outline btn-sm" id="createTestOrderBtn">+ Create Test Order</button>
-            <span id="testOrderMsg" style="margin-left:10px;font-size:13px;color:var(--cg-text-muted);"></span>
+            <button class="btn btn-primary btn-sm" id="orderSendPaymentLinkBtn">+ Send Payment Link</button>
           </div>
           <div class="admin-table-wrap"><table class="admin-table" id="ordersTable"><thead><tr><th>#</th><th>Date</th><th>Customer</th><th>Email</th><th>Billing Address</th><th>Items</th><th>Total</th><th>Discount</th><th>Promo</th><th>Status</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
         </div>
@@ -1045,8 +1044,9 @@
   <div class="modal-overlay" id="purchaseLinkModal">
     <div class="modal-card">
       <button class="modal-close" onclick="closeModal('purchaseLinkModal')">&times;</button>
-      <h3>Create Purchase Link</h3>
+      <h3>Send Payment Link</h3>
       <form id="purchaseLinkForm">
+        <div class="form-group"><label class="label">Customer Name</label><input class="input" type="text" id="plName" placeholder="e.g. John Smith"></div>
         <div class="form-group"><label class="label">Email</label><input class="input" type="email" id="plEmail" required></div>
         <div class="form-group"><label class="label">Ticket Tier</label><select class="input" id="plTier" required></select></div>
         <div class="form-row">
@@ -1057,7 +1057,7 @@
         <div id="plResult" style="margin-top:16px;"></div>
         <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:24px;">
           <button type="button" class="btn btn-ghost" onclick="closeModal('purchaseLinkModal')">Cancel</button>
-          <button type="submit" class="btn btn-primary">Create</button>
+          <button type="submit" class="btn btn-primary">Create &amp; Send Link</button>
         </div>
       </form>
     </div>
@@ -1789,29 +1789,7 @@
         </tr>`;
       }).join('');
 
-      // Test order button
-      const testBtn = $('createTestOrderBtn');
-      if (testBtn && !testBtn._bound) {
-        testBtn._bound = true;
-        testBtn.addEventListener('click', async () => {
-          const email = prompt('Send test ticket to email:', adminOrders[0]?.email || '');
-          if (!email) return;
-          const name = prompt('Name on ticket:', 'TEST TICKET') || 'TEST TICKET';
-          testBtn.disabled = true;
-          $('testOrderMsg').textContent = 'Creating...';
-          try {
-            const res = await apiFetch('/api/admin/orders/create-test', { method: 'POST', body: JSON.stringify({ email, name }) });
-            $('testOrderMsg').style.color = 'var(--cg-green)';
-            $('testOrderMsg').textContent = `✓ Test order ${res.order_number} created — confirmation email sent to ${res.email}`;
-            await loadOrders();
-          } catch(e) {
-            $('testOrderMsg').style.color = 'var(--cg-red)';
-            $('testOrderMsg').textContent = e.message;
-          } finally {
-            testBtn.disabled = false;
-          }
-        });
-      }
+
     }
 
     window.viewOrder = async function(id) {
@@ -2150,7 +2128,7 @@
       </tr>`).join('');
     }
 
-    $('addPurchaseLinkBtn').addEventListener('click', async () => {
+    async function openPurchaseLinkModal() {
       $('purchaseLinkForm').reset();
       $('plResult').innerHTML = '';
       const tierSelect = $('plTier');
@@ -2160,12 +2138,16 @@
         const tiers = await apiFetch('/api/admin/tickets');
         tierSelect.innerHTML = tiers.map(t => `<option value="${t.id}">${t.name} (${fmtMoney(t.price_cents)})</option>`).join('');
       } catch (e) { tierSelect.innerHTML = '<option value="">Failed to load</option>'; }
-    });
+    }
+    $('addPurchaseLinkBtn').addEventListener('click', openPurchaseLinkModal);
+    $('orderSendPaymentLinkBtn').addEventListener('click', openPurchaseLinkModal);
 
     $('purchaseLinkForm').addEventListener('submit', async (e) => {
       e.preventDefault();
+      const email = $('plEmail').value;
       const body = {
-        email: $('plEmail').value,
+        name: $('plName').value.trim() || null,
+        email,
         tier_id: parseInt($('plTier').value),
         qty: parseInt($('plQty').value) || 1,
         promo_code: $('plPromo').value || null,
@@ -2174,7 +2156,8 @@
       try {
         const res = await apiFetch('/api/admin/purchase-links', { method: 'POST', body: JSON.stringify(body) });
         const fullUrl = location.origin + res.url;
-        $('plResult').innerHTML = `<div class="msg msg-success">Link created!</div><div class="copy-link"><span>${fullUrl}</span><button onclick="navigator.clipboard.writeText('${fullUrl}');this.textContent='Copied!'">Copy</button></div>`;
+        const emailNote = res.email_sent ? `<p style="color:var(--cg-green);font-size:13px;margin:8px 0 0;">✓ Payment link emailed to ${email}</p>` : '';
+        $('plResult').innerHTML = `<div class="msg msg-success">Link created!</div>${emailNote}<div class="copy-link" style="margin-top:8px;"><span>${fullUrl}</span><button onclick="navigator.clipboard.writeText('${fullUrl}');this.textContent='Copied!'">Copy</button></div>`;
         loadPurchaseLinks();
       } catch (e) { $('plResult').innerHTML = `<div class="msg msg-error">${e.message}</div>`; }
     });

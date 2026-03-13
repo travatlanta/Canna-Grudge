@@ -1309,12 +1309,33 @@ def admin_get_purchase_links():
 def admin_create_purchase_link():
     d = request.get_json()
     token = secrets.token_urlsafe(24)
-    expires = datetime.now(timezone.utc) + timedelta(days=int(d.get('expires_days', 7)))
+    expires_days = int(d.get('expires_days', 7))
+    expires = datetime.now(timezone.utc) + timedelta(days=expires_days)
+    customer_email = (d.get('email') or '').strip()
+    customer_name = (d.get('name') or customer_email or 'there').strip()
     link = execute_db(
         'INSERT INTO purchase_links (token, email, tier_id, qty, promo_code, expires_at) VALUES (%s, %s, %s, %s, %s, %s) RETURNING *',
-        (token, d.get('email', ''), d.get('tier_id'), d.get('qty', 1), d.get('promo_code'), expires)
+        (token, customer_email, d.get('tier_id'), d.get('qty', 1), d.get('promo_code'), expires)
     )
-    return jsonify({'link': link, 'url': f'/tickets.html?invite={token}'}), 201
+    payment_url = request.host_url.rstrip('/') + f'/tickets.html?invite={token}'
+    email_sent = False
+    if customer_email:
+        try:
+            tier = query_db('SELECT name, price_cents FROM ticket_tiers WHERE id=%s', (d.get('tier_id'),), one=True)
+            qty = int(d.get('qty', 1))
+            total_cents = (tier['price_cents'] if tier else 0) * qty
+            send_email(customer_email, 'payment_link', {
+                'buyer_name': customer_name,
+                'tier_name': tier['name'] if tier else 'Ticket',
+                'qty': str(qty),
+                'total': f'${total_cents / 100:.2f}',
+                'payment_url': payment_url,
+                'expires_days': str(expires_days),
+            })
+            email_sent = True
+        except Exception as e:
+            app.logger.error(f'payment_link email failed: {e}')
+    return jsonify({'link': link, 'url': f'/tickets.html?invite={token}', 'email_sent': email_sent}), 201
 
 @app.route('/api/purchase-links/<token>', methods=['GET'])
 def get_purchase_link(token):
