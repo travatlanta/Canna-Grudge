@@ -47,11 +47,14 @@ def _get_paypal_token():
 
 if not firebase_admin._apps:
     sa_key = os.environ.get('FIREBASE_SERVICE_ACCOUNT_KEY', '').lstrip('\ufeff').strip()
-    if sa_key:
-        cred = credentials.Certificate(json.loads(sa_key))
-        firebase_admin.initialize_app(cred)
-    else:
-        firebase_admin.initialize_app()
+    try:
+        if sa_key:
+            cred = credentials.Certificate(json.loads(sa_key))
+            firebase_admin.initialize_app(cred)
+        else:
+            firebase_admin.initialize_app()
+    except Exception as _fb_err:
+        print(f"[FIREBASE INIT] {_fb_err} — running without Firebase auth")
 
 resend.api_key = os.environ.get('RESEND_API_KEY', '')
 RESEND_FROM_EMAIL = os.environ.get('RESEND_FROM_EMAIL', 'CannaGrudge <onboarding@resend.dev>')
