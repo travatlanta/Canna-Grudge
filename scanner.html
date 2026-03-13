@@ -70,6 +70,72 @@
     .access-denied-card h2 { font-size: 22px; margin-bottom: 8px; }
     .access-denied-card p { color: rgba(255,255,255,.4); }
     #scannerAuth { display:none; }
+
+    /* ── Guest List ── */
+    .scanner-tabs { display: flex; gap: 6px; margin-bottom: 16px; }
+    .scanner-tab {
+      flex: 1; padding: 10px 6px; border-radius: 10px; border: 1px solid rgba(255,255,255,.08);
+      background: transparent; color: rgba(255,255,255,.5); font-size: 13px; font-weight: 700;
+      cursor: pointer; transition: all .15s; text-align: center;
+    }
+    .scanner-tab.active { background: var(--cg-gold); border-color: var(--cg-gold); color: #000; }
+    .stat-bar {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 20px;
+    }
+    .stat-box {
+      background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.06);
+      border-radius: 12px; padding: 12px 8px; text-align: center;
+    }
+    .stat-box.stat-total { border-color: rgba(200,168,78,.2); }
+    .stat-box.stat-in    { border-color: rgba(39,174,96,.2); }
+    .stat-box.stat-out   { border-color: rgba(231,76,60,.15); }
+    .stat-num  { font-size: 26px; font-weight: 900; line-height: 1; }
+    .stat-num.gold { color: var(--cg-gold); }
+    .stat-num.green { color: var(--cg-green); }
+    .stat-num.red   { color: var(--cg-red); }
+    .stat-label { font-size: 11px; color: rgba(255,255,255,.4); margin-top: 3px; text-transform: uppercase; letter-spacing: .04em; font-weight: 700; }
+    .guest-search {
+      display: flex; gap: 8px; margin-bottom: 14px;
+    }
+    .guest-search input {
+      flex: 1; padding: 10px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.04); color: #fff; font-size: 15px; outline: none;
+    }
+    .guest-search input:focus { border-color: var(--cg-gold); }
+    .guest-search input::placeholder { color: rgba(255,255,255,.3); }
+    .guest-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 14px; border-radius: 12px; margin-bottom: 6px;
+      border: 1px solid rgba(255,255,255,.05); background: rgba(255,255,255,.02);
+      transition: all .15s;
+    }
+    .guest-row.is-in { border-color: rgba(39,174,96,.2); background: rgba(39,174,96,.04); }
+    .guest-avatar {
+      width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px; font-weight: 900;
+    }
+    .guest-avatar.in  { background: rgba(39,174,96,.15); color: var(--cg-green); }
+    .guest-avatar.out { background: rgba(255,255,255,.06); color: rgba(255,255,255,.4); }
+    .guest-info { flex: 1; min-width: 0; }
+    .guest-name { font-size: 14px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .guest-sub  { font-size: 11px; color: rgba(255,255,255,.4); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .guest-action button {
+      padding: 7px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; border: none; white-space: nowrap;
+    }
+    .btn-gl-checkin { background: var(--cg-green); color: #fff; }
+    .btn-gl-checkin:hover { filter: brightness(1.1); }
+    .btn-gl-undo { background: rgba(255,255,255,.07); color: rgba(255,255,255,.5); }
+    .btn-gl-undo:hover { background: rgba(231,76,60,.15); color: var(--cg-red); }
+    .guest-list-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .guest-list-count { font-size: 12px; color: rgba(255,255,255,.35); }
+    .guest-refresh-btn {
+      padding: 6px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,.1);
+      background: transparent; color: rgba(255,255,255,.5); font-size: 12px; font-weight: 700; cursor: pointer;
+    }
+    .guest-refresh-btn:hover { border-color: var(--cg-gold); color: var(--cg-gold); }
+    .section-divider { display: flex; align-items: center; gap: 10px; margin: 20px 0 16px; color: rgba(255,255,255,.3); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
+    .section-divider hr { flex: 1; border: none; border-top: 1px solid rgba(255,255,255,.07); }
   </style>
 </head>
 <body>
@@ -105,6 +171,32 @@
         <button id="searchBtn" onclick="doSearch()">Search</button>
       </div>
       <div id="results"></div>
+
+      <!-- ── Guest List Section ── -->
+      <div class="section-divider"><hr><span>Guest List</span><hr></div>
+
+      <div class="stat-bar" id="statBar">
+        <div class="stat-box stat-total"><div class="stat-num gold" id="statTotal">—</div><div class="stat-label">Total</div></div>
+        <div class="stat-box stat-in"><div class="stat-num green" id="statIn">—</div><div class="stat-label">Checked In</div></div>
+        <div class="stat-box stat-out"><div class="stat-num red" id="statOut">—</div><div class="stat-label">Remaining</div></div>
+      </div>
+
+      <div class="scanner-tabs">
+        <button class="scanner-tab active" id="tabAll" onclick="setGuestTab('all')">All</button>
+        <button class="scanner-tab" id="tabIn" onclick="setGuestTab('in')">Checked In</button>
+        <button class="scanner-tab" id="tabOut" onclick="setGuestTab('out')">Not In</button>
+      </div>
+
+      <div class="guest-search">
+        <input type="text" id="guestFilter" placeholder="Filter by name, email, or order #…" oninput="renderGuestList()">
+      </div>
+
+      <div class="guest-list-meta">
+        <span class="guest-list-count" id="guestCount"></span>
+        <button class="guest-refresh-btn" onclick="loadGuestList(true)">↻ Refresh</button>
+      </div>
+
+      <div id="guestList"><div class="loading-msg" style="padding:30px 0;">Loading guest list…</div></div>
     </div>
   </div>
 
@@ -283,5 +375,111 @@
     document.getElementById('searchInput').addEventListener('keydown', e => {
       if (e.key === 'Enter') doSearch();
     });
+
+    // ── Guest List ──
+    let _guestData = [];
+    let _guestTab = 'all';
+    let _guestRefreshTimer = null;
+
+    window.setGuestTab = function(tab) {
+      _guestTab = tab;
+      document.querySelectorAll('.scanner-tab').forEach(b => b.classList.remove('active'));
+      document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active');
+      renderGuestList();
+    };
+
+    window.loadGuestList = async function(showRefreshing = false) {
+      if (showRefreshing) {
+        document.getElementById('guestList').innerHTML = '<div class="loading-msg" style="padding:24px 0;">Refreshing…</div>';
+      }
+      try {
+        const data = await apiFetch('/api/admin/checkin/guestlist');
+        _guestData = data.orders || [];
+        document.getElementById('statTotal').textContent = data.total ?? _guestData.length;
+        document.getElementById('statIn').textContent    = data.checked_in ?? 0;
+        document.getElementById('statOut').textContent   = data.remaining ?? 0;
+        renderGuestList();
+      } catch (e) {
+        document.getElementById('guestList').innerHTML = `<div class="no-results">${e.message}</div>`;
+      }
+    };
+
+    window.renderGuestList = function() {
+      const q = (document.getElementById('guestFilter').value || '').toLowerCase().trim();
+      let list = _guestData.filter(o => {
+        if (_guestTab === 'in'  && !o.checked_in) return false;
+        if (_guestTab === 'out' &&  o.checked_in) return false;
+        if (!q) return true;
+        return (o.name || '').toLowerCase().includes(q)
+            || (o.email || '').toLowerCase().includes(q)
+            || (o.order_number || '').toLowerCase().includes(q);
+      });
+
+      document.getElementById('guestCount').textContent = `${list.length} guest${list.length !== 1 ? 's' : ''}`;
+
+      if (!list.length) {
+        document.getElementById('guestList').innerHTML = '<div class="no-results" style="padding:30px 0;">No guests match</div>';
+        return;
+      }
+
+      document.getElementById('guestList').innerHTML = list.map(o => {
+        const initials = (o.name || 'G').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+        const tickets  = (o.items || []).map(i => `${i.qty}× ${i.tier_name}`).join(', ') || 'Ticket';
+        const checkinTime = o.checked_in_at ? new Date(o.checked_in_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+        const sub = o.checked_in ? `✓ ${checkinTime}  ·  ${tickets}` : `${o.order_number || '#' + o.id}  ·  ${tickets}`;
+        return `<div class="guest-row ${o.checked_in ? 'is-in' : ''}" id="gl-${o.id}">
+          <div class="guest-avatar ${o.checked_in ? 'in' : 'out'}">${o.checked_in ? '✓' : initials}</div>
+          <div class="guest-info">
+            <div class="guest-name">${o.name || 'Guest'}</div>
+            <div class="guest-sub">${sub}</div>
+          </div>
+          <div class="guest-action">
+            ${o.checked_in
+              ? `<button class="btn-gl-undo" onclick="glUndo(${o.id})">Undo</button>`
+              : `<button class="btn-gl-checkin" onclick="glCheckin(${o.id})">Check In</button>`}
+          </div>
+        </div>`;
+      }).join('');
+    };
+
+    window.glCheckin = async function(id) {
+      const btn = document.querySelector(`#gl-${id} button`);
+      if (btn) { btn.disabled = true; btn.textContent = '…'; }
+      try {
+        await apiFetch(`/api/admin/checkin/${id}`, { method: 'POST' });
+        const o = _guestData.find(x => x.id === id);
+        if (o) { o.checked_in = true; o.checked_in_at = new Date().toISOString(); }
+        // update stats
+        const inCount = _guestData.filter(x => x.checked_in).length;
+        document.getElementById('statIn').textContent  = inCount;
+        document.getElementById('statOut').textContent = _guestData.length - inCount;
+        renderGuestList();
+        // also refresh the search results area if it's showing this order
+        if (document.getElementById('searchInput').value.trim()) doSearch();
+      } catch (e) {
+        alert(e.message);
+        if (btn) { btn.disabled = false; btn.textContent = 'Check In'; }
+      }
+    };
+
+    window.glUndo = async function(id) {
+      if (!confirm('Undo this check-in?')) return;
+      try {
+        await apiFetch(`/api/admin/checkin/${id}/undo`, { method: 'POST' });
+        const o = _guestData.find(x => x.id === id);
+        if (o) { o.checked_in = false; o.checked_in_at = null; }
+        const inCount = _guestData.filter(x => x.checked_in).length;
+        document.getElementById('statIn').textContent  = inCount;
+        document.getElementById('statOut').textContent = _guestData.length - inCount;
+        renderGuestList();
+        if (document.getElementById('searchInput').value.trim()) doSearch();
+      } catch (e) {
+        alert(e.message);
+      }
+    };
+
+    // Load on mount, then auto-refresh every 60s
+    loadGuestList();
+    _guestRefreshTimer = setInterval(() => loadGuestList(), 60000);
   </script>
 </body></html>

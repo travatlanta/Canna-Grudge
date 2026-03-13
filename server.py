@@ -890,6 +890,29 @@ def admin_resend_order_confirmation(oid):
 
 # ──────── Check-In / Scanner ────────
 
+@app.route('/api/admin/checkin/guestlist', methods=['GET'])
+@verify_admin
+def admin_checkin_guestlist():
+    """Full guest list with check-in status for the scanner page."""
+    orders = query_db(
+        '''SELECT o.id, o.order_number, o.email, o.name, o.total_cents,
+                  o.checked_in, o.checked_in_at, o.created_at
+           FROM orders o
+           WHERE o.status = 'completed'
+           ORDER BY o.name ASC'''
+    )
+    for o in orders:
+        o['items'] = query_db(
+            'SELECT tier_name, qty FROM order_items WHERE order_id = %s ORDER BY id',
+            (o['id'],)
+        )
+        for k in ['created_at', 'checked_in_at']:
+            if o.get(k):
+                o[k] = o[k].isoformat()
+    total = len(orders)
+    checked_in = sum(1 for o in orders if o.get('checked_in'))
+    return jsonify({'orders': orders, 'total': total, 'checked_in': checked_in, 'remaining': total - checked_in})
+
 @app.route('/api/admin/checkin/lookup', methods=['GET'])
 @verify_admin
 def admin_checkin_lookup():
