@@ -241,6 +241,12 @@
         if (!v.is_admin) { document.getElementById('scannerDenied').style.display = 'block'; return; }
         document.getElementById('scannerAuth').style.display = 'block';
         document.getElementById('searchInput').focus();
+        // Auth confirmed — safe to load guest list now
+        window.loadGuestList();
+        _guestRefreshTimer = setInterval(() => window.loadGuestList(), 60000);
+        // Load guest list only after auth is confirmed
+        window.loadGuestList();
+        _guestRefreshTimer = setInterval(() => window.loadGuestList(), 60000);
       } catch (e) {
         document.getElementById('scannerDenied').style.display = 'block';
       }
@@ -479,7 +485,6 @@
     };
 
     // Load on mount, then auto-refresh every 60s
-    loadGuestList();
-    _guestRefreshTimer = setInterval(() => loadGuestList(), 60000);
+    // (actual call is inside onAuthStateChanged after auth confirmed)
   </script>
 </body></html>
