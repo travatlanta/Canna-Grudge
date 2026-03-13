@@ -1051,24 +1051,28 @@
       <button class="modal-close" onclick="closeModal('purchaseLinkModal')">&times;</button>
       <h3>Create New Order</h3>
       <form id="purchaseLinkForm">
+        <input type="hidden" id="plTierId">
+        <input type="hidden" id="plAddonTierId">
         <div class="form-group"><label class="label">Customer Name</label><input class="input" type="text" id="plName" placeholder="e.g. John Smith"></div>
         <div class="form-group"><label class="label">Email</label><input class="input" type="email" id="plEmail" required></div>
-        <div class="form-group"><label class="label">Ticket Tier</label><select class="input" id="plTier" required></select></div>
-        <div class="form-row">
-          <div class="form-group"><label class="label">Quantity</label><input class="input" type="number" min="1" value="1" id="plQty"></div>
-          <div class="form-group"><label class="label">Expires In (days)</label><input class="input" type="number" min="1" value="7" id="plExpires"></div>
-        </div>
-        <div style="border-top:1px solid var(--cg-border);margin:16px 0 12px;padding-top:14px;">
-          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:600;color:var(--cg-text-secondary);"><input type="checkbox" id="plAddonCheck" style="width:auto;accent-color:var(--cg-gold);"> Add Early Entry Add-On</label>
-          <div id="plAddonRow" style="display:none;margin-top:12px;">
-            <div class="form-row">
-              <div class="form-group"><label class="label">Add-On Tier</label><select class="input" id="plAddonTier"></select></div>
-              <div class="form-group"><label class="label">Qty</label><input class="input" type="number" min="1" value="1" id="plAddonQty"></div>
+        <div style="border:1px solid var(--cg-border);border-radius:10px;overflow:hidden;margin:4px 0 16px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--cg-border);">
+            <div>
+              <p style="margin:0;font-size:14px;font-weight:700;color:var(--cg-text);" id="plTierLabel">Regular Entry</p>
+              <p style="margin:3px 0 0;font-size:12px;color:var(--cg-text-muted);" id="plTierPrice"></p>
             </div>
-            <p style="font-size:12px;color:var(--cg-text-muted);margin:2px 0 0;">Add-on requires a matching regular ticket purchase. Customer will receive a separate checkout link for this add-on.</p>
+            <input class="input" type="number" min="0" value="1" id="plQty" style="width:80px;text-align:center;">
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;">
+            <div>
+              <p style="margin:0;font-size:14px;font-weight:700;color:var(--cg-text);" id="plAddonLabel">Early Entry Add-On</p>
+              <p style="margin:3px 0 0;font-size:12px;color:var(--cg-text-muted);" id="plAddonPrice"></p>
+              <p style="margin:3px 0 0;font-size:11px;color:var(--cg-text-muted);">Requires a Regular Entry ticket</p>
+            </div>
+            <input class="input" type="number" min="0" value="0" id="plAddonQty" style="width:80px;text-align:center;">
           </div>
         </div>
-        <div class="form-group"><label class="label">Promo Code (optional)</label><input class="input" id="plPromo"></div>
+        <div class="form-group"><label class="label">Expires In (days)</label><input class="input" type="number" min="1" value="7" id="plExpires"></div>
         <div id="plResult" style="margin-top:16px;"></div>
         <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:24px;">
           <button type="button" class="btn btn-ghost" onclick="closeModal('purchaseLinkModal')">Cancel</button>
@@ -2146,49 +2150,51 @@
     async function openPurchaseLinkModal() {
       $('purchaseLinkForm').reset();
       $('plResult').innerHTML = '';
-      $('plAddonRow').style.display = 'none';
-      $('plAddonCheck').checked = false;
-      const tierSelect = $('plTier');
-      const addonSelect = $('plAddonTier');
-      tierSelect.innerHTML = '<option value="">Loading...</option>';
-      addonSelect.innerHTML = '<option value="">Loading...</option>';
+      $('plQty').value = 1;
+      $('plAddonQty').value = 0;
+      $('plTierLabel').textContent = 'Regular Entry';
+      $('plTierPrice').textContent = '';
+      $('plAddonLabel').textContent = 'Early Entry Add-On';
+      $('plAddonPrice').textContent = '';
       openModal('purchaseLinkModal');
       try {
         const tiers = await apiFetch('/api/admin/tickets');
-        const opts = tiers.map(t => `<option value="${t.id}">${t.name} (${fmtMoney(t.price_cents)})</option>`).join('');
-        tierSelect.innerHTML = opts;
-        addonSelect.innerHTML = opts;
-      } catch (e) {
-        tierSelect.innerHTML = '<option value="">Failed to load</option>';
-        addonSelect.innerHTML = '<option value="">Failed to load</option>';
-      }
+        const mainTier = tiers.find(t => !/(early|add.?on)/i.test(t.name)) || tiers[0];
+        const addonTier = tiers.find(t => /(early|add.?on)/i.test(t.name));
+        if (mainTier) {
+          $('plTierId').value = mainTier.id;
+          $('plTierLabel').textContent = mainTier.name;
+          $('plTierPrice').textContent = fmtMoney(mainTier.price_cents) + ' each';
+        }
+        if (addonTier) {
+          $('plAddonTierId').value = addonTier.id;
+          $('plAddonLabel').textContent = addonTier.name;
+          $('plAddonPrice').textContent = fmtMoney(addonTier.price_cents) + ' each';
+        }
+      } catch(e) { /* tiers failed, continue anyway */ }
     }
     $('addPurchaseLinkBtn').addEventListener('click', openPurchaseLinkModal);
     $('orderSendPaymentLinkBtn').addEventListener('click', openPurchaseLinkModal);
 
-    $('plAddonCheck').addEventListener('change', function() {
-      $('plAddonRow').style.display = this.checked ? '' : 'none';
-      if (this.checked) $('plAddonQty').value = $('plQty').value || 1;
-    });
-    $('plQty').addEventListener('input', function() {
-      if ($('plAddonCheck').checked) $('plAddonQty').value = this.value;
-    });
-
     $('purchaseLinkForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = $('plEmail').value;
-      const hasAddon = $('plAddonCheck').checked && $('plAddonTier').value;
+      const mainQty = parseInt($('plQty').value) || 0;
+      const addonQty = parseInt($('plAddonQty').value) || 0;
+      if (mainQty < 1) {
+        $('plResult').innerHTML = '<div class="msg msg-error">Enter at least 1 Regular Entry ticket.</div>';
+        return;
+      }
       const body = {
         name: $('plName').value.trim() || null,
         email,
-        tier_id: parseInt($('plTier').value),
-        qty: parseInt($('plQty').value) || 1,
-        promo_code: $('plPromo').value || null,
+        tier_id: parseInt($('plTierId').value),
+        qty: mainQty,
         expires_days: parseInt($('plExpires').value) || 7,
-        ...(hasAddon && {
-          addon_tier_id: parseInt($('plAddonTier').value),
-          addon_qty: parseInt($('plAddonQty').value) || 1
-        })
+        ...(addonQty > 0 && $('plAddonTierId').value ? {
+          addon_tier_id: parseInt($('plAddonTierId').value),
+          addon_qty: addonQty
+        } : {})
       };
       try {
         const res = await apiFetch('/api/admin/purchase-links', { method: 'POST', body: JSON.stringify(body) });
