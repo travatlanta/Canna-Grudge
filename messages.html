@@ -30,11 +30,6 @@
   <main class="container">
     <div class="card" data-animate style="max-width:720px;margin:24px auto;padding:16px;">
       <h2 style="margin-top:0;margin-bottom:12px;">Messages</h2>
-      <nav id="messageTabs" class="msg-tabs">
-        <button class="msg-tab" data-tab="inbox">Inbox</button>
-        <button class="msg-tab" data-tab="sent">Sent</button>
-        <button class="msg-tab" data-tab="trash">Trash</button>
-      </nav>
       <div id="messagesList" style="margin-bottom:16px;">
         <p class="muted">No messages yet.</p>
       </div>
@@ -47,104 +42,55 @@
   </main>
   <script type="module">
     const messagesList = document.getElementById('messagesList');
-    const messageTabs = document.getElementById('messageTabs');
     const messageForm = document.getElementById('messageForm');
     const messageInput = document.getElementById('messageInput');
+    const base = window.CG_API_BASE || '';
 
-    // Helper to get messages by category
-    function getMessages(type) {
-      const key = 'user' + type.charAt(0).toUpperCase() + type.slice(1) + 'Messages';
-      return JSON.parse(localStorage.getItem(key) || '[]');
-    }
-    // Helper to save messages by category
-    function saveMessages(type, msgs) {
-      const key = 'user' + type.charAt(0).toUpperCase() + type.slice(1) + 'Messages';
-      localStorage.setItem(key, JSON.stringify(msgs));
-    }
-    // Load messages for a given tab
-    function loadMessages(tab) {
-      const msgs = getMessages(tab);
-      messagesList.innerHTML = '';
-      if (msgs.length === 0) {
-        messagesList.innerHTML = '<p class="muted">No messages in ' + tab + '.</p>';
+    function loadMessages() {
+      messagesList.innerHTML = '<p class="muted">Loading...</p>';
+      // Show previously sent messages from localStorage as a simple log
+      const sent = JSON.parse(localStorage.getItem('cg_sent_messages') || '[]');
+      if (!sent.length) {
+        messagesList.innerHTML = '<p class="muted">No messages sent yet. Use the form below to contact us.</p>';
         return;
       }
-      // Show newest first
-      msgs.slice().reverse().forEach((msg, index) => {
+      messagesList.innerHTML = '';
+      sent.slice().reverse().forEach(function(msg) {
         const div = document.createElement('div');
         div.className = 'msg-card';
-        div.innerHTML = '<div style="font-weight:600;margin-bottom:4px;color:var(--cg-text-strong)">' + (msg.subject || 'Message') + '</div>' +
-                        '<div class="muted" style="font-size:12px;margin-bottom:4px;">' + msg.timestamp + '</div>' +
-                        '<div style="margin-bottom:8px;color:var(--cg-text)">' + msg.body + '</div>';
-        // Action buttons container
-        const actions = document.createElement('div');
-        actions.style.textAlign = 'right';
-        // In trash tab, allow restore
-        if (tab === 'trash') {
-          const restoreBtn = document.createElement('button');
-          restoreBtn.className = 'msg-action';
-          restoreBtn.textContent = 'Restore';
-          restoreBtn.onclick = () => {
-            const trash = getMessages('trash');
-            const idx = trash.length - 1 - index;
-            const [restored] = trash.splice(idx, 1);
-            saveMessages('trash', trash);
-            const inbox = getMessages('inbox');
-            inbox.push(restored);
-            saveMessages('inbox', inbox);
-            loadMessages('trash');
-          };
-          actions.appendChild(restoreBtn);
-        } else {
-          // In inbox or sent, allow delete to trash
-          const deleteBtn = document.createElement('button');
-          deleteBtn.className = 'msg-action';
-          deleteBtn.textContent = 'Delete';
-          deleteBtn.onclick = () => {
-            const list = getMessages(tab);
-            const idx = list.length - 1 - index;
-            const [deleted] = list.splice(idx, 1);
-            saveMessages(tab, list);
-            const trash = getMessages('trash');
-            trash.push(deleted);
-            saveMessages('trash', trash);
-            loadMessages(tab);
-          };
-          actions.appendChild(deleteBtn);
-        }
-        div.appendChild(actions);
+        div.innerHTML = '<div style="font-weight:600;margin-bottom:4px;color:var(--cg-text-strong)">Message to Admin</div>'
+          + '<div class="muted" style="font-size:12px;margin-bottom:4px;">' + msg.timestamp + '</div>'
+          + '<div style="margin-bottom:8px;color:var(--cg-text)">' + (msg.body || '').replace(/</g, '&lt;').replace(/\n/g, '<br>') + '</div>'
+          + '<div style="font-size:11px;color:var(--cg-accent);">✓ Sent</div>';
         messagesList.appendChild(div);
       });
     }
-    // Tab switching
-    messageTabs.addEventListener('click', (e) => {
-      if (e.target.tagName === 'BUTTON') {
-        const tab = e.target.getAttribute('data-tab');
-        Array.from(messageTabs.children).forEach(btn => btn.classList.remove('active'));
-        e.target.classList.add('active');
-        loadMessages(tab);
-      }
-    });
-    // Initialize default tab
-    const defaultTabBtn = messageTabs.querySelector('button[data-tab="inbox"]');
-    if (defaultTabBtn) {
-      defaultTabBtn.classList.add('active');
-      loadMessages('inbox');
-    }
-    // Handle message sending -> save to sent messages
-    messageForm.addEventListener('submit', (e) => {
+
+    loadMessages();
+
+    messageForm.addEventListener('submit', function(e) {
       e.preventDefault();
       const body = messageInput.value.trim();
       if (!body) return;
-      const sent = getMessages('sent');
-      sent.push({ subject: 'Message to Admin', body: body, timestamp: new Date().toLocaleString() });
-      saveMessages('sent', sent);
-      messageInput.value = '';
-      alert('Your message has been sent!');
-      // reload current tab
-      const activeBtn = messageTabs.querySelector('button.active');
-      const currentTab = activeBtn ? activeBtn.getAttribute('data-tab') : 'inbox';
-      loadMessages(currentTab);
+      const btn = messageForm.querySelector('.send-btn');
+      btn.disabled = true; btn.textContent = 'Sending...';
+      fetch(base + '/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: body })
+      }).then(function(r) { return r.json(); }).then(function(d) {
+        if (d.error) throw new Error(d.error);
+        const sent = JSON.parse(localStorage.getItem('cg_sent_messages') || '[]');
+        sent.push({ body: body, timestamp: new Date().toLocaleString() });
+        localStorage.setItem('cg_sent_messages', JSON.stringify(sent));
+        messageInput.value = '';
+        btn.disabled = false; btn.textContent = 'Send Message';
+        alert('Your message has been sent!');
+        loadMessages();
+      }).catch(function(err) {
+        btn.disabled = false; btn.textContent = 'Send Message';
+        alert('Failed: ' + err.message);
+      });
     });
   </script>
   <footer class="footer">

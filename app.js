@@ -304,6 +304,65 @@ document.addEventListener('DOMContentLoaded', () => {
   // ─── Comprehensive Analytics Tracker ──────────────────────
   (function(){
     if (location.pathname.startsWith('/admin') || location.pathname.startsWith('/scanner')) return;
+
+    // ── Floating Chat Bubble ──
+    (function buildChatBubble() {
+      if (location.pathname === '/messages') return; // already on messages page
+      var bubble = document.createElement('div');
+      bubble.id = 'cg-chat-bubble';
+      bubble.innerHTML = '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#050505" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>';
+      bubble.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:9999;width:56px;height:56px;border-radius:50%;background:#d4a843;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 20px rgba(212,168,67,.35);transition:transform .2s ease,box-shadow .2s ease;';
+      bubble.onmouseenter = function(){ bubble.style.transform='scale(1.1)'; bubble.style.boxShadow='0 6px 28px rgba(212,168,67,.5)'; };
+      bubble.onmouseleave = function(){ bubble.style.transform='scale(1)'; bubble.style.boxShadow='0 4px 20px rgba(212,168,67,.35)'; };
+
+      var panel = document.createElement('div');
+      panel.id = 'cg-chat-panel';
+      panel.style.cssText = 'position:fixed;bottom:92px;right:24px;z-index:9998;width:360px;max-width:calc(100vw - 32px);max-height:480px;background:#111;border:1px solid rgba(255,255,255,.08);border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,.5);display:none;flex-direction:column;overflow:hidden;';
+      panel.innerHTML = '<div style="padding:16px 18px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:space-between;">'
+        + '<div><strong style="font-size:15px;color:#d4a843;">Contact Us</strong><p style="margin:2px 0 0;font-size:12px;color:#888;">We usually respond within a few hours</p></div>'
+        + '<button id="cg-chat-close" style="background:none;border:none;color:#888;cursor:pointer;font-size:20px;padding:4px;">&times;</button></div>'
+        + '<form id="cg-chat-form" style="padding:16px 18px;display:flex;flex-direction:column;gap:10px;">'
+        + '<input id="cg-chat-name" placeholder="Your name" style="padding:10px 12px;background:#1a1a1a;color:#fff;border:1px solid rgba(255,255,255,.08);border-radius:8px;font-size:14px;font-family:inherit;outline:none;transition:border-color .2s;" onfocus="this.style.borderColor=\'#d4a843\'" onblur="this.style.borderColor=\'rgba(255,255,255,.08)\'">'
+        + '<input id="cg-chat-email" type="email" placeholder="Your email (for reply)" style="padding:10px 12px;background:#1a1a1a;color:#fff;border:1px solid rgba(255,255,255,.08);border-radius:8px;font-size:14px;font-family:inherit;outline:none;transition:border-color .2s;" onfocus="this.style.borderColor=\'#d4a843\'" onblur="this.style.borderColor=\'rgba(255,255,255,.08)\'">'
+        + '<textarea id="cg-chat-msg" rows="4" required placeholder="How can we help?" style="padding:10px 12px;background:#1a1a1a;color:#fff;border:1px solid rgba(255,255,255,.08);border-radius:8px;font-size:14px;font-family:inherit;resize:vertical;outline:none;transition:border-color .2s;" onfocus="this.style.borderColor=\'#d4a843\'" onblur="this.style.borderColor=\'rgba(255,255,255,.08)\'"></textarea>'
+        + '<button type="submit" style="padding:12px;background:#d4a843;color:#050505;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;transition:opacity .2s;" onmouseenter="this.style.opacity=\'0.85\'" onmouseleave="this.style.opacity=\'1\'">Send Message</button>'
+        + '</form>';
+      document.body.appendChild(panel);
+      document.body.appendChild(bubble);
+
+      var open = false;
+      bubble.addEventListener('click', function() {
+        open = !open;
+        panel.style.display = open ? 'flex' : 'none';
+      });
+      document.getElementById('cg-chat-close').addEventListener('click', function() {
+        open = false;
+        panel.style.display = 'none';
+      });
+
+      document.getElementById('cg-chat-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        var btn = this.querySelector('button[type="submit"]');
+        btn.disabled = true; btn.textContent = 'Sending...';
+        var base = window.CG_API_BASE || '';
+        fetch(base + '/api/contact', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: document.getElementById('cg-chat-name').value.trim(),
+            email: document.getElementById('cg-chat-email').value.trim(),
+            message: document.getElementById('cg-chat-msg').value.trim()
+          })
+        }).then(function(r){ return r.json(); }).then(function(d) {
+          if (d.error) throw new Error(d.error);
+          panel.querySelector('form').innerHTML = '<div style="text-align:center;padding:32px 0;"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg><p style="margin-top:12px;font-size:15px;font-weight:600;color:#fff;">Message Sent!</p><p style="color:#888;font-size:13px;">We\'ll get back to you soon.</p></div>';
+        }).catch(function(err) {
+          btn.disabled = false; btn.textContent = 'Send Message';
+          alert('Failed to send: ' + err.message);
+        });
+      });
+    })();
+
     var sid = sessionStorage.getItem('cg_sid');
     if (!sid) { sid = Math.random().toString(36).slice(2) + Date.now().toString(36); sessionStorage.setItem('cg_sid', sid); }
     var params = new URLSearchParams(location.search);

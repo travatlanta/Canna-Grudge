@@ -201,6 +201,17 @@ def run_migrations():
         "ALTER TABLE order_items ADD COLUMN IF NOT EXISTS product_id INTEGER",
         "ALTER TABLE order_items ADD COLUMN IF NOT EXISTS quantity INTEGER",
         "ALTER TABLE order_items ADD COLUMN IF NOT EXISTS unit_price INTEGER",
+        # --- contact_messages table ---
+        """CREATE TABLE IF NOT EXISTS contact_messages (
+            id SERIAL PRIMARY KEY,
+            name TEXT DEFAULT '',
+            email TEXT DEFAULT '',
+            message TEXT NOT NULL,
+            status TEXT DEFAULT 'unread',
+            admin_reply TEXT DEFAULT '',
+            replied_at TIMESTAMPTZ,
+            created_at TIMESTAMPTZ DEFAULT NOW()
+        )""",
     ]
     for sql in migrations:
         try:
@@ -1975,3 +1986,106 @@ def admin_active_sessions():
         })
 
     return jsonify(list(session_map.values()))
+
+# ── Contact Messages (public + admin) ──────────────────────────
+
+@app.route('/api/contact', methods=['POST'])
+def submit_contact_message():
+    data = request.get_json() or {}
+    name = (data.get('name') or '').strip()[:200]
+    email = (data.get('email') or '').strip()[:200]
+    message = (data.get('message') or '').strip()
+    if not message or len(message) < 2:
+        return jsonify({'error': 'Message is required'}), 400
+    if len(message) > 5000:
+        return jsonify({'error': 'Message too long'}), 400
+
+    row = execute_db(
+        'INSERT INTO contact_messages (name, email, message) VALUES (%s, %s, %s) RETURNING id, created_at',
+        (name, email, message)
+    )
+
+    # Send email notification to admin
+    try:
+        resend.Emails.send({
+            'from': RESEND_FROM_EMAIL,
+            'to': ['dominique@diablocanna.co'],
+            'subject': f'New Contact Message from {name or "Anonymous"}',
+            'html': f'''<div style="font-family:sans-serif;max-width:600px;margin:0 auto;background:#111;color:#fff;padding:32px;border-radius:12px;">
+                <h2 style="color:#d4a843;margin-top:0;">New Contact Message</h2>
+                <p><strong>From:</strong> {name or "Anonymous"}</p>
+                <p><strong>Email:</strong> {email or "Not provided"}</p>
+                <p><strong>Message:</strong></p>
+                <div style="background:#1a1a1a;padding:16px;border-radius:8px;border:1px solid #333;white-space:pre-wrap;">{message}</div>
+                <p style="margin-top:24px;color:#888;font-size:13px;">Reply from the <a href="https://cannagrudge.com/admin" style="color:#d4a843;">Admin Dashboard</a> inbox.</p>
+            </div>'''
+        })
+    except Exception as e:
+        print(f"[CONTACT EMAIL] {e}")
+
+    return jsonify({'success': True, 'id': row['id'] if row else None})
+
+@app.route('/api/admin/messages', methods=['GET'])
+@verify_admin
+def admin_get_messages():
+    status = request.args.get('status', '')
+    if status:
+        msgs = query_db('SELECT * FROM contact_messages WHERE status = %s ORDER BY created_at DESC', (status,))
+    else:
+        msgs = query_db('SELECT * FROM contact_messages ORDER BY created_at DESC')
+    for m in msgs:
+        for k in ['created_at', 'replied_at']:
+            if m.get(k) and hasattr(m[k], 'isoformat'):
+                m[k] = m[k].isoformat()
+    return jsonify(msgs)
+
+@app.route('/api/admin/messages/<int:mid>/read', methods=['PUT'])
+@verify_admin
+def admin_mark_message_read(mid):
+    execute_db('UPDATE contact_messages SET status = %s WHERE id = %s', ('read', mid))
+    return jsonify({'success': True})
+
+@app.route('/api/admin/messages/<int:mid>/reply', methods=['POST'])
+@verify_admin
+def admin_reply_message(mid):
+    data = request.get_json() or {}
+    reply = (data.get('reply') or '').strip()
+    if not reply:
+        return jsonify({'error': 'Reply text required'}), 400
+
+    msg = query_db('SELECT * FROM contact_messages WHERE id = %s', (mid,), one=True)
+    if not msg:
+        return jsonify({'error': 'Message not found'}), 404
+
+    execute_db(
+        'UPDATE contact_messages SET admin_reply = %s, replied_at = NOW(), status = %s WHERE id = %s',
+        (reply, 'replied', mid)
+    )
+
+    # Send reply email to the customer if they provided an email
+    customer_email = (msg.get('email') or '').strip()
+    if customer_email:
+        try:
+            resend.Emails.send({
+                'from': RESEND_FROM_EMAIL,
+                'to': [customer_email],
+                'subject': 'Re: Your Message to CannaGrudge',
+                'html': f'''<div style="font-family:sans-serif;max-width:600px;margin:0 auto;background:#111;color:#fff;padding:32px;border-radius:12px;">
+                    <h2 style="color:#d4a843;margin-top:0;">CannaGrudge</h2>
+                    <p>Hi {msg.get("name") or "there"},</p>
+                    <div style="background:#1a1a1a;padding:16px;border-radius:8px;border:1px solid #333;white-space:pre-wrap;">{reply}</div>
+                    <hr style="border:none;border-top:1px solid #333;margin:24px 0;">
+                    <p style="color:#888;font-size:13px;">Your original message:</p>
+                    <div style="background:#1a1a1a;padding:12px;border-radius:8px;border:1px solid #222;color:#999;font-size:13px;white-space:pre-wrap;">{msg.get("message","")}</div>
+                </div>'''
+            })
+        except Exception as e:
+            print(f"[REPLY EMAIL] {e}")
+
+    return jsonify({'success': True})
+
+@app.route('/api/admin/messages/<int:mid>', methods=['DELETE'])
+@verify_admin
+def admin_delete_message(mid):
+    execute_db('DELETE FROM contact_messages WHERE id = %s', (mid,))
+    return jsonify({'success': True})

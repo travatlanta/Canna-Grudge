@@ -175,3 +175,17 @@ CREATE TABLE IF NOT EXISTS activity_log (
 CREATE INDEX IF NOT EXISTS idx_activity_log_created ON activity_log(created_at);
 CREATE INDEX IF NOT EXISTS idx_activity_log_event ON activity_log(event_type);
 CREATE INDEX IF NOT EXISTS idx_activity_log_category ON activity_log(category);
+
+CREATE TABLE IF NOT EXISTS contact_messages (
+    id SERIAL PRIMARY KEY,
+    name TEXT DEFAULT '',
+    email TEXT DEFAULT '',
+    message TEXT NOT NULL,
+    status TEXT DEFAULT 'unread',
+    admin_reply TEXT DEFAULT '',
+    replied_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_contact_messages_status ON contact_messages(status);
+CREATE INDEX IF NOT EXISTS idx_contact_messages_created ON contact_messages(created_at);
