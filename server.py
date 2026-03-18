@@ -1,4 +1,5 @@
 import os
+import re
 import json
 import uuid
 import secrets
@@ -326,6 +327,16 @@ def health_check():
     status = 'ok' if db_ok else 'degraded'
     code = 200 if db_ok else 503
     return jsonify({'status': status, 'db': db_ok, 'service': 'cannagrudge'}), code
+
+@app.route('/api/deck-pages')
+def deck_pages():
+    """Return a sorted list of deck page image filenames from assets/deck/."""
+    deck_dir = os.path.join(_ROOT, 'assets', 'deck')
+    if not os.path.isdir(deck_dir):
+        return jsonify([])
+    files = [f for f in os.listdir(deck_dir) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.webp'))]
+    files.sort(key=lambda f: int(re.sub(r'\D', '', os.path.splitext(f)[0]) or '0'))
+    return jsonify(files)
 
 @app.route('/')
 def index():

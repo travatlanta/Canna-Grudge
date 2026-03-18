@@ -177,26 +177,12 @@
     <p data-animate>Swipe or use the controls to view the CannaGrudge sponsorship deck one page at a time.</p>
 
     <div class="deck-slider" id="deckSlider" aria-label="Sponsorship deck pages" data-animate>
-      <div class="deck-slide"><img src="assets/deck/1.png" alt="Deck page 1" loading="lazy"></div>
-      <div class="deck-slide"><img src="assets/deck/2.png" alt="Deck page 2" loading="lazy"></div>
-      <div class="deck-slide"><img src="assets/deck/3.png" alt="Deck page 3" loading="lazy"></div>
-      <div class="deck-slide"><img src="assets/deck/4.png" alt="Deck page 4" loading="lazy"></div>
-      <div class="deck-slide"><img src="assets/deck/5.png" alt="Deck page 5" loading="lazy"></div>
-      <div class="deck-slide"><img src="assets/deck/6.png" alt="Deck page 6" loading="lazy"></div>
-      <div class="deck-slide"><img src="assets/deck/7.png" alt="Deck page 7" loading="lazy"></div>
-      <div class="deck-slide"><img src="assets/deck/8.png" alt="Deck page 8" loading="lazy"></div>
-      <div class="deck-slide"><img src="assets/deck/9.png" alt="Deck page 9" loading="lazy"></div>
-      <div class="deck-slide"><img src="assets/deck/10.png" alt="Deck page 10" loading="lazy"></div>
-      <div class="deck-slide"><img src="assets/deck/11.png" alt="Deck page 11" loading="lazy"></div>
-      <div class="deck-slide"><img src="assets/deck/12.png" alt="Deck page 12" loading="lazy"></div>
-      <div class="deck-slide"><img src="assets/deck/13.png" alt="Deck page 13" loading="lazy"></div>
-      <div class="deck-slide"><img src="assets/deck/14.png" alt="Deck page 14" loading="lazy"></div>
-      <div class="deck-slide"><img src="assets/deck/15.png" alt="Deck page 15" loading="lazy"></div>
+      <!-- slides loaded dynamically -->
     </div>
 
     <div class="deck-controls" data-animate>
       <button type="button" class="deck-btn" id="prevSlide">◀ Prev</button>
-      <span class="slide-counter" id="slideCounter">1 / 15</span>
+      <span class="slide-counter" id="slideCounter">Loading…</span>
       <button type="button" class="deck-btn" id="nextSlide">Next ▶</button>
     </div>
 
@@ -257,9 +243,42 @@
 
 
   <script>
-  (function() {
+  // Deck page list — fetched once, shared by slider + PDF
+  window._deckPages = null;
+  async function loadDeckPages() {
+    if (window._deckPages) return window._deckPages;
+    try {
+      const res = await fetch('/api/deck-pages');
+      if (!res.ok) throw new Error('Failed to load deck pages');
+      window._deckPages = await res.json();
+    } catch {
+      // fallback: probe sequentially until a 404
+      const pages = [];
+      for (let i = 1; ; i++) {
+        const r = await fetch('assets/deck/' + i + '.png', { method: 'HEAD' });
+        if (!r.ok) break;
+        pages.push(i + '.png');
+      }
+      window._deckPages = pages;
+    }
+    return window._deckPages;
+  }
+
+  (async function() {
     const slider = document.getElementById('deckSlider');
     if (!slider) return;
+    const pages = await loadDeckPages();
+    // Build slide elements
+    pages.forEach((file, i) => {
+      const div = document.createElement('div');
+      div.className = 'deck-slide';
+      const img = document.createElement('img');
+      img.src = 'assets/deck/' + encodeURIComponent(file);
+      img.alt = 'Deck page ' + (i + 1);
+      img.loading = 'lazy';
+      div.appendChild(img);
+      slider.appendChild(div);
+    });
     const slides = Array.from(slider.querySelectorAll('.deck-slide'));
     const prev = document.getElementById('prevSlide');
     const next = document.getElementById('nextSlide');
@@ -355,12 +374,9 @@
       }
       const { jsPDF } = window.jspdf;
       const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-      const pages = [
-        '1.png','2.png','3.png','4.png','5.png','6.png','7.png',
-        '8.png','9.png','10.png','11.png','12.png','13.png','14.png','15.png'
-      ];
+      const pages = await loadDeckPages();
       for (let i = 0; i < pages.length; i++) {
-        const path = `assets/deck/${pages[i]}`;
+        const path = `assets/deck/${encodeURIComponent(pages[i])}`;
         try {
           const resp = await fetch(path);
           if (!resp.ok) throw new Error('Image not found');
