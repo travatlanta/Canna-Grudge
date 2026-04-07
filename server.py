@@ -989,6 +989,9 @@ def admin_get_order_detail(oid):
     if order.get('updated_at') and hasattr(order['updated_at'], 'isoformat'):
         order['updated_at'] = order['updated_at'].isoformat()
     order['items'] = items or []
+    # Ensure failure_reason is always present (empty string if not failed)
+    if 'failure_reason' not in order:
+        order['failure_reason'] = ''
     return jsonify(order)
 
 @app.route('/api/admin/orders/create-test', methods=['POST'])
@@ -1549,8 +1552,8 @@ def get_purchase_link(token):
 @app.route('/api/admin/stats', methods=['GET'])
 @verify_admin
 def admin_stats():
-    total_orders = query_db('SELECT COUNT(*) as cnt, COALESCE(SUM(total_cents), 0) as revenue FROM orders', one=True)
-    total_tickets = query_db('SELECT COALESCE(SUM(qty), 0) as cnt FROM order_items', one=True)
+    total_orders = query_db("SELECT COUNT(*) as cnt, COALESCE(SUM(total_cents), 0) as revenue FROM orders WHERE status = 'completed'", one=True)
+    total_tickets = query_db("SELECT COALESCE(SUM(oi.qty), 0) as cnt FROM order_items oi JOIN orders o ON o.id = oi.order_id WHERE o.status = 'completed'", one=True)
     tier_stats = query_db('SELECT name, sold, capacity FROM ticket_tiers WHERE active = TRUE ORDER BY sort_order')
     pending_sponsors = query_db("SELECT COUNT(*) as cnt FROM sponsor_requests WHERE status = 'pending'", one=True)
     pending_invoices = query_db("SELECT COUNT(*) as cnt, COALESCE(SUM(amount_cents), 0) as total FROM invoices WHERE status IN ('draft', 'sent')", one=True)

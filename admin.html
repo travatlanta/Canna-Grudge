@@ -1265,7 +1265,7 @@
     }
 
     function statusBadge(status) {
-      const cls = status === 'completed' || status === 'paid' || status === 'approved' ? 'badge-green' : status === 'refunded' || status === 'denied' ? 'badge-red' : 'badge-gold';
+      const cls = status === 'completed' || status === 'paid' || status === 'approved' ? 'badge-green' : status === 'refunded' || status === 'denied' || status === 'failed' ? 'badge-red' : 'badge-gold';
       return `<span class="badge ${cls}">${status}</span>`;
     }
 
@@ -1906,12 +1906,16 @@
         return `<tr><td style="padding:8px;border-bottom:1px solid var(--cg-border);">${i.tier_name || 'Ticket'}</td><td style="padding:8px;border-bottom:1px solid var(--cg-border);text-align:center;">${qty}</td><td style="padding:8px;border-bottom:1px solid var(--cg-border);text-align:right;">${fmtMoney(unit * qty)}</td></tr>`;
       }).join('') || '<tr><td colspan="3" style="padding:10px;color:var(--cg-text-muted);text-align:center;">No line items</td></tr>';
 
+      const failureReasonRow = order.status === 'failed' && order.failure_reason ? 
+        `<div><span style="color:var(--cg-text-muted);">Failure Reason</span><div style="color:#dc3545;font-weight:600;">${order.failure_reason}</div></div>` : '';
+
       return `
         <div class="form-row" style="grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
           <div><span style="color:var(--cg-text-muted);">Order ID</span><div style="color:var(--cg-text);font-weight:700;">${order.id}</div></div>
           <div><span style="color:var(--cg-text-muted);">Order Number</span><div style="color:var(--cg-text);font-weight:700;">${order.order_number || '—'}</div></div>
           <div><span style="color:var(--cg-text-muted);">Date</span><div>${fmtDateTime(order.created_at)}</div></div>
           <div><span style="color:var(--cg-text-muted);">Status</span><div>${statusBadge(order.status || 'pending')}</div></div>
+          ${failureReasonRow}
           <div><span style="color:var(--cg-text-muted);">Customer</span><div>${order.name || '—'}</div></div>
           <div><span style="color:var(--cg-text-muted);">Email</span><div>${order.email || '—'}</div></div>
           <div><span style="color:var(--cg-text-muted);">Promo</span><div>${order.promo_code || '—'}</div></div>
