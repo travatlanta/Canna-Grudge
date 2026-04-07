@@ -951,7 +951,8 @@ def admin_get_orders():
     cleanup_abandoned_orders()
     
     orders = query_db('''
-        SELECT o.id, o.order_number, o.email, o.name, o.created_at, o.status, o.failure_reason, o.total_amount, o.discount_cents,
+        SELECT o.id, o.order_number, o.email, o.name, o.created_at, o.status, o.failure_reason,
+               o.total_cents, o.total_amount, o.discount_cents, o.promo_code, o.billing_address,
                json_agg(json_build_object('tier_name', oi.tier_name, 'qty', oi.qty, 'unit_price_cents', oi.unit_price_cents)) as items
         FROM orders o LEFT JOIN order_items oi ON oi.order_id = o.id
         WHERE o.status IN ('completed', 'failed', 'pending')

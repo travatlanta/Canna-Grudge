@@ -1944,6 +1944,7 @@
       if (!data.length) { tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;color:var(--cg-text-muted);padding:32px;">No orders</td></tr>'; return; }
       tbody.innerHTML = data.map(o => {
         const items = (o.items || []).map(i => `${i.qty}x ${i.tier_name}`).join(', ');
+        const totalCents = Number(o.total_cents ?? o.total_amount ?? 0);
         return `<tr>
           <td style="color:var(--cg-text);font-weight:600;">${o.id}</td>
           <td>${fmtDateTime(o.created_at)}</td>
@@ -1951,7 +1952,7 @@
           <td>${o.email || '—'}</td>
           <td>${fmtBillingAddress(o.billing_address)}</td>
           <td>${items || '—'}</td>
-          <td>${fmtMoney(o.total_cents)}</td>
+          <td>${fmtMoney(totalCents)}</td>
           <td>${o.discount_cents ? fmtMoney(o.discount_cents) : '—'}</td>
           <td>${o.promo_code || '—'}</td>
           <td>${statusBadge(o.status)}</td>
