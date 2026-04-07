@@ -59,6 +59,8 @@ if not firebase_admin._apps:
 
 resend.api_key = os.environ.get('RESEND_API_KEY', '')
 RESEND_FROM_EMAIL = os.environ.get('RESEND_FROM_EMAIL', 'CannaGrudge <onboarding@resend.dev>')
+VENDOR_INQUIRY_EMAIL = os.environ.get('VENDOR_INQUIRY_EMAIL', 'dominique@diablocanna.co').strip()
+INBOX_NOTIFICATION_EMAIL = os.environ.get('INBOX_NOTIFICATION_EMAIL', 'dominique@diablocanna.co').strip()
 
 def get_db():
     conn = psycopg2.connect(DATABASE_URL)
@@ -89,6 +91,34 @@ def execute_db(sql, params=None):
     cur.close()
     conn.close()
     return result
+
+def _normalize_sale_percent(value):
+    try:
+        pct = int(value or 0)
+    except (TypeError, ValueError):
+        pct = 0
+    return max(0, min(pct, 95))
+
+def _is_ticket_sale_active(ticket, now=None):
+    now = now or datetime.now(timezone.utc)
+    sale_pct = _normalize_sale_percent(ticket.get('sale_percent'))
+    if sale_pct <= 0:
+        return False
+    starts = ticket.get('sale_start')
+    ends = ticket.get('sale_end')
+    if starts and now < starts:
+        return False
+    if ends and now > ends:
+        return False
+    return True
+
+def _ticket_effective_price_cents(ticket, now=None):
+    base = int(ticket.get('price_cents') or 0)
+    if not _is_ticket_sale_active(ticket, now=now):
+        return base
+    pct = _normalize_sale_percent(ticket.get('sale_percent'))
+    discounted = int(round(base * (100 - pct) / 100.0))
+    return max(0, discounted)
 
 def verify_admin(f):
     @wraps(f)
@@ -135,19 +165,46 @@ try:
 except Exception as e:
     print(f"[EMAIL SEED] {e}")
 
-def seed_ticket_tiers():
-    """Seed default ticket tiers if they don't exist"""
+def cleanup_abandoned_orders():
+    """Mark pending orders older than 1 hour as failed and decrement inventory."""
     try:
-        existing = query_db('SELECT COUNT(*) as cnt FROM ticket_tiers', one=True)
-        if existing and existing['cnt'] > 0:
-            return
+        # Find pending orders older than 1 hour
+        cutoff = datetime.now(timezone.utc) - timedelta(hours=1)
+        old_pending = query_db(
+            '''SELECT o.id, oi.ticket_tier_id, oi.qty FROM orders o
+               LEFT JOIN order_items oi ON oi.order_id = o.id
+               WHERE o.status = 'pending' AND o.created_at < %s''',
+            (cutoff,)
+        )
+        
+        if old_pending:
+            print(f"[CLEANUP] Marking {len(old_pending)} abandoned orders as failed...")
+            marked_orders = set()
+            for item in old_pending:
+                order_id = item['id']
+                # Mark order as failed (only once per order)
+                if order_id not in marked_orders:
+                    execute_db("UPDATE orders SET status='failed' WHERE id=%s", (order_id,))
+                    marked_orders.add(order_id)
+                # Decrement inventory for this item
+                if item['ticket_tier_id'] and item['qty']:
+                    execute_db('UPDATE ticket_tiers SET sold = GREATEST(0, sold - %s) WHERE id = %s', 
+                              (item['qty'], item['ticket_tier_id']))
+            print(f"[CLEANUP] Cleaned up {len(marked_orders)} abandoned orders")
+    except Exception as e:
+        print(f"[CLEANUP ERROR] {e}")
+
+def seed_ticket_tiers():
+    """Seed default ticket tiers, inserting if missing and always syncing features/description text."""
+    try:
+        cleanup_abandoned_orders()
         
         tiers = [
             {
                 'name': 'Regular Entry',
                 'price_cents': 4000,
                 'description': 'General admission ticket with full event access',
-                'features': 'Standing room access|Vendor marketplace|Games & activities area|Food & drink available|Live fight card + halftime entertainment',
+                'features': 'Standing room access|Vendor marketplace|Vendor games & trophy competition|Food & drink available|Live fight card + vendor games finals',
                 'capacity': 500,
                 'sort_order': 1,
                 'active': True
@@ -162,15 +219,23 @@ def seed_ticket_tiers():
                 'active': True
             }
         ]
-        
+
         for tier in tiers:
-            execute_db(
-                '''INSERT INTO ticket_tiers (name, price_cents, description, features, capacity, sort_order, active)
-                   VALUES (%s, %s, %s, %s, %s, %s, %s)''',
-                (tier['name'], tier['price_cents'], tier['description'], tier['features'], 
-                 tier['capacity'], tier['sort_order'], tier['active'])
-            )
-        print(f"[TICKET SEED] Created {len(tiers)} default ticket tiers")
+            existing = query_db('SELECT id FROM ticket_tiers WHERE name = %s', (tier['name'],), one=True)
+            if existing:
+                execute_db(
+                    '''UPDATE ticket_tiers SET description = %s, features = %s, sort_order = %s
+                       WHERE name = %s''',
+                    (tier['description'], tier['features'], tier['sort_order'], tier['name'])
+                )
+            else:
+                execute_db(
+                    '''INSERT INTO ticket_tiers (name, price_cents, description, features, capacity, sort_order, active)
+                       VALUES (%s, %s, %s, %s, %s, %s, %s)''',
+                    (tier['name'], tier['price_cents'], tier['description'], tier['features'],
+                     tier['capacity'], tier['sort_order'], tier['active'])
+                )
+        print(f"[TICKET SEED] Synced {len(tiers)} ticket tiers")
     except Exception as e:
         print(f"[TICKET SEED ERROR] {e}")
 
@@ -202,6 +267,8 @@ def run_migrations():
         "ALTER TABLE order_items ADD COLUMN IF NOT EXISTS product_id INTEGER",
         "ALTER TABLE order_items ADD COLUMN IF NOT EXISTS quantity INTEGER",
         "ALTER TABLE order_items ADD COLUMN IF NOT EXISTS unit_price INTEGER",
+        # --- ticket_tiers: add optional percentage sale support ---
+        "ALTER TABLE ticket_tiers ADD COLUMN IF NOT EXISTS sale_percent INTEGER DEFAULT 0",
         # --- contact_messages table ---
         """CREATE TABLE IF NOT EXISTS contact_messages (
             id SERIAL PRIMARY KEY,
@@ -403,10 +470,37 @@ def bootstrap_admin():
 
 @app.route('/api/tickets', methods=['GET'])
 def get_public_tickets():
-    tiers = query_db('SELECT id, name, price_cents, description, features, capacity, sold, active FROM ticket_tiers WHERE active = TRUE ORDER BY sort_order')
+    cleanup_abandoned_orders()
+    
+    tiers = query_db(
+        '''SELECT t.id, t.name, t.price_cents, t.description, t.features, t.capacity, t.active,
+                  t.sale_start, t.sale_end, t.sale_percent,
+                  COALESCE(SUM(CASE WHEN o.status='completed' THEN oi.qty ELSE 0 END), 0) as actual_sold
+           FROM ticket_tiers t
+           LEFT JOIN order_items oi ON oi.ticket_tier_id = t.id
+           LEFT JOIN orders o ON o.id = oi.order_id
+           WHERE t.active = TRUE
+           GROUP BY t.id
+           ORDER BY t.sort_order'''
+    )
+    now = datetime.now(timezone.utc)
     result = []
     for t in tiers:
+        base_price = int(t.get('price_cents') or 0)
+        effective_price = _ticket_effective_price_cents(t, now=now)
+        on_sale = effective_price < base_price
         t['features'] = t['features'].split('|') if t['features'] else []
+        if t.get('sale_start'):
+            t['sale_start'] = t['sale_start'].isoformat()
+        if t.get('sale_end'):
+            t['sale_end'] = t['sale_end'].isoformat()
+        t['sale_percent'] = _normalize_sale_percent(t.get('sale_percent'))
+        t['effective_price_cents'] = effective_price
+        t['is_on_sale'] = on_sale
+        t['savings_cents'] = max(0, base_price - effective_price)
+        # Use actual sold count from completed orders only
+        t['sold'] = int(t.get('actual_sold') or 0)
+        del t['actual_sold']
         result.append(t)
     return jsonify(result)
 
@@ -490,7 +584,7 @@ def create_paypal_order_route():
         if not tier and not fallback:
             return jsonify({'error': 'Invalid ticket tier'}), 400
         if tier:
-            price, tier_name, tier_pk = tier['price_cents'], tier['name'], tier['id']
+            price, tier_name, tier_pk = _ticket_effective_price_cents(tier), tier['name'], tier['id']
         else:
             price, tier_name, tier_pk = fallback['price_cents'], fallback['name'], None
         qty = max(1, min(int(item.get('qty', 1)), 50))
@@ -553,8 +647,17 @@ def create_paypal_order_route():
         )
         pp_resp.raise_for_status()
         pp_order = pp_resp.json()
-    except Exception:
-        execute_db("UPDATE orders SET status='failed' WHERE id=%s", (order['id'],))
+    except Exception as e:
+        error_msg = str(e)
+        try:
+            error_details = _req.post(f'{PAYPAL_BASE_URL}/v2/checkout/orders').json()
+            if 'message' in error_details:
+                error_msg = error_details['message']
+            elif 'details' in error_details and error_details['details']:
+                error_msg = error_details['details'][0].get('issue', str(e))
+        except:
+            pass
+        execute_db("UPDATE orders SET status='failed', failure_reason=%s WHERE id=%s", (error_msg, order['id']))
         return jsonify({'error': 'Failed to create PayPal order. Please try again.'}), 500
 
     execute_db('UPDATE orders SET square_payment_id=%s WHERE id=%s', (pp_order['id'], order['id']))
@@ -584,12 +687,30 @@ def capture_paypal_order_route():
         )
         cap_resp.raise_for_status()
         cap_data = cap_resp.json()
-    except Exception:
-        execute_db("UPDATE orders SET status='failed' WHERE id=%s", (internal_order_id,))
+    except Exception as e:
+        error_msg = str(e)
+        try:
+            resp_json = cap_resp.json() if 'cap_resp' in locals() else {}
+            if 'message' in resp_json:
+                error_msg = resp_json['message']
+            elif 'details' in resp_json and resp_json['details']:
+                error_msg = resp_json['details'][0].get('issue', str(e))
+        except:
+            pass
+        execute_db("UPDATE orders SET status='failed', failure_reason=%s WHERE id=%s", (error_msg, internal_order_id))
         return jsonify({'error': 'PayPal capture failed. Please try again.'}), 400
 
     if cap_data.get('status') != 'COMPLETED':
-        execute_db("UPDATE orders SET status='failed' WHERE id=%s", (internal_order_id,))
+        error_msg = 'Payment not completed by PayPal'
+        if 'purchase_units' in cap_data and cap_data['purchase_units']:
+            pu = cap_data['purchase_units'][0]
+            if 'payments' in pu and 'captures' in pu['payments']:
+                capture = pu['payments']['captures'][0]
+                if 'status' in capture:
+                    error_msg = f'Payment status: {capture["status"]}'
+                if 'status_details' in capture and 'reason' in capture['status_details']:
+                    error_msg = capture['status_details']['reason']
+        execute_db("UPDATE orders SET status='failed', failure_reason=%s WHERE id=%s", (error_msg, internal_order_id))
         return jsonify({'error': 'Payment not completed by PayPal.'}), 400
 
     capture_id = cap_data['purchase_units'][0]['payments']['captures'][0]['id']
@@ -784,6 +905,7 @@ def admin_get_tickets():
             t['sale_start'] = t['sale_start'].isoformat()
         if t.get('sale_end'):
             t['sale_end'] = t['sale_end'].isoformat()
+        t['sale_percent'] = _normalize_sale_percent(t.get('sale_percent'))
     return jsonify(tiers)
 
 @app.route('/api/admin/tickets', methods=['POST'])
@@ -791,12 +913,13 @@ def admin_get_tickets():
 def admin_create_ticket():
     d = request.get_json()
     features = '|'.join(d.get('features', [])) if isinstance(d.get('features'), list) else d.get('features', '')
+    sale_percent = _normalize_sale_percent(d.get('sale_percent'))
     tier = execute_db(
-        '''INSERT INTO ticket_tiers (name, price_cents, description, features, capacity, sort_order, active, sale_start, sale_end)
-           VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING *''',
+        '''INSERT INTO ticket_tiers (name, price_cents, description, features, capacity, sort_order, active, sale_start, sale_end, sale_percent)
+           VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING *''',
         (d['name'], d['price_cents'], d.get('description', ''), features,
          d.get('capacity', 0), d.get('sort_order', 0), d.get('active', True),
-         d.get('sale_start'), d.get('sale_end'))
+         d.get('sale_start'), d.get('sale_end'), sale_percent)
     )
     return jsonify(tier), 201
 
@@ -805,12 +928,13 @@ def admin_create_ticket():
 def admin_update_ticket(tid):
     d = request.get_json()
     features = '|'.join(d.get('features', [])) if isinstance(d.get('features'), list) else d.get('features', '')
+    sale_percent = _normalize_sale_percent(d.get('sale_percent'))
     tier = execute_db(
         '''UPDATE ticket_tiers SET name=%s, price_cents=%s, description=%s, features=%s,
-           capacity=%s, sort_order=%s, active=%s, sale_start=%s, sale_end=%s WHERE id=%s RETURNING *''',
+           capacity=%s, sort_order=%s, active=%s, sale_start=%s, sale_end=%s, sale_percent=%s WHERE id=%s RETURNING *''',
         (d['name'], d['price_cents'], d.get('description', ''), features,
          d.get('capacity', 0), d.get('sort_order', 0), d.get('active', True),
-         d.get('sale_start'), d.get('sale_end'), tid)
+         d.get('sale_start'), d.get('sale_end'), sale_percent, tid)
     )
     return jsonify(tier)
 
@@ -824,9 +948,13 @@ def admin_delete_ticket(tid):
 @app.route('/api/admin/orders', methods=['GET'])
 @verify_admin
 def admin_get_orders():
+    cleanup_abandoned_orders()
+    
     orders = query_db('''
-        SELECT o.*, json_agg(json_build_object('tier_name', oi.tier_name, 'qty', oi.qty, 'unit_price_cents', oi.unit_price_cents)) as items
+        SELECT o.id, o.order_number, o.email, o.name, o.created_at, o.status, o.failure_reason, o.total_amount, o.discount_cents,
+               json_agg(json_build_object('tier_name', oi.tier_name, 'qty', oi.qty, 'unit_price_cents', oi.unit_price_cents)) as items
         FROM orders o LEFT JOIN order_items oi ON oi.order_id = o.id
+        WHERE o.status IN ('completed', 'failed', 'pending')
         GROUP BY o.id ORDER BY o.created_at DESC
     ''')
     for o in orders:
@@ -1077,6 +1205,26 @@ def sponsor_request():
         'INSERT INTO sponsor_requests (company, contact_name, email, phone, message) VALUES (%s, %s, %s, %s, %s) RETURNING *',
         (d['company'], d['contact_name'], d['email'], d.get('phone', ''), d.get('message', ''))
     )
+
+    if VENDOR_INQUIRY_EMAIL:
+        try:
+            message = (
+                f"New vendor/sponsor inquiry received.\n\n"
+                f"Company: {sr.get('company', '')}\n"
+                f"Contact: {sr.get('contact_name', '')}\n"
+                f"Email: {sr.get('email', '')}\n"
+                f"Phone: {sr.get('phone', '')}\n\n"
+                f"Message:\n{sr.get('message', '')}\n"
+            )
+            resend.Emails.send({
+                'from': RESEND_FROM_EMAIL,
+                'to': [VENDOR_INQUIRY_EMAIL],
+                'subject': f"New Vendor Inquiry: {sr.get('company', 'Unknown Company')}",
+                'text': message,
+            })
+        except Exception as e:
+            print(f"[SPONSOR INQUIRY EMAIL ERROR] {e}")
+
     return jsonify({'success': True, 'id': sr['id']}), 201
 
 @app.route('/api/sponsors/deck-access', methods=['GET'])
@@ -2016,21 +2164,23 @@ def submit_contact_message():
         (name, email, message)
     )
 
-    # Send email notification to admin
+    # Send email notification to inbox owner
     try:
-        resend.Emails.send({
-            'from': RESEND_FROM_EMAIL,
-            'to': ['dominique@diablocanna.co'],
-            'subject': f'New Contact Message from {name or "Anonymous"}',
-            'html': f'''<div style="font-family:sans-serif;max-width:600px;margin:0 auto;background:#111;color:#fff;padding:32px;border-radius:12px;">
-                <h2 style="color:#d4a843;margin-top:0;">New Contact Message</h2>
-                <p><strong>From:</strong> {name or "Anonymous"}</p>
-                <p><strong>Email:</strong> {email or "Not provided"}</p>
-                <p><strong>Message:</strong></p>
-                <div style="background:#1a1a1a;padding:16px;border-radius:8px;border:1px solid #333;white-space:pre-wrap;">{message}</div>
-                <p style="margin-top:24px;color:#888;font-size:13px;">Reply from the <a href="https://cannagrudge.com/admin" style="color:#d4a843;">Admin Dashboard</a> inbox.</p>
-            </div>'''
-        })
+        if INBOX_NOTIFICATION_EMAIL:
+            inbox_url = 'https://cannagrudge.com/admin?tab=inbox'
+            resend.Emails.send({
+                'from': RESEND_FROM_EMAIL,
+                'to': [INBOX_NOTIFICATION_EMAIL],
+                'subject': f'New Contact Message from {name or "Anonymous"}',
+                'html': f'''<div style="font-family:sans-serif;max-width:600px;margin:0 auto;background:#111;color:#fff;padding:32px;border-radius:12px;">
+                    <h2 style="color:#d4a843;margin-top:0;">New Contact Message</h2>
+                    <p><strong>From:</strong> {name or "Anonymous"}</p>
+                    <p><strong>Email:</strong> {email or "Not provided"}</p>
+                    <p><strong>Message:</strong></p>
+                    <div style="background:#1a1a1a;padding:16px;border-radius:8px;border:1px solid #333;white-space:pre-wrap;">{message}</div>
+                    <p style="margin-top:24px;color:#888;font-size:13px;">Open the admin inbox: <a href="{inbox_url}" style="color:#d4a843;">{inbox_url}</a></p>
+                </div>'''
+            })
     except Exception as e:
         print(f"[CONTACT EMAIL] {e}")
 

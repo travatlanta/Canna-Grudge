@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS ticket_tiers (
     id SERIAL PRIMARY KEY,
     name TEXT NOT NULL,
     price_cents INTEGER NOT NULL DEFAULT 0,
+    sale_percent INTEGER DEFAULT 0,
     description TEXT DEFAULT '',
     features TEXT DEFAULT '',
     capacity INTEGER DEFAULT 0,
@@ -63,6 +64,7 @@ CREATE TABLE IF NOT EXISTS orders (
     receipt_url TEXT,
     billing_address TEXT,
     notes TEXT DEFAULT '',
+    failure_reason TEXT DEFAULT '',
     checked_in BOOLEAN DEFAULT FALSE,
     checked_in_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT NOW()

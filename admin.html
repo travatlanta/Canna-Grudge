@@ -860,7 +860,7 @@
 
         <div id="tab-tickets" class="tab-content">
           <div style="margin-bottom:16px;"><button class="btn btn-primary btn-sm" id="addTicketBtn">+ Add Ticket Tier</button></div>
-          <div class="admin-table-wrap"><table class="admin-table" id="ticketsTable"><thead><tr><th>Name</th><th>Price</th><th>Capacity</th><th>Sold</th><th>Active</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
+          <div class="admin-table-wrap"><table class="admin-table" id="ticketsTable"><thead><tr><th>Name</th><th>Price</th><th>Sale</th><th>Capacity</th><th>Sold</th><th>Active</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
         </div>
 
         <div id="tab-orders" class="tab-content">
@@ -974,6 +974,7 @@
           <div class="form-group"><label class="label">Sale Start</label><input class="input" type="datetime-local" id="ticketSaleStart"></div>
           <div class="form-group"><label class="label">Sale End</label><input class="input" type="datetime-local" id="ticketSaleEnd"></div>
         </div>
+        <div class="form-group"><label class="label">Sale Discount (%)</label><input class="input" type="number" min="0" max="95" step="1" id="ticketSalePercent" value="0"><div style="font-size:12px;color:var(--cg-text-muted);margin-top:6px;">Set to 0 to disable sale pricing.</div></div>
         <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:24px;">
           <button type="button" class="btn btn-ghost" onclick="closeModal('ticketModal')">Cancel</button>
           <button type="submit" class="btn btn-primary">Save</button>
@@ -1289,16 +1290,19 @@
     const tabs = document.querySelectorAll('.admin-nav-btn[data-tab]');
     const tabTitles = { dashboard: 'Dashboard', analytics: 'Analytics', tickets: 'Tickets', orders: 'Orders', promos: 'Promo Codes', sponsors: 'Sponsors', invoices: 'Invoices', 'purchase-links': 'Purchase Links', inbox: 'Inbox', users: 'Users', emails: 'Email Templates', admins: 'Admins' };
 
+    function activateTab(tabId) {
+      const validTab = tabTitles[tabId] ? tabId : 'dashboard';
+      tabs.forEach(b => b.classList.toggle('active', b.dataset.tab === validTab));
+      document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+      $('tab-' + validTab).classList.add('active');
+      $('pageTitle').textContent = tabTitles[validTab] || validTab;
+      loadTab(validTab);
+      closeSidebar();
+    }
+
     tabs.forEach(btn => {
       btn.addEventListener('click', () => {
-        tabs.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
-        const tabId = btn.dataset.tab;
-        $('tab-' + tabId).classList.add('active');
-        $('pageTitle').textContent = tabTitles[tabId] || tabId;
-        loadTab(tabId);
-        closeSidebar();
+        activateTab(btn.dataset.tab);
       });
     });
 
@@ -1744,20 +1748,20 @@
       }).join('');
     }
 
-    async function markMsgRead(id) {
+    window.markMsgRead = async function markMsgRead(id) {
       await apiFetch(`/api/admin/messages/${id}/read`, { method: 'PUT' });
       showMsg('Marked as read', 'success');
       loadInbox();
-    }
+    };
 
-    async function deleteMsg(id) {
+    window.deleteMsg = async function deleteMsg(id) {
       if (!confirm('Delete this message?')) return;
       await apiFetch(`/api/admin/messages/${id}`, { method: 'DELETE' });
       showMsg('Deleted', 'success');
       loadInbox();
-    }
+    };
 
-    function openReplyModal(id, name, email) {
+    window.openReplyModal = function openReplyModal(id, name, email) {
       const html = `<div class="modal-card" style="max-width:520px;">
         <button class="modal-close" onclick="closeModal('replyModal')">&times;</button>
         <h3 style="margin-bottom:4px;">Reply to ${name}</h3>
@@ -1774,14 +1778,14 @@
       modal.classList.add('active');
     }
 
-    async function sendReply(id) {
+    window.sendReply = async function sendReply(id) {
       const text = $('replyText').value.trim();
       if (!text) return;
       await apiFetch(`/api/admin/messages/${id}/reply`, { method: 'POST', body: JSON.stringify({ reply: text }) });
       closeModal('replyModal');
       showMsg('Reply sent!', 'success');
       loadInbox();
-    }
+    };
 
     // Load unread count on dashboard load
     async function loadInboxBadge() {
@@ -1795,14 +1799,31 @@
 
     let ticketTiers = [];
 
+    function isTicketSaleLive(t) {
+      const pct = Number(t.sale_percent || 0);
+      if (pct <= 0) return false;
+      const now = new Date();
+      const startOk = !t.sale_start || now >= new Date(t.sale_start);
+      const endOk = !t.sale_end || now <= new Date(t.sale_end);
+      return startOk && endOk;
+    }
+
+    function saleBadgeForTicket(t) {
+      const pct = Number(t.sale_percent || 0);
+      if (pct <= 0) return '<span style="color:var(--cg-text-muted);">No sale</span>';
+      if (isTicketSaleLive(t)) return `<span class="badge" style="background:rgba(63,217,104,.15);color:#6dff9f;border:1px solid rgba(63,217,104,.4);">LIVE ${pct}% OFF</span>`;
+      return `<span class="badge" style="background:rgba(255,255,255,.06);color:var(--cg-text-secondary);border:1px solid rgba(255,255,255,.15);">${pct}% OFF (scheduled)</span>`;
+    }
+
     async function loadTickets() {
       const data = await apiFetch('/api/admin/tickets');
       ticketTiers = data;
       const tbody = $('ticketsTable').querySelector('tbody');
-      if (!data.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--cg-text-muted);padding:32px;">No ticket tiers</td></tr>'; return; }
+      if (!data.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--cg-text-muted);padding:32px;">No ticket tiers</td></tr>'; return; }
       tbody.innerHTML = data.map(t => `<tr>
         <td style="color:var(--cg-text);font-weight:600;">${t.name}</td>
         <td>${fmtMoney(t.price_cents)}</td>
+        <td>${saleBadgeForTicket(t)}</td>
         <td>${t.capacity || '∞'}</td>
         <td>${t.sold || 0}</td>
         <td>${t.active ? statusBadge('active') : '<span class="badge badge-red">inactive</span>'}</td>
@@ -1818,6 +1839,7 @@
       tog.classList.add('active');
       tog.dataset.val = 'true';
       tog.nextElementSibling.textContent = 'Yes';
+      $('ticketSalePercent').value = 0;
       openModal('ticketModal');
     });
 
@@ -1837,6 +1859,7 @@
       else { tog.classList.remove('active'); tog.dataset.val = 'false'; tog.nextElementSibling.textContent = 'No'; }
       $('ticketSaleStart').value = t.sale_start ? t.sale_start.slice(0, 16) : '';
       $('ticketSaleEnd').value = t.sale_end ? t.sale_end.slice(0, 16) : '';
+      $('ticketSalePercent').value = Number(t.sale_percent || 0);
       openModal('ticketModal');
     };
 
@@ -1861,7 +1884,8 @@
         sort_order: parseInt($('ticketSort').value) || 0,
         active: $('ticketActive').dataset.val === 'true',
         sale_start: $('ticketSaleStart').value || null,
-        sale_end: $('ticketSaleEnd').value || null
+        sale_end: $('ticketSaleEnd').value || null,
+        sale_percent: Math.max(0, Math.min(95, parseInt($('ticketSalePercent').value) || 0))
       };
       try {
         if (id) await apiFetch(`/api/admin/tickets/${id}`, { method: 'PUT', body: JSON.stringify(body) });
@@ -2698,7 +2722,8 @@
 
           $('adminLoading').style.display = 'none';
           $('adminApp').style.display = 'block';
-          loadDashboard();
+          const requestedTab = new URLSearchParams(location.search).get('tab');
+          activateTab(requestedTab || 'dashboard');
         } catch (e) {
           console.error('[ADMIN] verify failed:', e);
           $('adminLoading').style.display = 'none';

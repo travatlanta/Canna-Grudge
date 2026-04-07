@@ -67,6 +67,38 @@
       object-fit: contain;
       filter: brightness(0.85) grayscale(0.2);
     }
+    .sale-badges {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: 12px 0 4px;
+    }
+    .sale-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(255, 255, 255, 0.07);
+      color: #fff;
+    }
+    .sale-chip.hot {
+      border-color: rgba(255, 130, 40, 0.65);
+      background: linear-gradient(135deg, rgba(255, 88, 38, 0.35), rgba(255, 176, 45, 0.28));
+      box-shadow: 0 0 16px rgba(255, 120, 40, 0.25);
+    }
+    .tier-price-base {
+      margin-left: 8px;
+      color: var(--cg-text-muted);
+      text-decoration: line-through;
+      font-size: 18px;
+      font-weight: 700;
+    }
   </style>
 </head>
 <body class="page-padded">
@@ -74,7 +106,7 @@
   <div class="page-header">
     <div class="container">
       <h1>Get Your <span class="text-gradient">Tickets</span></h1>
-      <p class="section-subtitle">Regular Entry is $40. Add Early Entry for +$20 per ticket if you want in one hour early.</p>
+      <p class="section-subtitle" id="ticketSubtitle">Regular Entry is $40. Add Early Entry for +$20 per ticket if you want in one hour early.</p>
     </div>
   </div>
 
@@ -93,7 +125,6 @@
       <div class="marquee-logo"><img src="assets/brands/Sweeto.png" alt="Sweeto"></div>
       <div class="marquee-logo"><img src="assets/brands/Terp%20City.png" alt="Terp City"></div>
       <div class="marquee-logo"><img src="assets/brands/Toasted.png" alt="Toasted"></div>
-      <div class="marquee-logo"><img src="assets/brands/Tyson.png" alt="Tyson"></div>
       <!-- duplicate set for seamless loop -->
       <div class="marquee-logo"><img src="assets/brands/Diablo%20Cannabis.png" alt="Diablo"></div>
       <div class="marquee-logo"><img src="assets/brands/Dime%20Industries.png" alt="Dime Industries"></div>
@@ -107,7 +138,6 @@
       <div class="marquee-logo"><img src="assets/brands/Sweeto.png" alt="Sweeto"></div>
       <div class="marquee-logo"><img src="assets/brands/Terp%20City.png" alt="Terp City"></div>
       <div class="marquee-logo"><img src="assets/brands/Toasted.png" alt="Toasted"></div>
-      <div class="marquee-logo"><img src="assets/brands/Tyson.png" alt="Tyson"></div>
     </div>
   </div>
 
@@ -117,12 +147,13 @@
 
         <div class="ticket-card featured" id="card-regular">
           <div class="badge badge-corner">Main Ticket</div>
-          <div class="tier-name">Regular Entry</div>
-          <div class="tier-price">$40<small>/person</small></div>
-          <ul class="tier-features">
+          <div class="tier-name" id="regularTierName">Regular Entry</div>
+          <div class="sale-badges" id="regularSaleBadges" style="display:none;"></div>
+          <div class="tier-price"><span id="regularTierPrice">$40</span><span class="tier-price-base" id="regularTierBasePrice" style="display:none;"></span><small>/person</small></div>
+          <ul class="tier-features" id="regularTierFeatures">
             <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Standing room access</li>
             <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Vendor marketplace</li>
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Games &amp; activities area</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Vendor games &amp; trophy competition</li>
             <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Food &amp; drink available</li>
             <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Live fight card + halftime entertainment</li>
           </ul>
@@ -145,9 +176,10 @@
 
         <div class="ticket-card" id="card-early-info">
           <div class="badge badge-corner">Optional Add-On</div>
-          <div class="tier-name">Early Entry Details</div>
-          <div class="tier-price">+$20<small>/person</small></div>
-          <ul class="tier-features">
+          <div class="tier-name" id="addonTierName">Early Entry Details</div>
+          <div class="sale-badges" id="addonSaleBadges" style="display:none;"></div>
+          <div class="tier-price"><span id="addonTierPrice">+$20</span><span class="tier-price-base" id="addonTierBasePrice" style="display:none;"></span><small>/person</small></div>
+          <ul class="tier-features" id="addonTierFeatures">
             <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Doors open to you one hour early</li>
             <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Beat lines and secure better standing spots</li>
             <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Extra time to shop vendors before crowd peak</li>
@@ -175,7 +207,7 @@
           </li>
           <li class="info-item">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--cg-gold)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-            Gates open at 12:00 PM
+            Gates open at 3:00 PM
           </li>
           <li class="info-item">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--cg-gold)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
@@ -234,6 +266,99 @@
   <script type="module" src="./firebase-config.js"></script>
   <script>
     var regularQty = 1;
+    var ticketPricing = {
+      regular: { id: 'regular-entry', name: 'Regular Entry', price: 4000, basePrice: 4000, salePercent: 0, isOnSale: false },
+      addon: { id: 'early-entry-addon', name: 'Early Entry Add-On', price: 2000, basePrice: 2000, salePercent: 0, isOnSale: false }
+    };
+
+    function fmtMoney(cents, withPlus) {
+      var normalized = (Math.max(0, Number(cents) || 0) / 100).toFixed(2).replace(/\.00$/, '');
+      var amount = '$' + normalized;
+      return withPlus ? '+' + amount : amount;
+    }
+
+    function renderTierFeatures(listId, features) {
+      if (!Array.isArray(features) || !features.length) return;
+      var list = document.getElementById(listId);
+      if (!list) return;
+      list.innerHTML = features.map(function(feature) {
+        return '<li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>' + feature + '</li>';
+      }).join('');
+    }
+
+    function renderSaleBadges(elId, tier) {
+      var el = document.getElementById(elId);
+      if (!el) return;
+      if (!tier.isOnSale || !tier.salePercent) {
+        el.style.display = 'none';
+        el.innerHTML = '';
+        return;
+      }
+      var savings = Math.max(0, (tier.basePrice || 0) - (tier.price || 0));
+      el.style.display = 'flex';
+      el.innerHTML = [
+        '<span class="sale-chip hot">Flash Sale</span>',
+        '<span class="sale-chip">' + tier.salePercent + '% off</span>',
+        '<span class="sale-chip">Save $' + (savings / 100).toFixed(2) + '</span>'
+      ].join('');
+    }
+
+    function renderTierPrice(priceId, baseId, tier, withPlus) {
+      var priceEl = document.getElementById(priceId);
+      var baseEl = document.getElementById(baseId);
+      if (priceEl) priceEl.textContent = fmtMoney(tier.price, withPlus);
+      if (!baseEl) return;
+      if (tier.isOnSale && tier.basePrice > tier.price) {
+        baseEl.style.display = '';
+        baseEl.textContent = fmtMoney(tier.basePrice, withPlus);
+      } else {
+        baseEl.style.display = 'none';
+        baseEl.textContent = '';
+      }
+    }
+
+    async function hydrateTicketPricing() {
+      try {
+        var res = await fetch('/api/tickets');
+        if (!res.ok) return;
+        var tiers = await res.json();
+        if (!Array.isArray(tiers) || !tiers.length) return;
+
+        var regularTier = tiers.find(function(t) { return !/(early|add.?on)/i.test(t.name || ''); }) || tiers[0];
+        var addonTier = tiers.find(function(t) { return /(early|add.?on)/i.test(t.name || ''); }) || null;
+
+        if (regularTier) {
+          ticketPricing.regular.name = regularTier.name || ticketPricing.regular.name;
+          ticketPricing.regular.basePrice = Number(regularTier.price_cents || ticketPricing.regular.basePrice);
+          ticketPricing.regular.price = Number(regularTier.effective_price_cents || regularTier.price_cents || ticketPricing.regular.price);
+          ticketPricing.regular.salePercent = Number(regularTier.sale_percent || 0);
+          ticketPricing.regular.isOnSale = !!regularTier.is_on_sale;
+          document.getElementById('regularTierName').textContent = ticketPricing.regular.name;
+          renderTierFeatures('regularTierFeatures', regularTier.features);
+          renderSaleBadges('regularSaleBadges', ticketPricing.regular);
+          renderTierPrice('regularTierPrice', 'regularTierBasePrice', ticketPricing.regular, false);
+        }
+
+        if (addonTier) {
+          ticketPricing.addon.name = addonTier.name || ticketPricing.addon.name;
+          ticketPricing.addon.basePrice = Number(addonTier.price_cents || ticketPricing.addon.basePrice);
+          ticketPricing.addon.price = Number(addonTier.effective_price_cents || addonTier.price_cents || ticketPricing.addon.price);
+          ticketPricing.addon.salePercent = Number(addonTier.sale_percent || 0);
+          ticketPricing.addon.isOnSale = !!addonTier.is_on_sale;
+          document.getElementById('addonTierName').textContent = ticketPricing.addon.name;
+          renderTierFeatures('addonTierFeatures', addonTier.features);
+          renderSaleBadges('addonSaleBadges', ticketPricing.addon);
+          renderTierPrice('addonTierPrice', 'addonTierBasePrice', ticketPricing.addon, true);
+        }
+
+        var subtitle = document.getElementById('ticketSubtitle');
+        if (subtitle) {
+          subtitle.textContent = ticketPricing.regular.name + ' is ' + fmtMoney(ticketPricing.regular.price, false) + '. Add ' + ticketPricing.addon.name + ' for ' + fmtMoney(ticketPricing.addon.price, true) + ' per ticket if you want in one hour early.';
+        }
+      } catch (e) {
+        console.warn('Failed to load live ticket pricing', e);
+      }
+    }
 
     function changeQty(delta) {
       var next = regularQty + delta;
@@ -244,12 +369,14 @@
     }
 
     function addTicketPackage() {
-      addToCart('regular-entry', 'Regular Entry', 4000, regularQty);
+      addToCart(ticketPricing.regular.id, ticketPricing.regular.name, ticketPricing.regular.price, regularQty);
       var earlyToggle = document.getElementById('earlyEntryToggle');
       if (earlyToggle && earlyToggle.checked) {
-        addToCart('early-entry-addon', 'Early Entry Add-On', 2000, regularQty);
+        addToCart(ticketPricing.addon.id, ticketPricing.addon.name, ticketPricing.addon.price, regularQty);
       }
     }
+
+    hydrateTicketPricing();
   </script>
 </body>
 </html>

@@ -2275,7 +2275,7 @@ body.page-padded {
    Fliers Showcase
 ══════════════════════════════════════════════════ */
 
-/* ── Main poster glow (JumboTron flier in hero section) ── */
+/* ── Main poster glow ── */
 .flier-poster-glow {
   box-shadow:
     0 0 0 1px rgba(212,175,55,0.15),

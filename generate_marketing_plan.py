@@ -302,7 +302,7 @@ add_body(doc, 'Email Strategy:', bold=True)
 add_bullet(doc, 'Hero image — best event flier or graphic, full width')
 add_bullet(doc, 'One punchy paragraph: what it is, where, when — no walls of text')
 add_bullet(doc, 'List ALL 13 competing brand names — customers recognize them, instant credibility')
-add_bullet(doc, 'Highlight the experience: live boxing, JumboTron, free tattoos, vendor expo, music')
+    add_bullet(doc, 'Highlight the experience: live boxing, 6 brand bouts, free tattoos, vendor games with trophies, vendor expo, music')
 add_bullet(doc, 'One CTA button: "Get Tickets → cannagrudge.com" — nothing else')
 add_bullet(doc, 'If it doesn\'t fit on a phone screen above the fold, it\'s too long')
 add_bullet(doc, '', bold_prefix='Exclusive promo code: ')
@@ -385,7 +385,7 @@ add_table(doc,
         ['Wednesday', 'Behind the Scenes',  'Venue, prep, merch, team activity'],
         ['Thursday',  'Countdown',          '"30 days / 14 days until CannaGrudge" graphic'],
         ['Friday',    'Ticket Push',        '"Weekend plans? April 25 →" with ticket link'],
-        ['Daily Story','Engagement',        'Countdown sticker, polls ("Who wins — Nirvana or Tyson?"), ticket link'],
+        ['Daily Story','Engagement',        'Countdown sticker, polls ("Who wins — Nirvana or Diablo?"), ticket link'],
     ],
     col_widths=[1.3, 1.8, 4.0]
 )
@@ -397,7 +397,7 @@ add_callout(doc, 'Free tattoos. Live fights. Open bar vendors. April 25.')
 add_body(doc, 'Shift the message from "what is it" to "what will you experience that night."')
 add_bullet(doc, 'Walk them through the night hour by hour — make them feel like they\'re already there')
 add_bullet(doc, 'Free tattoos — if confirmed, this is a massive hook for this demographic')
-add_bullet(doc, 'JumboTron watch party, music/DJ, vendor expo — paint the full picture')
+    add_bullet(doc, 'Vendor games with trophy finals, music/DJ, vendor expo — paint the full picture')
 add_bullet(doc, 'Ticket tiers clearly explained — what each tier includes, price, availability')
 add_bullet(doc, 'Add a sold ticket count or "X tickets remaining" if numbers support FOMO')
 
